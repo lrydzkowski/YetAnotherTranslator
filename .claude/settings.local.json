@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:www.nuget.org)",
+      "WebFetch(domain:elevenlabs.io)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:spectreconsole.net)"
     ],
     "deny": [],
     "ask": []

@@ -24,7 +24,7 @@ Choose boring solutions over clever ones. Explicit over implicit. If there's a s
 
 ## Technical Standards
 
-.NET 10 version only. Standard C# conventions and formatting. No magic strings or numbers. Configuration via files or environment variables. Validation done with FluentValidation. Always implement integration tests.
+.NET 10 version only. Standard C# conventions and formatting. No magic strings or numbers. Configuration via files or environment variables. Validation done with FluentValidation. Always implement integration tests. Use Testcontainers, Verify (https://github.com/VerifyTests/Verify), and Wiremock.NET. User "return early" pattern.
 
 ## Development Workflow
 

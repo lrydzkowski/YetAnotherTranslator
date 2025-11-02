@@ -140,7 +140,7 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - What happens when the user is offline and LLM providers require internet connectivity?
 - What happens when the configuration file has syntax errors (invalid JSON)?
 - What happens when the configured LLM provider API is down or rate-limited?
-- How does the system handle ambiguous input that could be either Polish or English when using auto-detect commands?
+- How does the system handle ambiguous input that could be either Polish or English when using auto-detect commands? → **Clarified in Session 2025-11-02**: `/t` and `/tt` commands use LLM-based language detection via DetectLanguageAsync; explicit commands (`/tp`, `/te`, `/ttp`, `/tte`) bypass detection as source language is specified
 - What happens when automatic language detection fails or is uncertain?
 - What happens when grammar review is requested for non-English text?
 - How does the system handle very long text snippets that may exceed service limits?
@@ -148,8 +148,8 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - How is history maintained across multiple sessions and what are storage limits?
 - What happens when the user enters an invalid REPL command?
 - What happens when the secret manager is unavailable or fails to return credentials?
-- How should the system authenticate to the secret manager (e.g., tokens for Vault, AWS IAM roles for Secrets Manager, Azure managed identity for Key Vault)?
-- Should the application support multiple secret manager backends simultaneously or only one at a time?
+- How should the system authenticate to the secret manager (e.g., tokens for Vault, AWS IAM roles for Secrets Manager, Azure managed identity for Key Vault)? → **Clarified in Session 2025-11-02**: Azure Key Vault authentication via DefaultAzureCredential (supports az login for development, managed identity for production)
+- Should the application support multiple secret manager backends simultaneously or only one at a time? → **Clarified in Session 2025-11-02**: v1 supports single backend (Azure Key Vault only); multi-backend support deferred to future releases
 
 ## Requirements
 
@@ -164,49 +164,48 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - **FR-007**: System MUST translate text snippets from English to Polish
 - **FR-008**: System MUST review English text and identify grammar errors with correction suggestions
 - **FR-009**: System MUST review English text and suggest vocabulary improvements
-- **FR-010**: System MUST play audio pronunciation for English words using a text-to-speech API service
+- **FR-010**: System MUST play audio pronunciation for English words and phrases using a text-to-speech API service
 - **FR-010a**: System MUST accept optional part of speech parameter for word pronunciation to handle words with pronunciation variations (e.g., noun vs verb)
-- **FR-011**: System MUST play audio pronunciation for English phrases and expressions using a text-to-speech API service
-- **FR-011a**: System MUST support configurable text-to-speech provider selection (e.g., Google Cloud TTS, Amazon Polly, Azure Speech)
-- **FR-012**: System MUST save history of all translation operations
-- **FR-013**: System MUST save history of all grammar review operations
-- **FR-014**: System MUST save history of all pronunciation requests
-- **FR-015**: System MUST allow users to retrieve and view their operation history
-- **FR-016**: System MUST handle Polish diacritical characters correctly in all operations
-- **FR-017**: System MUST provide clear error messages when operations fail
-- **FR-018**: System MUST provide a REPL (Read-Eval-Print Loop) interactive interface
-- **FR-018a**: System MUST support `/t <word>` or `/translate <word>` command for word translation with automatic language detection
-- **FR-018b**: System MUST support `/tp <word>` or `/translate-polish <word>` command for Polish-to-English word translation
-- **FR-018c**: System MUST support `/te <word>` or `/translate-english <word>` command for English-to-Polish word translation
-- **FR-018d**: System MUST support `/tt <text>` or `/translate-text <text>` command for text translation with automatic language detection
-- **FR-018e**: System MUST support `/ttp <text>` or `/translate-text-polish <text>` command for Polish-to-English text translation
-- **FR-018f**: System MUST support `/tte <text>` or `/translate-test-english <text>` command for English-to-Polish text translation
-- **FR-018g**: System MUST support `/r <text>` or `/review <text>` command for English grammar and vocabulary review
-- **FR-018h**: System MUST support `/p <text>` or `/playback <text>` command for English pronunciation playback with optional part of speech parameter
-- **FR-018i**: System MUST support `/history` or `/hist` command to display operation history
-- **FR-018j**: System MUST support `/h` or `/help` command to display help information
-- **FR-018k**: System MUST support `/c` or `/clear` command to clear the screen
-- **FR-018l**: System MUST support `/q` or `/quit` command to quit the application
-- **FR-019**: System MUST output results to standard output
-- **FR-020**: System MUST output errors to standard error
-- **FR-021**: System MUST automatically detect source language (Polish vs English) when using auto-detect commands
-- **FR-022**: System MUST display word translation results in table format with columns for rank, translation, part of speech, countability, and example sentences
-- **FR-023**: System MUST accept text input as single-line commands with support for escaped newlines (`\n`) to represent multi-line content
-- **FR-024**: System MUST use LLM-based implementation for word translation, text translation, and grammar review functions
-- **FR-025**: System MUST leverage LLM's inherent spelling correction capabilities without implementing separate spell-checking logic
-- **FR-026**: System MUST support configurable LLM provider selection through a pluggable provider architecture
-- **FR-027**: System MUST allow users to configure which LLM provider(s) to use for different operations via JSON configuration file
-- **FR-028**: System MUST read configuration from a JSON configuration file located in the standard user config directory (e.g., `~/.config/translator/config.json` on Linux, `%APPDATA%\translator\config.json` on Windows) on startup
-- **FR-029**: System MUST validate that all required configuration fields are present at startup
-- **FR-030**: System MUST validate configuration file syntax (valid JSON) at startup and provide error messages with line and column information for JSON syntax errors
-- **FR-031**: System MUST display clear error messages indicating missing or invalid configuration fields when validation fails
-- **FR-032**: System MUST exit with a non-zero status code when configuration validation fails
-- **FR-033**: System MUST integrate with dedicated secret manager services (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault) for securely storing and retrieving API credentials for LLM and TTS providers
-- **FR-034**: System MUST support configurable secret manager backend selection via configuration file
-- **FR-035**: System MUST store references to secrets (not the actual credentials) in the local configuration file
-- **FR-036**: System MUST retrieve actual API credentials from configured secret manager at runtime
-- **FR-037**: System MUST provide clear error messages when secret manager is unavailable or fails to return credentials
-- **FR-038**: System MUST proceed to REPL when all configuration is valid and credentials are successfully retrieved
+- **FR-010b**: System MUST use ElevenLabs as text-to-speech provider (v1 scope: single TTS provider; configurable multi-provider selection for Google Cloud TTS, Amazon Polly, Azure Speech deferred to future releases)
+- **FR-011**: System MUST save history of all translation operations
+- **FR-012**: System MUST save history of all grammar review operations
+- **FR-013**: System MUST save history of all pronunciation requests
+- **FR-014**: System MUST allow users to retrieve and view their operation history
+- **FR-015**: System MUST handle Polish diacritical characters correctly in all operations
+- **FR-016**: System MUST provide clear error messages when operations fail
+- **FR-017**: System MUST provide a REPL (Read-Eval-Print Loop) interactive interface
+- **FR-017a**: System MUST support `/t <word>` or `/translate <word>` command for word translation with automatic language detection
+- **FR-017b**: System MUST support `/tp <word>` or `/translate-polish <word>` command for Polish-to-English word translation
+- **FR-017c**: System MUST support `/te <word>` or `/translate-english <word>` command for English-to-Polish word translation
+- **FR-017d**: System MUST support `/tt <text>` or `/translate-text <text>` command for text translation with automatic language detection
+- **FR-017e**: System MUST support `/ttp <text>` or `/translate-text-polish <text>` command for Polish-to-English text translation
+- **FR-017f**: System MUST support `/tte <text>` or `/translate-text-english <text>` command for English-to-Polish text translation
+- **FR-017g**: System MUST support `/r <text>` or `/review <text>` command for English grammar and vocabulary review
+- **FR-017h**: System MUST support `/p <text>` or `/playback <text>` command for English pronunciation playback with optional part of speech parameter
+- **FR-017i**: System MUST support `/history` or `/hist` command to display operation history
+- **FR-017j**: System MUST support `/h` or `/help` command to display help information
+- **FR-017k**: System MUST support `/c` or `/clear` command to clear the screen
+- **FR-017l**: System MUST support `/q` or `/quit` command to quit the application
+- **FR-018**: System MUST output results to standard output
+- **FR-019**: System MUST output errors to standard error
+- **FR-020**: System MUST automatically detect source language (Polish vs English) when using auto-detect commands (`/t`, `/tt`); explicit commands (`/tp`, `/te`, `/ttp`, `/tte`) specify source language without detection
+- **FR-021**: System MUST display word translation results in table format with columns for rank, translation, part of speech, countability, and example sentences
+- **FR-022**: System MUST accept text input as single-line commands with support for escaped newlines (`\n`) to represent multi-line content
+- **FR-023**: System MUST use LLM-based implementation for word translation, text translation, and grammar review functions
+- **FR-024**: System MUST leverage LLM's inherent spelling correction capabilities without implementing separate spell-checking logic
+- **FR-025**: System MUST use Anthropic Claude as LLM provider (v1 scope: single LLM provider; pluggable multi-provider architecture deferred to future releases)
+- **FR-026**: System MUST allow users to configure Anthropic LLM settings (model, temperature, max tokens) via JSON configuration file (v1 scope: single provider configuration; multi-provider operation mapping deferred to future releases)
+- **FR-027**: System MUST read configuration from a JSON configuration file located in the standard user config directory (e.g., `~/.config/translator/config.json` on Linux, `%APPDATA%\translator\config.json` on Windows) on startup
+- **FR-028**: System MUST validate that all required configuration fields are present at startup
+- **FR-029**: System MUST validate configuration file syntax (valid JSON) at startup and provide error messages with line and column information for JSON syntax errors
+- **FR-030**: System MUST display clear error messages indicating missing or invalid configuration fields when validation fails
+- **FR-031**: System MUST exit with a non-zero status code when configuration validation fails
+- **FR-032**: System MUST integrate with Azure Key Vault for securely storing and retrieving API credentials for LLM and TTS providers (v1 scope: Azure Key Vault only; multi-backend support for HashiCorp Vault and AWS Secrets Manager deferred to future releases)
+- **FR-033**: System MUST support Azure Key Vault configuration via configuration file (v1 scope: single backend; configurable multi-backend selection deferred to future releases)
+- **FR-034**: System MUST store references to secrets (not the actual credentials) in the local configuration file
+- **FR-035**: System MUST retrieve actual API credentials from configured secret manager at runtime
+- **FR-036**: System MUST provide clear error messages when secret manager is unavailable or fails to return credentials
+- **FR-037**: System MUST proceed to REPL when all configuration is valid and credentials are successfully retrieved
 
 ### Key Entities
 
@@ -217,8 +216,8 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - **Pronunciation Request**: Represents an English word or expression for which audio pronunciation is requested, including optional part of speech for disambiguation
 - **Operation History Entry**: Records a single operation including type, timestamp, input, and key results for future retrieval
 - **LLM Provider Configuration**: Represents the configuration for LLM provider(s) including provider type, secret reference (not actual credentials), operation-to-provider mapping, and provider-specific settings
-- **TTS Provider Configuration**: Represents the configuration for text-to-speech provider including provider type (Google Cloud TTS, Amazon Polly, Azure Speech), secret reference (not actual credentials), and voice settings
-- **Secret Manager Configuration**: Represents the configuration for dedicated secret manager including backend type (HashiCorp Vault, AWS Secrets Manager, or Azure Key Vault), connection settings (endpoint URL, region), and authentication method (token, IAM role, managed identity)
+- **TTS Provider Configuration**: Represents the configuration for ElevenLabs text-to-speech provider including secret reference (not actual credentials), voice ID, and model settings
+- **Secret Manager Configuration**: Represents the configuration for Azure Key Vault including connection settings (Key Vault URL) and authentication method (DefaultAzureCredential via az login or managed identity)
 
 ## Success Criteria
 
@@ -241,22 +240,22 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 
 - Users have internet connectivity for accessing LLM-based translation, grammar review, TTS services, and dedicated secret manager services
 - Users have audio playback capability for pronunciation features
-- Users have access to a dedicated secret manager service (HashiCorp Vault, AWS Secrets Manager, or Azure Key Vault) for storing API credentials
+- Users have access to Azure Key Vault for storing API credentials (v1 scope)
 - Users can manually create and edit JSON configuration files
-- Users can configure and authenticate to their chosen secret manager backend (via tokens, IAM roles, or managed identities)
+- Users can authenticate to Azure Key Vault via Azure CLI (az login) or managed identity in production environments
 - Users can manually store API credentials in their secret manager and obtain secret references (paths/IDs)
 - LLM providers (e.g., OpenAI, Anthropic, Google, etc.) can provide popularity rankings for translations
 - LLM providers can provide linguistic metadata (parts of speech, countability, example sentences)
 - LLM providers can perform grammar and vocabulary review with high accuracy
 - LLM providers inherently handle minor spelling variations and typos in input without requiring explicit spell-checking logic
-- Text-to-speech providers (Google Cloud TTS, Amazon Polly, Azure Speech) can generate high-quality English pronunciation audio
+- ElevenLabs text-to-speech service can generate high-quality English pronunciation audio
 - TTS providers support natural-sounding pronunciation with appropriate intonation for both words and phrases
 - Operation history, LLM provider configuration (excluding credentials), TTS provider configuration (excluding credentials), and secret manager configuration storage in standard user config directory on local filesystem is acceptable
-- Dedicated secret manager services provide reliable and available access to stored credentials at runtime
+- Azure Key Vault provides reliable and available access to stored credentials at runtime
 - REPL-style interactive interface is suitable for user interaction
 - LLM providers can reliably perform language auto-detection to distinguish between Polish and English text
 - Text snippet translation limit of 5000 characters is reasonable for CLI usage and aligns with common LLM token limits
 - Different LLM providers offer compatible APIs or can be abstracted through a common interface
-- Different TTS providers offer compatible APIs or can be abstracted through a common interface
-- Different secret manager backends (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault) offer compatible APIs or can be abstracted through a common interface
+- ElevenLabs SDK (ElevenLabs-DotNet) provides reliable .NET integration for audio generation
+- Azure Key Vault SDK provides reliable .NET integration via Azure.Security.KeyVault.Secrets and Azure.Identity packages
 
