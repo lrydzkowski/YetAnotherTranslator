@@ -50,6 +50,31 @@ A REPL-style command-line interface for Polish-English translation featuring wor
 - **No silent failures**: All errors displayed to user with actionable guidance
 - **Appropriate level**: Validation in handlers via FluentValidation, business errors in handlers, infrastructure errors in providers
 
+**Offline Detection and Cache Fallback**:
+
+The system detects offline scenarios through exception handling rather than proactive connectivity checks:
+
+1. **LLM Provider Unavailable**:
+   - Catch `HttpRequestException` with inner `SocketException` (no network)
+   - Catch `TaskCanceledException` from timeout (5 second timeout for API calls)
+   - Catch provider-specific exceptions (e.g., `AnthropicException` for API errors)
+
+2. **Cache Fallback Behavior**:
+   - On network exception → Check cache for matching entry
+   - Cache hit → Return cached result with "(cached)" indicator in UI
+   - Cache miss → Display error: "Unable to connect to translation service. No cached result available. Please check your internet connection."
+
+3. **Azure Key Vault Unavailable** (startup only):
+   - Catch `RequestFailedException` from Azure SDK
+   - Fail fast at startup (no cache fallback for credentials)
+   - Display clear error: "Failed to retrieve credentials from Azure Key Vault: {error}. Run 'az login' and verify Key Vault access."
+
+**Implementation Notes**:
+- Do not implement proactive connectivity checks (adds complexity, violates Simplicity principle)
+- Rely on exception handling at operation level
+- Cache keys based on SHA256 hash ensure exact match for offline retrieval
+- Offline mode is automatic and transparent to user (except error messages when no cache available)
+
 ### Simplicity ✅
 - **Handler pattern**: Simple handler classes with business logic methods, no MediatR complexity
 - **Direct invocation**: Handlers called directly from CLI layer

@@ -54,6 +54,10 @@ Multi-project solution structure:
 - [ ] T016 [P] Create CommandType enum in src/YetAnotherTranslator.Core/Models/CommandType.cs
 - [ ] T017 Create TranslatorDbContext in src/YetAnotherTranslator.Infrastructure/Persistence/TranslatorDbContext.cs with DbSets for HistoryEntry, TranslationCache, TextTranslationCache, PronunciationCache
 - [ ] T018 Create initial EF Core migration InitialSchema using dotnet ef migrations add
+  - Entities included: HistoryEntryEntity, TranslationCacheEntity, TextTranslationCacheEntity, PronunciationCacheEntity
+  - Indexes: Primary keys, unique indexes on cache_key columns, timestamp indexes for history queries
+  - Command: `dotnet ef migrations add InitialSchema --project src/YetAnotherTranslator.Infrastructure --startup-project src/YetAnotherTranslator.Cli`
+  - Verify migration creates all 4 tables with correct column types (uuid, timestamp with time zone, jsonb, bytea, varchar)
 - [ ] T019 [P] Create TestBase class in tests/YetAnotherTranslator.Tests.Integration/Infrastructure/TestBase.cs with Testcontainers PostgreSQL setup and WireMock server initialization
 - [ ] T020 [P] Create WireMock fixtures directory tests/YetAnotherTranslator.Tests.Integration/Infrastructure/WireMockFixtures/
 - [ ] T021 [P] Setup dependency injection container configuration in src/YetAnotherTranslator.Cli/Program.cs
@@ -78,6 +82,9 @@ Multi-project solution structure:
 - [ ] T025 [P] [US6] Integration test for incomplete config (missing LLM provider) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
 - [ ] T026 [P] [US6] Integration test for invalid Azure Key Vault URL in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
 - [ ] T027 [P] [US6] Integration test for valid config successfully launches REPL in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
+- [ ] T027a [P] [US6] Integration test for Azure Key Vault network failure (timeout) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
+- [ ] T027b [P] [US6] Integration test for Azure Key Vault permission denied (403) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
+- [ ] T027c [P] [US6] Integration test for secret not found (404) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
 
 ### Implementation for User Story 6
 
@@ -111,6 +118,8 @@ Multi-project solution structure:
 - [ ] T040 [P] [US1] Integration test for cache hit scenario in tests/YetAnotherTranslator.Tests.Integration/Features/TranslateWordTests.cs
 - [ ] T041 [P] [US1] Integration test for --no-cache option in tests/YetAnotherTranslator.Tests.Integration/Features/TranslateWordTests.cs
 - [ ] T042 [P] [US1] Integration test for invalid word (empty, too long) in tests/YetAnotherTranslator.Tests.Integration/Features/TranslateWordTests.cs
+- [ ] T042a [P] [US1] Integration test verifying CMU Arpabet is saved to TranslationCache and retrieved from cache on subsequent call in tests/YetAnotherTranslator.Tests.Integration/Features/TranslateWordTests.cs
+- [ ] T042b [P] [US1] Integration test verifying CMU Arpabet failure (null) is saved to cache and subsequent calls display "N/A" from cache in tests/YetAnotherTranslator.Tests.Integration/Features/TranslateWordTests.cs
 
 ### Implementation for User Story 1
 
@@ -123,6 +132,13 @@ Multi-project solution structure:
 - [ ] T049 [P] [US1] Create TranslationCacheEntity in src/YetAnotherTranslator.Infrastructure/Persistence/Entities/TranslationCacheEntity.cs
 - [ ] T050 [US1] Update TranslatorDbContext with entity configurations and indexes in src/YetAnotherTranslator.Infrastructure/Persistence/TranslatorDbContext.cs
 - [ ] T051 [US1] Implement AnthropicLlmProvider with TranslateWordAsync method that requests CMU Arpabet from LLM in src/YetAnotherTranslator.Infrastructure/Llm/AnthropicLlmProvider.cs
+  - Use structured JSON response format (see research.md section 9 for prompt template)
+  - Temperature: 0.3 for consistent translations
+  - MaxTokens: 2048 for word translations
+  - Parse JSON response into TranslationResult model
+  - Handle null cmuArpabet field gracefully (set to null in model, display as "N/A" in UI)
+  - Include error handling for malformed JSON responses (retry once, then fail with clear message)
+  - Log LLM response metadata (tokens, model, response ID) to LlmResponseMetadata
 - [ ] T052 [US1] Implement AzureKeyVaultSecretsProvider in src/YetAnotherTranslator.Infrastructure/Secrets/AzureKeyVaultSecretsProvider.cs
 - [ ] T053 [US1] Implement HistoryRepository with cache-aside pattern (check cache, call API on miss, save to cache) in src/YetAnotherTranslator.Infrastructure/Persistence/HistoryRepository.cs
 - [ ] T054 [US1] Implement cache key generation using SHA256 hash in src/YetAnotherTranslator.Infrastructure/Persistence/CacheKeyGenerator.cs
@@ -157,6 +173,12 @@ Multi-project solution structure:
 - [ ] T067 [P] [US2] Create TextTranslationCacheEntity in src/YetAnotherTranslator.Infrastructure/Persistence/Entities/TextTranslationCacheEntity.cs
 - [ ] T068 [US2] Create TranslateTextRequestValidator with 5000 character limit in src/YetAnotherTranslator.Core/Validation/TranslateTextRequestValidator.cs
 - [ ] T069 [US2] Implement TranslateTextAsync method in AnthropicLlmProvider in src/YetAnotherTranslator.Infrastructure/Llm/AnthropicLlmProvider.cs
+  - Temperature: 0.3 for consistent translations
+  - MaxTokens: 4096 for text snippets (larger than word translations)
+  - First call DetectLanguageAsync if source language is Auto
+  - Preserve paragraph structure and formatting in translation
+  - Simple plain text response (no JSON parsing needed for text translation)
+  - Handle 5000 character limit with clear error if exceeded (validation should catch this, but double-check)
 - [ ] T070 [US2] Implement TranslateTextHandler with caching in src/YetAnotherTranslator.Core/Handlers/TranslateTextHandler.cs
 - [ ] T071 [US2] Add /tt, /ttp, /tte command support to CommandParser in src/YetAnotherTranslator.Cli/Repl/CommandParser.cs
 - [ ] T072 [US2] Create TextTranslationFormatter for plain text output in src/YetAnotherTranslator.Cli/Display/TextTranslationFormatter.cs
@@ -184,6 +206,13 @@ Multi-project solution structure:
 - [ ] T078 [P] [US3] Create ReviewGrammarRequest record in src/YetAnotherTranslator.Core/Models/ReviewGrammarRequest.cs
 - [ ] T079 [US3] Create ReviewGrammarRequestValidator in src/YetAnotherTranslator.Core/Validation/ReviewGrammarRequestValidator.cs
 - [ ] T080 [US3] Implement ReviewGrammarAsync method with language detection in AnthropicLlmProvider in src/YetAnotherTranslator.Infrastructure/Llm/AnthropicLlmProvider.cs
+  - First call DetectLanguageAsync to verify English text
+  - Temperature: 0.5 for balanced grammar analysis (higher than translation for nuanced suggestions)
+  - MaxTokens: 4096 for detailed grammar feedback
+  - Prompt structure: System prompt establishes grammar expert role, user prompt provides text with clear instructions to categorize issues (grammar vs vocabulary) and provide explanations
+  - Parse structured JSON response into GrammarReviewResult with nested GrammarIssue and VocabularySuggestion types
+  - Handle edge case: Text is grammatically correct but has vocabulary suggestions
+  - Include retry logic for API failures with exponential backoff (3 attempts)
 - [ ] T081 [US3] Implement ReviewGrammarHandler in src/YetAnotherTranslator.Core/Handlers/ReviewGrammarHandler.cs
 - [ ] T082 [US3] Add /r, /review command support to CommandParser in src/YetAnotherTranslator.Cli/Repl/CommandParser.cs
 - [ ] T083 [US3] Create GrammarReviewFormatter for formatted output in src/YetAnotherTranslator.Cli/Display/GrammarReviewFormatter.cs

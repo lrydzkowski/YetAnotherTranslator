@@ -100,6 +100,19 @@ When `--no-cache` is specified, the system bypasses cache lookup and always call
 ╰───┴─────────────┴────────────────┴──────────────┴────────────────────────────────────────╯
 ```
 
+**Success Output Example (Polish→English with CMU Arpabet failure)**:
+
+```text
+╭───┬─────────────┬────────────────┬──────────────┬─────────────┬────────────────────────────────────────╮
+│ # │ Translation │ Part of Speech │ Countability │ CMU Arpabet │ Example                                │
+├───┼─────────────┼────────────────┼──────────────┼─────────────┼────────────────────────────────────────┤
+│ 1 │ cat         │ noun           │ countable    │ K AE1 T     │ The cat sat on the mat.                │
+│ 2 │ rare-word   │ noun           │ countable    │ N/A         │ Example sentence here.                 │
+╰───┴─────────────┴────────────────┴──────────────┴─────────────┴────────────────────────────────────────╯
+
+Note: N/A indicates CMU Arpabet could not be generated (rare word or LLM error)
+```
+
 **Error Cases**:
 - Empty word → "Word cannot be empty"
 - Word too long → "Word must be less than 100 characters"

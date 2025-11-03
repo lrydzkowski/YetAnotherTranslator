@@ -819,6 +819,84 @@ var request = new TranslateWordRequest(word, sourceLanguage, targetLanguage);
 await _validator.ValidateAndThrowAsync(request, cancellationToken);
 ```
 
+## 9. CMU Arpabet Phonetic Transcription
+
+### Decision
+
+Request CMU Arpabet from LLM (Claude) in same API call as translation
+
+### Rationale
+
+- Avoids additional API calls or libraries
+- Claude can generate accurate CMU Arpabet transcriptions
+- Supports part-of-speech-specific pronunciations (e.g., "record" noun vs verb)
+- Reduces system complexity by leveraging existing LLM capability
+
+### Alternatives Considered
+
+- CMUdict lookup library: Limited to dictionary words, no part-of-speech variants
+- Separate pronunciation API: Additional cost and complexity
+- Microsoft Cognitive Services: Requires additional Azure service setup
+
+### Implementation Recommendations
+
+**LLM Prompt Engineering for CMU Arpabet**:
+
+When requesting translations from Claude that include CMU Arpabet, use the following prompt structure:
+
+System Prompt:
+```
+You are a professional translator specializing in Polish-English translation.
+You provide detailed linguistic information including CMU Arpabet phonetic transcriptions for English words.
+```
+
+User Prompt Example (Polish→English):
+```
+Translate the Polish word '{word}' to English.
+
+Provide:
+1. Multiple translations ranked by popularity (most common first)
+2. For each translation:
+   - The English word
+   - Part of speech (noun, verb, adjective, etc.)
+   - Countability (countable/uncountable for nouns, N/A otherwise)
+   - CMU Arpabet phonetic transcription using standard CMU dictionary format
+   - Example sentence demonstrating usage
+3. If a word has pronunciation variants by part of speech (e.g., "record" as noun vs verb),
+   provide separate CMU Arpabet for each variant
+
+Return response as structured JSON with schema:
+{
+  "translations": [
+    {
+      "rank": 1,
+      "word": "cat",
+      "partOfSpeech": "noun",
+      "countability": "countable",
+      "cmuArpabet": "K AE1 T",
+      "examples": ["The cat sat on the mat."]
+    }
+  ]
+}
+```
+
+**Error Handling**:
+- If CMU Arpabet cannot be generated, return `null` for `cmuArpabet` field
+- Parser should handle null gracefully and display "N/A" in UI
+- Log warning for failed CMU Arpabet generation for debugging
+
+**Validation**:
+- CMU Arpabet format: Space-separated phonemes with stress markers (0, 1, 2)
+- Validate against CMU dictionary conventions
+- Accept null for words not in CMU dictionary (rare/foreign words)
+
+**Best Practices**:
+- Include CMU Arpabet request in translation prompt for Polish→English direction only
+- Generate separate Arpabet for each part of speech when pronunciation variants exist
+- Gracefully handle failures: display translation without Arpabet, show "N/A" in column
+- Do NOT include CMU Arpabet for English→Polish direction
+- Cache Arpabet with translation results in PostgreSQL
+
 ## Summary
 
 All NEEDS CLARIFICATION items have been resolved with specific technology choices and implementation patterns. Key decisions:
@@ -831,6 +909,7 @@ All NEEDS CLARIFICATION items have been resolved with specific technology choice
 6. **Database**: EF Core 10.0 with Npgsql for PostgreSQL
 7. **Handlers**: Direct handler invocation (no MediatR) for simplicity
 8. **Validation**: FluentValidation v11.10 called directly in handlers
+9. **CMU Arpabet**: Requested from LLM in same API call as translation (Polish→English only)
 
 Testing strategy: Integration tests only using real PostgreSQL (via Testcontainers), mocked external APIs (via WireMock.Net), and snapshot assertions (via Verify). This approach tests actual database behavior and API integration patterns while avoiding false confidence from in-memory databases or excessive mocking. Verify snapshots make complex object assertions maintainable.
 

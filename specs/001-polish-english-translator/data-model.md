@@ -216,7 +216,11 @@ Cache for word translations to avoid repeated LLM calls.
 
 **Relationships**: None (independent entity)
 
-**Retention Policy**: 30-day expiration, LRU eviction if database exceeds size limit
+**Retention Policy**:
+- **v1 Scope**: No automatic expiration or cleanup (unlimited storage per FR-045)
+- **Future Enhancement**: 30-day expiration and LRU eviction deferred to post-MVP release
+- **User Responsibility**: Users manage their own database storage and can manually delete old cache entries if needed
+- **Rationale**: Simplicity principle - avoid complexity of background cleanup jobs in v1; users have `--no-cache` option to force fresh results
 
 ### 3. TextTranslationCacheEntity
 
@@ -250,7 +254,11 @@ Cache for text translations to avoid repeated LLM calls.
 
 **Relationships**: None (independent entity)
 
-**Retention Policy**: 30-day expiration, LRU eviction if database exceeds size limit
+**Retention Policy**:
+- **v1 Scope**: No automatic expiration or cleanup (unlimited storage per FR-045)
+- **Future Enhancement**: 30-day expiration and LRU eviction deferred to post-MVP release
+- **User Responsibility**: Users manage their own database storage and can manually delete old cache entries if needed
+- **Rationale**: Simplicity principle - avoid complexity of background cleanup jobs in v1; users have `--no-cache` option to force fresh results
 
 ### 4. PronunciationCacheEntity
 
@@ -288,7 +296,11 @@ Cache for pronunciation audio to avoid repeated TTS API calls.
 
 **Relationships**: None (independent entity)
 
-**Retention Policy**: 30-day expiration, LRU eviction if database exceeds size limit
+**Retention Policy**:
+- **v1 Scope**: No automatic expiration or cleanup (unlimited storage per FR-045)
+- **Future Enhancement**: 30-day expiration and LRU eviction deferred to post-MVP release
+- **User Responsibility**: Users manage their own database storage and can manually delete old cache entries if needed
+- **Rationale**: Simplicity principle - avoid complexity of background cleanup jobs in v1; users have `--no-cache` option to force fresh results
 
 ## Configuration Models (YetAnotherTranslator.Infrastructure.Configuration)
 

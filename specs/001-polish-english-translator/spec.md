@@ -162,7 +162,7 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - How does the system handle offline scenarios for LLM providers? → **Clarified in Session 2025-11-03**: Attempt to use cached responses for previously seen queries and display a clear error message when there is no cache entry
 - How does the system handle configuration file syntax errors (invalid JSON)? → **Clarified in Session 2025-11-03**: Display clear error message with line and column information, exit with non-zero status code
 - How does the system handle LLM provider API downtime or rate limiting? → **Clarified in Session 2025-11-03**: Display clear error message indicating the provider is unavailable, suggest trying again later, and exit the current operation
-- How does the system handle ambiguous input that could be either Polish or English when using auto-detect commands? → **Clarified in Session 2025-11-02**: `/t` and `/tt` commands use LLM-based language detection via DetectLanguageAsync; explicit commands (`/tp`, `/te`, `/ttp`, `/tte`) bypass detection as source language is specified
+- How does the system handle ambiguous input that could be either Polish or English when using auto-detect commands (e.g., proper nouns like "Anna", "Roman"; numbers; single-letter words)? → **Clarified in Session 2025-11-03**: `/t` and `/tt` commands use LLM-based language detection via DetectLanguageAsync which should return confidence score; if confidence < 80%, treat as uncertain and display error message per FR-041 asking user to use explicit commands (/tp, /te, /ttp, /tte) instead of auto-detect
 - How does the system handle automatic language detection failures or uncertainty? → **Clarified in Session 2025-11-03**: Display an error message asking user to use explicit language commands (/tp, /te, /ttp, /tte) instead of auto-detect
 - How does the system handle grammar review requests for non-English text? → **Clarified in Session 2025-11-03**: Detect the language first and display an error message stating grammar review only supports English text
 - How does the system handle very long text snippets that may exceed service limits? → **Clarified in Session 2025-11-03**: Enforce a hard limit (5000 characters per FR-024/SC-004) and display clear error message when exceeded
@@ -186,7 +186,7 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - **FR-005a**: System MUST provide CMU Arpabet phonetic transcription for English word translations when translating Polish→English (not applicable to English→Polish direction)
 - **FR-005a1**: System MUST provide part-of-speech-specific CMU Arpabet transcriptions for words with pronunciation variants (e.g., "record" as noun: "R EH1 K ER0 D", as verb: "R IH0 K AO1 R D")
 - **FR-005b**: System MUST save CMU Arpabet pronunciation data in operation history and cache for offline access
-- **FR-005c**: System MUST gracefully handle CMU Arpabet generation failures by displaying translations with a warning indicator in the Arpabet column (e.g., "N/A" or "[error]") rather than failing the entire translation operation
+- **FR-005c**: System MUST gracefully handle CMU Arpabet generation failures by displaying "N/A" in the Arpabet column (consistent with countability column format) rather than failing the entire translation operation
 - **FR-006**: System MUST translate text snippets from Polish to English
 - **FR-007**: System MUST translate text snippets from English to Polish
 - **FR-008**: System MUST review English text and identify grammar errors with correction suggestions
@@ -215,7 +215,7 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - **FR-017l**: System MUST support `/q` or `/quit` command to quit the application
 - **FR-018**: System MUST output results to standard output
 - **FR-019**: System MUST output errors to standard error
-- **FR-020**: System MUST automatically detect source language (Polish vs English) when using auto-detect commands (`/t`, `/tt`); explicit commands (`/tp`, `/te`, `/ttp`, `/tte`) specify source language without detection
+- **FR-020**: System MUST automatically detect source language (Polish vs English) when using auto-detect commands (`/t`, `/tt`); explicit commands (`/tp`, `/te`, `/ttp`, `/tte`) specify source language without detection. If detection confidence is low (e.g., proper nouns, numbers, ambiguous words), system MUST return error per FR-041 asking user to use explicit language commands.
 - **FR-021**: System MUST display word translation results in table format with columns for rank, translation, part of speech, countability, CMU Arpabet (for English translations), and example sentences
 - **FR-022**: System MUST accept text input as single-line commands with support for escaped newlines (`\n`) to represent multi-line content
 - **FR-023**: System MUST use LLM-based implementation for word translation (including CMU Arpabet generation), text translation, and grammar review functions
@@ -262,7 +262,7 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - **SC-002**: Word translations display at least 3 different translations when multiple meanings exist
 - **SC-003**: 100% of word translations include example sentences demonstrating usage
 - **SC-004**: Text snippet translation handles inputs up to 5000 characters without errors
-- **SC-005**: Grammar review identifies common grammar mistakes (subject-verb agreement, tense errors, article usage) with 90% accuracy
+- **SC-005**: Grammar review identifies common grammar mistakes (subject-verb agreement, tense errors, article usage) with 90% accuracy (aspirational target dependent on LLM provider capabilities; actual accuracy measured against manually validated test dataset during integration testing)
 - **SC-006**: Pronunciation audio plays within 2 seconds of request
 - **SC-007**: Operation history persists across sessions and retains all past operations
 - **SC-008**: Users can access their complete operation history in under 1 second
