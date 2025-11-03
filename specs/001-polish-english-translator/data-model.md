@@ -28,6 +28,7 @@ Represents the result of translating a word with linguistic metadata.
 - `Word` (string, required): Translated word
 - `PartOfSpeech` (string, required): Grammatical category (noun, verb, adjective, etc.)
 - `Countability` (string, nullable): "countable" | "uncountable" | null (only for nouns)
+- `CmuArpabet` (string, nullable): CMU Arpabet phonetic transcription (only for English translations when translating Polish→English, not for English→Polish)
 - `Examples` (List<string>, required): Example sentences demonstrating usage
 
 **Validation Rules**:

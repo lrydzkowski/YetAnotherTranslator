@@ -1,4 +1,4 @@
-# YetAnotherTranslator Project Context
+﻿# YetAnotherTranslator Project Context
 
 This file provides technology context for AI coding assistants working on this project.
 
@@ -285,5 +285,5 @@ See `.specify/memory/constitution.md` for full details. Key principles:
 
 ---
 
-**Last Updated**: 2025-11-02 (automatically updated by `/speckit.plan`)
+**Last Updated**: 2025-11-03 (automatically updated by `/speckit.plan`)
 

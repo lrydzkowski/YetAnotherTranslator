@@ -75,16 +75,28 @@ When `--no-cache` is specified, the system bypasses cache lookup and always call
 - Translation
 - Part of Speech
 - Countability (for nouns)
+- CMU Arpabet (for English translations only when translating Polish→English)
 - Example sentence
 
-**Success Output Example**:
+**Success Output Example (Polish→English)**:
+
+```text
+╭───┬─────────────┬────────────────┬──────────────┬─────────────┬────────────────────────────────────────╮
+│ # │ Translation │ Part of Speech │ Countability │ CMU Arpabet │ Example                                │
+├───┼─────────────┼────────────────┼──────────────┼─────────────┼────────────────────────────────────────┤
+│ 1 │ cat         │ noun           │ countable    │ K AE1 T     │ The cat sat on the mat.                │
+│ 2 │ tomcat      │ noun           │ countable    │ T AA1 M K AE2 T │ The tomcat roamed the neighborhood. │
+╰───┴─────────────┴────────────────┴──────────────┴─────────────┴────────────────────────────────────────╯
+```
+
+**Success Output Example (English→Polish, no CMU Arpabet)**:
 
 ```text
 ╭───┬─────────────┬────────────────┬──────────────┬────────────────────────────────────────╮
 │ # │ Translation │ Part of Speech │ Countability │ Example                                │
 ├───┼─────────────┼────────────────┼──────────────┼────────────────────────────────────────┤
-│ 1 │ hello       │ interjection   │ N/A          │ Hello, how are you?                    │
-│ 2 │ hi          │ interjection   │ N/A          │ Hi there!                              │
+│ 1 │ cześć       │ interjection   │ N/A          │ Cześć, jak się masz?                   │
+│ 2 │ witaj       │ interjection   │ N/A          │ Witaj z powrotem!                      │
 ╰───┴─────────────┴────────────────┴──────────────┴────────────────────────────────────────╯
 ```
 
