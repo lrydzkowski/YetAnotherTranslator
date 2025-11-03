@@ -26,6 +26,22 @@
 - Q: Where should the configuration file be located? → A: Standard user config directory
 - Q: Which approach should be supported for external secret storage? → A: Dedicated secret managers - Support specific services like HashiCorp Vault, AWS Secrets Manager, Azure Key Vault
 
+### Session 2025-11-03
+
+- Q: What happens when a word has no direct translation equivalent between Polish and English? → A: Provide the closest conceptual equivalent with an explanation that no direct translation exists
+- Q: How does the system handle Polish special characters and diacritics (ą, ć, ę, ł, ń, ó, ś, ź, ż)? → A: Assume full Unicode UTF-8 support throughout the system; display and accept all Polish characters correctly
+- Q: What happens when the user is offline and translation services require internet connectivity? → A: Fall back to cache when available, and display a clear error message when there is no cached result
+- Q: What happens when the user is offline and LLM providers require internet connectivity? → A: Attempt to use cached responses for previously seen queries and display a clear error message when there is no cache entry
+- Q: What happens when the configuration file has syntax errors (invalid JSON)? → A: Display clear error message with line and column information, exit with non-zero status code
+- Q: What happens when the configured LLM provider API is down or rate-limited? → A: Display clear error message indicating the provider is unavailable, suggest trying again later, and exit the current operation
+- Q: What happens when automatic language detection fails or is uncertain? → A: Display an error message asking user to use explicit language commands (/tp, /te, /ttp, /tte) instead of auto-detect
+- Q: What happens when grammar review is requested for non-English text? → A: Detect the language first and display an error message stating grammar review only supports English text
+- Q: How does the system handle very long text snippets that may exceed service limits? → A: Enforce a hard limit (5000 characters per FR-024/SC-004) and display clear error message when exceeded
+- Q: What happens when audio playback is unavailable or fails? → A: Display clear error message explaining the audio playback failure and suggest checking audio system configuration
+- Q: How is history maintained across multiple sessions and what are storage limits? → A: Store unlimited history with no automatic cleanup; let users manage their own data
+- Q: What happens when the user enters an invalid REPL command? → A: Display error message showing the invalid command and suggest using /help to see available commands
+- Q: What happens when the secret manager is unavailable or fails to return credentials? → A: Display clear error message at startup indicating secret manager connection failure, exit with non-zero status code
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Word Translation with Detailed Linguistic Information (Priority: P1)
@@ -134,20 +150,20 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 
 ### Edge Cases
 
-- What happens when a word has no direct translation equivalent between Polish and English?
-- How does the system handle Polish special characters and diacritics (ą, ć, ę, ł, ń, ó, ś, ź, ż)?
-- What happens when the user is offline and translation services require internet connectivity?
-- What happens when the user is offline and LLM providers require internet connectivity?
-- What happens when the configuration file has syntax errors (invalid JSON)?
-- What happens when the configured LLM provider API is down or rate-limited?
+- How does the system handle words with no direct translation equivalent between Polish and English? → **Clarified in Session 2025-11-03**: Provide the closest conceptual equivalent with an explanation that no direct translation exists
+- How does the system handle Polish special characters and diacritics (ą, ć, ę, ł, ń, ó, ś, ź, ż)? → **Clarified in Session 2025-11-03**: Assume full Unicode UTF-8 support throughout the system; display and accept all Polish characters correctly
+- How does the system handle offline scenarios for translation services? → **Clarified in Session 2025-11-03**: Fall back to cache when available, and display a clear error message when there is no cached result
+- How does the system handle offline scenarios for LLM providers? → **Clarified in Session 2025-11-03**: Attempt to use cached responses for previously seen queries and display a clear error message when there is no cache entry
+- How does the system handle configuration file syntax errors (invalid JSON)? → **Clarified in Session 2025-11-03**: Display clear error message with line and column information, exit with non-zero status code
+- How does the system handle LLM provider API downtime or rate limiting? → **Clarified in Session 2025-11-03**: Display clear error message indicating the provider is unavailable, suggest trying again later, and exit the current operation
 - How does the system handle ambiguous input that could be either Polish or English when using auto-detect commands? → **Clarified in Session 2025-11-02**: `/t` and `/tt` commands use LLM-based language detection via DetectLanguageAsync; explicit commands (`/tp`, `/te`, `/ttp`, `/tte`) bypass detection as source language is specified
-- What happens when automatic language detection fails or is uncertain?
-- What happens when grammar review is requested for non-English text?
-- How does the system handle very long text snippets that may exceed service limits?
-- What happens when audio playback is unavailable or fails?
-- How is history maintained across multiple sessions and what are storage limits?
-- What happens when the user enters an invalid REPL command?
-- What happens when the secret manager is unavailable or fails to return credentials?
+- How does the system handle automatic language detection failures or uncertainty? → **Clarified in Session 2025-11-03**: Display an error message asking user to use explicit language commands (/tp, /te, /ttp, /tte) instead of auto-detect
+- How does the system handle grammar review requests for non-English text? → **Clarified in Session 2025-11-03**: Detect the language first and display an error message stating grammar review only supports English text
+- How does the system handle very long text snippets that may exceed service limits? → **Clarified in Session 2025-11-03**: Enforce a hard limit (5000 characters per FR-024/SC-004) and display clear error message when exceeded
+- How does the system handle audio playback unavailability or failures? → **Clarified in Session 2025-11-03**: Display clear error message explaining the audio playback failure and suggest checking audio system configuration
+- How is history maintained across multiple sessions and what are storage limits? → **Clarified in Session 2025-11-03**: Store unlimited history with no automatic cleanup; let users manage their own data
+- How does the system handle invalid REPL commands? → **Clarified in Session 2025-11-03**: Display error message showing the invalid command and suggest using /help to see available commands
+- How does the system handle secret manager unavailability or credential retrieval failures? → **Clarified in Session 2025-11-03**: Display clear error message at startup indicating secret manager connection failure, exit with non-zero status code
 - How should the system authenticate to the secret manager (e.g., tokens for Vault, AWS IAM roles for Secrets Manager, Azure managed identity for Key Vault)? → **Clarified in Session 2025-11-02**: Azure Key Vault authentication via DefaultAzureCredential (supports az login for development, managed identity for production)
 - Should the application support multiple secret manager backends simultaneously or only one at a time? → **Clarified in Session 2025-11-02**: v1 supports single backend (Azure Key Vault only); multi-backend support deferred to future releases
 
@@ -206,6 +222,14 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - **FR-035**: System MUST retrieve actual API credentials from configured secret manager at runtime
 - **FR-036**: System MUST provide clear error messages when secret manager is unavailable or fails to return credentials
 - **FR-037**: System MUST proceed to REPL when all configuration is valid and credentials are successfully retrieved
+- **FR-038**: System MUST support UTF-8 encoding throughout the application to correctly display and accept Polish diacritical characters (ą, ć, ę, ł, ń, ó, ś, ź, ż)
+- **FR-039**: System MUST fall back to cached results when offline for translation operations and display clear error message when no cached result is available
+- **FR-040**: System MUST fall back to cached LLM responses when offline for LLM provider operations and display clear error message when no cache entry exists
+- **FR-041**: System MUST display clear error message when language detection fails or is uncertain, asking user to use explicit language commands (`/tp`, `/te`, `/ttp`, `/tte`) instead of auto-detect commands
+- **FR-042**: System MUST detect the language before performing grammar review and display error message stating grammar review only supports English text when non-English text is detected
+- **FR-043**: System MUST display error message showing the invalid command and suggest using `/help` or `/h` to see available commands when user enters an invalid REPL command
+- **FR-044**: System MUST provide the closest conceptual equivalent with an explanation when a word has no direct translation equivalent between Polish and English
+- **FR-045**: System MUST store operation history without automatic cleanup or storage limits, allowing users to manage their own data
 
 ### Key Entities
 
@@ -229,7 +253,7 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - **SC-004**: Text snippet translation handles inputs up to 5000 characters without errors
 - **SC-005**: Grammar review identifies common grammar mistakes (subject-verb agreement, tense errors, article usage) with 90% accuracy
 - **SC-006**: Pronunciation audio plays within 2 seconds of request
-- **SC-007**: Operation history persists across sessions and retains all past 100 operations
+- **SC-007**: Operation history persists across sessions and retains all past operations
 - **SC-008**: Users can access their complete operation history in under 1 second
 - **SC-009**: System handles Polish diacritical characters without corruption or errors
 - **SC-010**: 95% of operations complete successfully with appropriate error messages for failures
@@ -258,4 +282,9 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - Different LLM providers offer compatible APIs or can be abstracted through a common interface
 - ElevenLabs SDK (ElevenLabs-DotNet) provides reliable .NET integration for audio generation
 - Azure Key Vault SDK provides reliable .NET integration via Azure.Security.KeyVault.Secrets and Azure.Identity packages
+- Users have terminals/consoles that support UTF-8 encoding for displaying Polish diacritical characters
+- PostgreSQL database provides sufficient storage capacity for unlimited operation history
+- Users are responsible for managing their own database storage and cleaning up old history entries if needed
+- Offline cache fallback is acceptable for providing limited functionality when internet connectivity is unavailable
+- PostgreSQL database serves as cache storage for both translations and pronunciations to enable offline fallback
 
