@@ -12,7 +12,7 @@
 - Q: Should pronunciation playback accept part of speech parameter for words with different pronunciations based on usage? → A: Yes, pronunciation should accept optional part of speech parameter since words can have different pronunciations (e.g., "record" as noun vs verb)
 - Q: How should users invoke different operations (CLI command structure)? → A: REPL-style interface with command prefixes: `/t` (translate word auto-detect), `/tp` (translate Polish word), `/te` (translate English word), `/tt` (translate text auto-detect), `/ttp` (translate Polish text), `/tte` (translate English text), `/r` (review English text), `/p` (pronounce English), `/h` (help), `/c` (clear screen), `/q` (quit)
 - Q: How should users access their operation history in the REPL? → A: `/history` or `/hist` command
-- Q: How should word translation results be displayed in the REPL? → A: Table format with columns for rank, translation, part of speech, countability, and examples
+- Q: How should word translation results be displayed in the REPL? → A: Table format with columns for rank, translation, part of speech, countability, CMU Arpabet (for English translations), and examples
 - Q: How should users input multi-line text in the REPL for text translation and review? → A: Single-line only with escaped newlines (`\n`) for multi-line content
 
 ### Session 2025-11-02
@@ -29,6 +29,11 @@
 ### Session 2025-11-03
 
 - Q: What happens when a word has no direct translation equivalent between Polish and English? → A: Provide the closest conceptual equivalent with an explanation that no direct translation exists
+- Q: Should CMU Arpabet pronunciation be returned for source Polish words, English translations, or both? → A: Return CMU Arpabet only for English translation results (not source Polish word)
+- Q: Should CMU Arpabet be included when translating English→Polish (for source English words) or only for Polish→English direction? → A: Only include CMU Arpabet for Polish→English direction; skip it for English→Polish
+- Q: How should CMU Arpabet phonetic transcriptions be obtained for English words? → A: Request CMU Arpabet from LLM (Claude) along with translations in the same API call
+- Q: Should CMU Arpabet differ by part of speech for words with pronunciation variants (e.g., "record" as noun vs verb)? → A: Generate separate CMU Arpabet for each part of speech when word has pronunciation variants
+- Q: What should happen when the LLM fails to generate CMU Arpabet or returns invalid format? → A: Display translation without Arpabet and show warning in that specific cell/column
 - Q: How does the system handle Polish special characters and diacritics (ą, ć, ę, ł, ń, ó, ś, ź, ż)? → A: Assume full Unicode UTF-8 support throughout the system; display and accept all Polish characters correctly
 - Q: What happens when the user is offline and translation services require internet connectivity? → A: Fall back to cache when available, and display a clear error message when there is no cached result
 - Q: What happens when the user is offline and LLM providers require internet connectivity? → A: Attempt to use cached responses for previously seen queries and display a clear error message when there is no cache entry
@@ -54,10 +59,11 @@ A language learner encounters an unfamiliar Polish word while reading and wants 
 
 **Acceptance Scenarios**:
 
-1. **Given** the user enters a Polish noun "kot", **When** the translation is performed, **Then** the system displays English translations ordered by popularity, each with part of speech (noun), countability status (countable), and example sentences
-2. **Given** the user enters a Polish word with multiple meanings "zamek", **When** the translation is performed, **Then** the system displays all meanings (castle, zipper, lock) ranked by frequency with distinct examples for each meaning
-3. **Given** the user enters a word in English "dog", **When** reverse translation is performed, **Then** the system displays Polish equivalents with the same linguistic detail
-4. **Given** the user enters a word that doesn't exist, **When** the translation is attempted, **Then** the system provides a clear error message with suggestions if available
+1. **Given** the user enters a Polish noun "kot", **When** the translation is performed, **Then** the system displays English translations ordered by popularity, each with part of speech (noun), countability status (countable), CMU Arpabet phonetic transcription (e.g., "K AE1 T"), and example sentences
+2. **Given** the user enters a Polish word with multiple meanings "zamek", **When** the translation is performed, **Then** the system displays all meanings (castle, zipper, lock) ranked by frequency with distinct examples and CMU Arpabet transcriptions for each meaning
+3. **Given** the user enters a Polish word that translates to an English word with pronunciation variants "nagrywać", **When** the translation is performed, **Then** the system displays "record" with different CMU Arpabet transcriptions for each part of speech (noun: "R EH1 K ER0 D", verb: "R IH0 K AO1 R D")
+4. **Given** the user enters a word in English "dog", **When** reverse translation is performed, **Then** the system displays Polish equivalents without CMU Arpabet (not applicable to English→Polish direction)
+5. **Given** the user enters a word that doesn't exist, **When** the translation is attempted, **Then** the system provides a clear error message with suggestions if available
 
 ---
 
@@ -164,6 +170,7 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - How is history maintained across multiple sessions and what are storage limits? → **Clarified in Session 2025-11-03**: Store unlimited history with no automatic cleanup; let users manage their own data
 - How does the system handle invalid REPL commands? → **Clarified in Session 2025-11-03**: Display error message showing the invalid command and suggest using /help to see available commands
 - How does the system handle secret manager unavailability or credential retrieval failures? → **Clarified in Session 2025-11-03**: Display clear error message at startup indicating secret manager connection failure, exit with non-zero status code
+- How does the system handle CMU Arpabet generation failures or invalid format responses from LLM? → **Clarified in Session 2025-11-03**: Display translation without Arpabet and show warning in that specific cell/column
 - How should the system authenticate to the secret manager (e.g., tokens for Vault, AWS IAM roles for Secrets Manager, Azure managed identity for Key Vault)? → **Clarified in Session 2025-11-02**: Azure Key Vault authentication via DefaultAzureCredential (supports az login for development, managed identity for production)
 - Should the application support multiple secret manager backends simultaneously or only one at a time? → **Clarified in Session 2025-11-02**: v1 supports single backend (Azure Key Vault only); multi-backend support deferred to future releases
 
@@ -176,6 +183,10 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - **FR-003**: System MUST display part of speech information for each word translation
 - **FR-004**: System MUST indicate countability status (countable/uncountable) for noun translations
 - **FR-005**: System MUST provide example sentences demonstrating usage for each translation
+- **FR-005a**: System MUST provide CMU Arpabet phonetic transcription for English word translations when translating Polish→English (not applicable to English→Polish direction)
+- **FR-005a1**: System MUST provide part-of-speech-specific CMU Arpabet transcriptions for words with pronunciation variants (e.g., "record" as noun: "R EH1 K ER0 D", as verb: "R IH0 K AO1 R D")
+- **FR-005b**: System MUST save CMU Arpabet pronunciation data in operation history and cache for offline access
+- **FR-005c**: System MUST gracefully handle CMU Arpabet generation failures by displaying translations with a warning indicator in the Arpabet column (e.g., "N/A" or "[error]") rather than failing the entire translation operation
 - **FR-006**: System MUST translate text snippets from Polish to English
 - **FR-007**: System MUST translate text snippets from English to Polish
 - **FR-008**: System MUST review English text and identify grammar errors with correction suggestions
@@ -205,9 +216,9 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - **FR-018**: System MUST output results to standard output
 - **FR-019**: System MUST output errors to standard error
 - **FR-020**: System MUST automatically detect source language (Polish vs English) when using auto-detect commands (`/t`, `/tt`); explicit commands (`/tp`, `/te`, `/ttp`, `/tte`) specify source language without detection
-- **FR-021**: System MUST display word translation results in table format with columns for rank, translation, part of speech, countability, and example sentences
+- **FR-021**: System MUST display word translation results in table format with columns for rank, translation, part of speech, countability, CMU Arpabet (for English translations), and example sentences
 - **FR-022**: System MUST accept text input as single-line commands with support for escaped newlines (`\n`) to represent multi-line content
-- **FR-023**: System MUST use LLM-based implementation for word translation, text translation, and grammar review functions
+- **FR-023**: System MUST use LLM-based implementation for word translation (including CMU Arpabet generation), text translation, and grammar review functions
 - **FR-024**: System MUST leverage LLM's inherent spelling correction capabilities without implementing separate spell-checking logic
 - **FR-025**: System MUST use Anthropic Claude as LLM provider (v1 scope: single LLM provider; pluggable multi-provider architecture deferred to future releases)
 - **FR-026**: System MUST allow users to configure Anthropic LLM settings (model, temperature, max tokens) via JSON configuration file (v1 scope: single provider configuration; multi-provider operation mapping deferred to future releases)
@@ -234,7 +245,7 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 ### Key Entities
 
 - **Translation Request**: Represents a word or text to be translated, including source language, target language, and the content to translate
-- **Translation Result**: Contains translations with popularity ranking, linguistic metadata (part of speech, countability), and example sentences
+- **Translation Result**: Contains translations with popularity ranking, linguistic metadata (part of speech, countability, CMU Arpabet phonetic transcription for English words), and example sentences
 - **Grammar Review Request**: Represents English text submitted for grammar and vocabulary analysis
 - **Grammar Review Result**: Contains identified errors, correction suggestions, and vocabulary enhancement recommendations
 - **Pronunciation Request**: Represents an English word or expression for which audio pronunciation is requested, including optional part of speech for disambiguation
@@ -270,6 +281,7 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - Users can manually store API credentials in their secret manager and obtain secret references (paths/IDs)
 - LLM providers (e.g., OpenAI, Anthropic, Google, etc.) can provide popularity rankings for translations
 - LLM providers can provide linguistic metadata (parts of speech, countability, example sentences)
+- LLM providers can generate accurate CMU Arpabet phonetic transcriptions for English words
 - LLM providers can perform grammar and vocabulary review with high accuracy
 - LLM providers inherently handle minor spelling variations and typos in input without requiring explicit spell-checking logic
 - ElevenLabs text-to-speech service can generate high-quality English pronunciation audio
