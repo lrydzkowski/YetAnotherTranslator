@@ -36,32 +36,74 @@ Polish-English Translation CLI Tool - A REPL-style command-line interface for tr
 
 ```text
 src/
-├── YetAnotherTranslator.Core/          # Business logic
-│   ├── Handlers/                       # Business logic handlers
-│   │   ├── TranslateWordHandler.cs
-│   │   ├── TranslateTextHandler.cs
-│   │   ├── ReviewGrammarHandler.cs
-│   │   └── PlayPronunciationHandler.cs
-│   ├── Interfaces/                     # Abstractions for Infrastructure
-│   ├── Models/                         # Domain models
-│   └── Validation/                     # FluentValidation validators
+├── YetAnotherTranslator.Core/          # Business logic (no external dependencies)
+│   ├── Handlers/                       # Self-contained handler namespaces
+│   │   ├── TranslateWord/              # Word translation feature
+│   │   │   ├── TranslateWordHandler.cs          # Main handler
+│   │   │   ├── TranslateWordRequest.cs          # Request model
+│   │   │   ├── TranslateWordValidator.cs        # FluentValidation validator
+│   │   │   ├── TranslationResult.cs             # Result model
+│   │   │   └── Translation.cs                   # Nested translation model
+│   │   │
+│   │   ├── TranslateText/              # Text translation feature
+│   │   │   ├── TranslateTextHandler.cs
+│   │   │   ├── TranslateTextRequest.cs
+│   │   │   ├── TranslateTextValidator.cs
+│   │   │   └── TextTranslationResult.cs
+│   │   │
+│   │   ├── ReviewGrammar/              # Grammar review feature
+│   │   │   ├── ReviewGrammarHandler.cs
+│   │   │   ├── ReviewGrammarRequest.cs
+│   │   │   ├── ReviewGrammarValidator.cs
+│   │   │   ├── GrammarReviewResult.cs
+│   │   │   ├── GrammarIssue.cs
+│   │   │   └── VocabularySuggestion.cs
+│   │   │
+│   │   ├── PlayPronunciation/          # Pronunciation playback feature
+│   │   │   ├── PlayPronunciationHandler.cs
+│   │   │   ├── PlayPronunciationRequest.cs
+│   │   │   ├── PlayPronunciationValidator.cs
+│   │   │   └── PronunciationResult.cs
+│   │   │
+│   │   └── GetHistory/                 # History retrieval feature
+│   │       ├── GetHistoryHandler.cs
+│   │       ├── GetHistoryRequest.cs
+│   │       ├── GetHistoryValidator.cs
+│   │       ├── HistoryEntry.cs
+│   │       └── CommandType.cs
+│   │
+│   └── Interfaces/                     # Shared interfaces (ILlmProvider, ITtsProvider, etc.)
 │
 ├── YetAnotherTranslator.Infrastructure/  # External integrations
 │   ├── Llm/                            # Official Anthropic SDK provider
+│   │   └── AnthropicProvider.cs        # Implements ILlmProvider
 │   ├── Tts/                            # ElevenLabs provider
+│   │   ├── ElevenLabsProvider.cs       # Implements ITtsProvider
+│   │   └── PortAudioPlayer.cs          # Implements IAudioPlayer
 │   ├── Secrets/                        # Azure Key Vault provider
+│   │   └── AzureKeyVaultProvider.cs    # Implements ISecretsProvider
 │   ├── Persistence/                    # EF Core DbContext, repositories
+│   │   ├── TranslatorDbContext.cs
+│   │   ├── Entities/                   # Database entities
+│   │   ├── Repositories/               # Repository implementations
+│   │   └── Migrations/                 # EF Core migrations
 │   └── Configuration/                  # Config validation
+│       ├── ApplicationConfiguration.cs
+│       └── Validators/                 # FluentValidation validators for config
 │
 └── YetAnotherTranslator.Cli/            # User interface
     ├── Repl/                           # PrettyPrompt integration
+    │   ├── ReplEngine.cs               # Main REPL loop
+    │   ├── CommandParser.cs            # Parse user commands
+    │   └── Command.cs                  # Command model
     ├── Display/                        # Spectre.Console formatting
-    └── Program.cs                      # Entry point
+    │   └── DisplayFormatter.cs         # Table formatting
+    └── Program.cs                      # Entry point, DI setup
 
 tests/
 └── YetAnotherTranslator.Tests.Integration/
     ├── Features/                       # Feature integration tests
-    │   ├── TranslateWordTests.cs
+    │   ├── TranslateWordTests.cs       # Tests TranslateWordHandler end-to-end
     │   ├── TranslateTextTests.cs
     │   ├── ReviewGrammarTests.cs
     │   └── PlayPronunciationTests.cs
@@ -69,16 +111,17 @@ tests/
     │   ├── TestBase.cs                 # Base class with Testcontainers + WireMock setup
     │   └── WireMockFixtures/           # Reusable WireMock response fixtures
     └── Helpers/
+        └── VerifySettings.cs           # Verify snapshot configuration
 ```
 
 ### Design Patterns
 
-- **Handler Pattern**: Simple handler classes with business logic methods (no MediatR)
-- **Clean Architecture**: Core defines interfaces, Infrastructure implements them
+- **Self-Contained Handlers**: Each handler resides in its own namespace (`YetAnotherTranslator.Core.Handlers.{HandlerName}`) with its models, validator, and any necessary interfaces. This promotes modularity and makes each feature independently understandable.
+- **Clean Architecture**: Core has zero dependencies on Infrastructure or CLI; Infrastructure references Core to implement interfaces; CLI references both
 - **Dependency Injection**: All dependencies injected via .NET DI container
-- **Repository Pattern**: Database access abstracted behind interfaces
-- **Cache-Aside**: History table serves as cache with bypass option
-- **Direct Invocation**: Handlers called directly from CLI layer for simplicity
+- **Repository Pattern**: Database access abstracted behind IHistoryRepository interface
+- **Cache-Aside**: History table serves as cache with bypass option (--no-cache)
+- **Direct Invocation**: Handlers called directly from CLI layer for simplicity (no MediatR)
 
 ## Configuration
 
@@ -152,39 +195,78 @@ var client = new SecretClient(new Uri(keyVaultUrl), credential);
 var secret = await client.GetSecretAsync("anthropic-api-key");
 ```
 
-### Direct Handler Invocation
+### Self-Contained Handler Example
+
+**File**: `src/YetAnotherTranslator.Core/Handlers/TranslateWord/TranslateWordHandler.cs`
 
 ```csharp
+namespace YetAnotherTranslator.Core.Handlers.TranslateWord;
+
 public class TranslateWordHandler
 {
     private readonly ILlmProvider _llmProvider;
     private readonly IValidator<TranslateWordRequest> _validator;
+    private readonly IHistoryRepository _historyRepository;
 
-    public TranslateWordHandler(ILlmProvider llmProvider, IValidator<TranslateWordRequest> validator)
+    public TranslateWordHandler(
+        ILlmProvider llmProvider,
+        IValidator<TranslateWordRequest> validator,
+        IHistoryRepository historyRepository)
     {
         _llmProvider = llmProvider;
         _validator = validator;
+        _historyRepository = historyRepository;
     }
 
     public async Task<TranslationResult> HandleAsync(
         string word,
         string sourceLang,
         string targetLang,
+        bool useCache = true,
         CancellationToken ct = default)
     {
-        // Validate
         var request = new TranslateWordRequest(word, sourceLang, targetLang);
         await _validator.ValidateAndThrowAsync(request, ct);
 
-        // Execute
-        return await _llmProvider.TranslateWordAsync(word, sourceLang, targetLang);
+        if (useCache)
+        {
+            var cached = await _historyRepository.GetCachedTranslationAsync(word, sourceLang);
+            if (cached != null)
+                return cached;
+        }
+
+        var result = await _llmProvider.TranslateWordAsync(word, sourceLang, targetLang);
+
+        await _historyRepository.SaveHistoryAsync(
+            new HistoryEntry
+            {
+                CommandType = CommandType.TranslateWord,
+                InputText = word,
+                OutputText = JsonSerializer.Serialize(result),
+                Timestamp = DateTime.UtcNow
+            });
+
+        return result;
     }
 }
+```
 
-// Usage in CLI
+**Usage in CLI**:
+
+```csharp
+// In CLI command processor
+using YetAnotherTranslator.Core.Handlers.TranslateWord;
+
 var handler = serviceProvider.GetRequiredService<TranslateWordHandler>();
 var result = await handler.HandleAsync(word, "Polish", "English");
 ```
+
+**Key Points**:
+- Handler is in its own namespace: `YetAnotherTranslator.Core.Handlers.TranslateWord`
+- All models (TranslateWordRequest, TranslationResult) are in the same namespace
+- Validator (TranslateWordValidator) is in the same namespace
+- Interfaces (ILlmProvider, IHistoryRepository) are shared from `Core.Interfaces`
+- Handler is self-contained and independently understandable
 
 ## Testing Approach
 
@@ -285,5 +367,5 @@ See `.specify/memory/constitution.md` for full details. Key principles:
 
 ---
 
-**Last Updated**: 2025-11-03 (automatically updated by `/speckit.plan`)
+**Last Updated**: 2025-11-04 (automatically updated by `/speckit.plan`)
 

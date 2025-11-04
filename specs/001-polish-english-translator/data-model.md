@@ -6,11 +6,13 @@
 
 ## Overview
 
-This document defines all domain entities, database schema, validation rules, and state transitions for the Polish-English Translation CLI tool. The model supports CQRS pattern with separate command and query concerns.
+This document defines all domain entities, database schema, validation rules, and state transitions for the Polish-English Translation CLI tool. The model uses a self-contained handler pattern where each handler resides in its own namespace with its models, validator, and interfaces.
 
-## Domain Models (YetAnotherTranslator.Core)
+## Domain Models (YetAnotherTranslator.Core.Handlers)
 
-### 1. TranslationResult
+**Architecture Note**: Models are organized by handler namespace for self-containment. Each handler namespace (e.g., `TranslateWord`, `TranslateText`) contains all models and interfaces specific to that feature.
+
+### 1. TranslationResult (YetAnotherTranslator.Core.Handlers.TranslateWord)
 
 Represents the result of translating a word with linguistic metadata.
 
@@ -43,7 +45,7 @@ Represents the result of translating a word with linguistic metadata.
 
 **State Transitions**: Immutable value object (no state transitions)
 
-### 2. TextTranslationResult
+### 2. TextTranslationResult (YetAnotherTranslator.Core.Handlers.TranslateText)
 
 Represents the result of translating a text snippet.
 
@@ -65,7 +67,7 @@ Represents the result of translating a text snippet.
 
 **State Transitions**: Immutable value object (no state transitions)
 
-### 3. GrammarReviewResult
+### 3. GrammarReviewResult (YetAnotherTranslator.Core.Handlers.ReviewGrammar)
 
 Represents the result of reviewing English text for grammar and vocabulary.
 
@@ -97,7 +99,7 @@ Represents the result of reviewing English text for grammar and vocabulary.
 
 **State Transitions**: Immutable value object (no state transitions)
 
-### 4. PronunciationResult
+### 4. PronunciationResult (YetAnotherTranslator.Core.Handlers.PlayPronunciation)
 
 Represents the result of generating pronunciation audio.
 
@@ -118,7 +120,7 @@ Represents the result of generating pronunciation audio.
 
 **State Transitions**: Immutable value object (no state transitions)
 
-### 5. CommandType (Enum)
+### 5. CommandType (YetAnotherTranslator.Core.Handlers.GetHistory)
 
 Enumeration of all command types for history tracking.
 
@@ -129,9 +131,9 @@ Enumeration of all command types for history tracking.
 - `ReviewGrammar` = 2
 - `PlayPronunciation` = 3
 
-### 6. LlmResponseMetadata
+### 6. LlmResponseMetadata (Shared across multiple handlers)
 
-Metadata from LLM API responses for tracking and debugging.
+Metadata from LLM API responses for tracking and debugging. This is a shared model that can be used by any handler that interacts with the LLM.
 
 **Fields**:
 
@@ -147,6 +149,33 @@ Metadata from LLM API responses for tracking and debugging.
 - Token counts >= 0
 
 **State Transitions**: Immutable value object (no state transitions)
+
+## Interface Organization
+
+**Self-Contained Handler Approach**: Each handler namespace defines the interfaces it needs. For pragmatism and to avoid duplication, shared interfaces can be placed in `YetAnotherTranslator.Core.Interfaces`:
+
+### Shared Interfaces (YetAnotherTranslator.Core.Interfaces)
+
+1. **ILlmProvider** - Used by TranslateWord, TranslateText, ReviewGrammar handlers
+   - Methods: `TranslateWordAsync`, `TranslateTextAsync`, `ReviewGrammarAsync`, `DetectLanguageAsync`
+
+2. **ITtsProvider** - Used by PlayPronunciation handler
+   - Methods: `GenerateSpeechAsync`
+
+3. **IAudioPlayer** - Used by PlayPronunciation handler
+   - Methods: `PlayAudioAsync`
+
+4. **IHistoryRepository** - Used by GetHistory handler (and potentially others for caching)
+   - Methods: `SaveHistoryAsync`, `GetHistoryAsync`, `GetCachedTranslationAsync`, etc.
+
+5. **ISecretsProvider** - Used by CLI startup for configuration
+   - Methods: `GetSecretAsync`
+
+**Alternative Approach**: Each handler could define its own interface contract within its namespace. For example:
+- `YetAnotherTranslator.Core.Handlers.TranslateWord.ILlmProvider`
+- `YetAnotherTranslator.Core.Handlers.TranslateText.ILlmProvider`
+
+This provides true self-containment but leads to interface duplication. For v1, shared interfaces in `Core.Interfaces` strike a balance between modularity and pragmatism.
 
 ## Database Entities (YetAnotherTranslator.Infrastructure.Persistence)
 

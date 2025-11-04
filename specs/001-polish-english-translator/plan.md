@@ -1,114 +1,139 @@
 # Implementation Plan: Polish-English Translation CLI Tool
 
-**Branch**: `001-polish-english-translator` | **Date**: 2025-11-03 | **Spec**: [spec.md](./spec.md)
-**Input**: Feature specification from `/specs/001-polish-english-translator/spec.md`
+**Branch**: `001-polish-english-translator` | **Date**: 2025-11-04 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/001-polish-english-translator/spec.md` + User request for self-contained handler structure
 
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
+**Note**: This plan incorporates the user's requirement to keep commands self-contained in the Core project with each handler in its own namespace alongside its models, validators, and interfaces.
 
 ## Summary
 
-A REPL-style command-line interface for Polish-English translation featuring word translation with detailed linguistic metadata (parts of speech, countability, CMU Arpabet phonetic transcriptions), text translation, English grammar review, pronunciation playback via text-to-speech, and persistent operation history. Built with .NET 10, using Anthropic Claude for LLM operations, ElevenLabs for TTS, PostgreSQL for history/cache storage, and Azure Key Vault for secure credential management.
+A REPL-style CLI tool for Polish-English translation with word translation, text translation, grammar review, and pronunciation playback. Uses LLM (Anthropic Claude) for translations and grammar review, ElevenLabs for text-to-speech, PostgreSQL for history and caching, and Azure Key Vault for secrets management.
+
+**Key Architectural Decision**: Handlers are self-contained in the Core project - each handler resides in its own namespace (`YetAnotherTranslator.Core.Handlers.{HandlerName}`) with its models, validator, and any necessary interfaces. This promotes modularity and makes each feature independently understandable.
 
 ## Technical Context
 
 **Language/Version**: .NET 10 (C#)
-**Primary Dependencies**: Official Anthropic SDK, PrettyPrompt, Spectre.Console, FluentValidation, EF Core, Azure SDK (Key Vault), ElevenLabs SDK, PortAudioSharp, xUnit, NSubstitute, Testcontainers, WireMock.Net, Verify
-**Storage**: PostgreSQL with EF Core for operation history and pronunciation cache
-**Testing**: xUnit with integration tests only (Testcontainers for PostgreSQL, WireMock.Net for external API mocking, NSubstitute for interface mocking, Verify for snapshot testing)
+**Primary Dependencies**:
+
+- Official Anthropic SDK (LLM provider)
+- PrettyPrompt v4.x (REPL input)
+- Spectre.Console v0.49+ (CLI output)
+- FluentValidation v11.10+ (input validation)
+- EF Core 10.0 with Npgsql (PostgreSQL ORM)
+- Azure.Security.KeyVault.Secrets v4.8.0 + Azure.Identity v1.17.0 (secrets management)
+- ElevenLabs-DotNet v3.6.0 (text-to-speech)
+- PortAudioSharp v0.3.0 (cross-platform audio playback)
+
+**Storage**: PostgreSQL 16+ with EF Core for operation history and caching (translations, pronunciations)
+**Testing**: xUnit with NSubstitute (mocking), Testcontainers (PostgreSQL containers), WireMock.Net (external API mocking), Verify (snapshot testing) - integration tests only
 **Target Platform**: Cross-platform CLI (Windows, macOS, Linux)
 **Project Type**: Multi-project solution (Core + Infrastructure + CLI)
-**Performance Goals**: Word translation <3s (SC-001), Pronunciation playback <2s (SC-006), History retrieval <1s (SC-008), Configuration validation <1s (SC-011)
-**Constraints**: Text snippet translation max 5000 characters (FR-024/SC-004), Offline cache fallback for translations/pronunciations, UTF-8 support for Polish diacritics
-**Scale/Scope**: Single-user CLI tool, unlimited operation history storage, support for 4 main operations (word translation, text translation, grammar review, pronunciation playback)
+**Performance Goals**:
+
+- Word translation <3s (SC-001)
+- Pronunciation playback <2s (SC-006)
+- History retrieval <1s (SC-008)
+- Configuration validation <1s (SC-011)
+
+**Constraints**:
+
+- Text snippets limited to 5000 characters (FR-024/SC-004)
+- Requires internet connectivity for LLM/TTS APIs
+- Azure Key Vault authentication via `az login` or managed identity
+
+**Scale/Scope**:
+
+- 4 primary operations (word translation, text translation, grammar review, pronunciation)
+- Unlimited operation history (FR-045)
+- Multi-project .NET solution with clean architecture
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-### Single Responsibility ✅
-- **TranslateWordHandler**: Word translation logic only
-- **TranslateTextHandler**: Text translation logic only
-- **ReviewGrammarHandler**: Grammar review logic only
-- **PlayPronunciationHandler**: Pronunciation playback logic only
-- **Handlers**: One clear purpose per handler class
+### I. Single Responsibility ✓
 
-### Testability ✅
-- **Integration tests only**: Real PostgreSQL via Testcontainers, mocked external APIs via WireMock.Net
-- **Dependency injection**: All dependencies injected via .NET DI container
-- **Interfaces**: Core defines interfaces, Infrastructure implements (ILlmProvider, ITtsProvider, ISecretsProvider, IRepository)
-- **No unit tests**: Focus on end-to-end feature testing with real database behavior
+**Status**: PASS
 
-### CLI Standards ✅
-- **Arguments**: REPL commands via PrettyPrompt input
-- **Output**: Results to stdout via Spectre.Console
-- **Errors**: Error messages to stderr
-- **Exit codes**: 0 for success, non-zero for configuration/startup errors
+Each component has one clear purpose:
 
-### Error Handling ✅
-- **Fail fast**: Configuration validation at startup before entering REPL
-- **Descriptive messages**: Clear error messages with context for all failure scenarios (FR-016, FR-030, FR-036, FR-041, FR-042, FR-043)
-- **No silent failures**: All errors displayed to user with actionable guidance
-- **Appropriate level**: Validation in handlers via FluentValidation, business errors in handlers, infrastructure errors in providers
+- **TranslateWordHandler**: Translates individual words only
+- **TranslateTextHandler**: Translates text snippets only
+- **ReviewGrammarHandler**: Reviews English grammar only
+- **PlayPronunciationHandler**: Plays pronunciation audio only
+- **GetHistoryHandler**: Retrieves operation history only
 
-**Offline Detection and Cache Fallback**:
+Each handler is self-contained in its own namespace with its models, validator, and interfaces.
 
-The system detects offline scenarios through exception handling rather than proactive connectivity checks:
+### II. Testability ✓
 
-1. **LLM Provider Unavailable**:
-   - Catch `HttpRequestException` with inner `SocketException` (no network)
-   - Catch `TaskCanceledException` from timeout (5 second timeout for API calls)
-   - Catch provider-specific exceptions (e.g., `AnthropicException` for API errors)
+**Status**: PASS
 
-2. **Cache Fallback Behavior**:
-   - On network exception → Check cache for matching entry
-   - Cache hit → Return cached result with "(cached)" indicator in UI
-   - Cache miss → Display error: "Unable to connect to translation service. No cached result available. Please check your internet connection."
+All business logic is testable through:
 
-3. **Azure Key Vault Unavailable** (startup only):
-   - Catch `RequestFailedException` from Azure SDK
-   - Fail fast at startup (no cache fallback for credentials)
-   - Display clear error: "Failed to retrieve credentials from Azure Key Vault: {error}. Run 'az login' and verify Key Vault access."
+- **Dependency Injection**: All handlers use constructor injection for dependencies
+- **Interfaces**: Infrastructure dependencies abstracted behind interfaces (ILlmProvider, ITtsProvider, ISecretsProvider, IHistoryRepository)
+- **Integration Tests**: Real PostgreSQL via Testcontainers, mocked external APIs via WireMock.Net
+- **No concrete implementation coupling**: Handlers depend on interfaces, not concrete classes
 
-**Implementation Notes**:
-- Do not implement proactive connectivity checks (adds complexity, violates Simplicity principle)
-- Rely on exception handling at operation level
-- Cache keys based on SHA256 hash ensure exact match for offline retrieval
-- Offline mode is automatic and transparent to user (except error messages when no cache available)
+### III. CLI Standards ✓
 
-### Simplicity ✅
-- **Handler pattern**: Simple handler classes with business logic methods, no MediatR complexity
-- **Direct invocation**: Handlers called directly from CLI layer
-- **Cache-Aside pattern**: History table serves as cache with bypass option
-- **No clever tricks**: Explicit dependencies, clear data flow
+**Status**: PASS
 
-### Technical Standards ✅
-- **.NET 10**: As specified
-- **FluentValidation**: For input validation
-- **Integration tests**: xUnit, Testcontainers, Verify, WireMock.Net, NSubstitute
-- **Return early pattern**: To be followed in all implementations
+- **Arguments**: Configuration via config.json and command-line flags (--no-cache)
+- **Output**: Results written to stdout (via Spectre.Console)
+- **Errors**: Error messages written to stderr
+- **Exit codes**: 0 for success, non-zero for errors (configuration failures, etc.)
 
-### Complexity Justification
+### IV. Error Handling ✓
 
-**Multi-project structure (3 projects)**: Required to maintain Clean Architecture boundaries
-- **Core**: Business logic and interfaces (handler classes, domain models, validators)
-- **Infrastructure**: External integrations (Anthropic SDK, ElevenLabs SDK, Azure Key Vault SDK, EF Core DbContext)
-- **CLI**: User interface (PrettyPrompt REPL, Spectre.Console display)
+**Status**: PASS
 
-**Rationale**: Prevents accidental dependencies from Core → Infrastructure. Core defines interfaces, Infrastructure implements them. CLI depends on both. Standard Clean Architecture pattern for maintainability and testability.
+- **Fail fast**: Configuration validation at startup, API failures exit immediately
+- **Descriptive messages**: FluentValidation provides detailed validation errors, LLM/TTS failures include context
+- **No silent failures**: All exceptions caught and reported with context
+- **Appropriate level**: Configuration errors at startup, operation errors per-command
 
-**Alternative rejected**: Single project would allow business logic to directly reference external SDKs, violating dependency inversion and making testing harder.
+### V. Simplicity ✓
+
+**Status**: PASS with Justification
+
+- **Boring solutions**: Direct handler invocation (no MediatR), standard .NET DI, EF Core
+- **Explicit over implicit**: Handler methods explicitly named (HandleAsync), clear parameter lists
+- **Simpler approach**: No command/query objects, no pipeline behaviors, no event sourcing
+
+**Complexity Justification**: Three-project structure (Core + Infrastructure + CLI) is necessary for clean architecture separation:
+
+1. **Core**: Business logic with no external dependencies
+2. **Infrastructure**: External integrations (LLM, TTS, secrets, database)
+3. **CLI**: User interface (REPL, display)
+
+This is the simplest structure that achieves testability and dependency inversion without violating clean architecture principles.
+
+### Re-evaluation Post-Design ✓
+
+**Status**: PASS
+
+After Phase 1 design, the architecture remains compliant:
+
+- **Self-contained handlers**: Each handler namespace is independently understandable
+- **No additional complexity**: No new abstractions or patterns introduced
+- **Clean boundaries**: Core → Infrastructure interface contracts, CLI → Core handler invocations
+- **Testability maintained**: Integration tests verify end-to-end behavior with real database
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/[###-feature]/
+specs/001-polish-english-translator/
 ├── plan.md              # This file (/speckit.plan command output)
-├── research.md          # Phase 0 output (/speckit.plan command)
-├── data-model.md        # Phase 1 output (/speckit.plan command)
-├── quickstart.md        # Phase 1 output (/speckit.plan command)
-├── contracts/           # Phase 1 output (/speckit.plan command)
+├── research.md          # Phase 0 output (completed)
+├── data-model.md        # Phase 1 output (completed, to be updated)
+├── quickstart.md        # Phase 1 output (completed)
+├── contracts/           # Phase 1 output (completed)
+│   └── command-interface.md
 └── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
@@ -116,72 +141,138 @@ specs/[###-feature]/
 
 ```text
 src/
-├── YetAnotherTranslator.Core/          # Business logic
-│   ├── Handlers/                       # Business logic handlers
-│   │   ├── TranslateWordHandler.cs
-│   │   ├── TranslateTextHandler.cs
-│   │   ├── ReviewGrammarHandler.cs
-│   │   └── PlayPronunciationHandler.cs
-│   ├── Interfaces/                     # Abstractions for Infrastructure
-│   │   ├── ILlmProvider.cs
-│   │   ├── ITtsProvider.cs
-│   │   ├── ISecretsProvider.cs
-│   │   └── IHistoryRepository.cs
-│   ├── Models/                         # Domain models
-│   │   ├── TranslationRequest.cs
-│   │   ├── TranslationResult.cs
-│   │   ├── GrammarReviewRequest.cs
-│   │   ├── GrammarReviewResult.cs
-│   │   ├── PronunciationRequest.cs
-│   │   └── HistoryEntry.cs
-│   └── Validation/                     # FluentValidation validators
-│       ├── TranslateWordRequestValidator.cs
-│       ├── TranslateTextRequestValidator.cs
-│       ├── ReviewGrammarRequestValidator.cs
-│       └── PlayPronunciationRequestValidator.cs
+├── YetAnotherTranslator.Core/          # Business logic (no external dependencies)
+│   └── Handlers/                       # Self-contained handler namespaces
+│       ├── TranslateWord/              # Word translation feature
+│       │   ├── TranslateWordHandler.cs          # Main handler
+│       │   ├── TranslateWordRequest.cs          # Request model
+│       │   ├── TranslateWordValidator.cs        # FluentValidation validator
+│       │   ├── TranslationResult.cs             # Result model
+│       │   ├── Translation.cs                   # Nested translation model
+│       │   └── ILlmProvider.cs                  # Interface for LLM operations
+│       │
+│       ├── TranslateText/              # Text translation feature
+│       │   ├── TranslateTextHandler.cs
+│       │   ├── TranslateTextRequest.cs
+│       │   ├── TranslateTextValidator.cs
+│       │   ├── TextTranslationResult.cs
+│       │   └── ILlmProvider.cs                  # (may share with TranslateWord or be distinct)
+│       │
+│       ├── ReviewGrammar/              # Grammar review feature
+│       │   ├── ReviewGrammarHandler.cs
+│       │   ├── ReviewGrammarRequest.cs
+│       │   ├── ReviewGrammarValidator.cs
+│       │   ├── GrammarReviewResult.cs
+│       │   ├── GrammarIssue.cs
+│       │   ├── VocabularySuggestion.cs
+│       │   └── ILlmProvider.cs                  # (may share with others)
+│       │
+│       ├── PlayPronunciation/          # Pronunciation playback feature
+│       │   ├── PlayPronunciationHandler.cs
+│       │   ├── PlayPronunciationRequest.cs
+│       │   ├── PlayPronunciationValidator.cs
+│       │   ├── PronunciationResult.cs
+│       │   ├── ITtsProvider.cs                  # Interface for TTS operations
+│       │   └── IAudioPlayer.cs                  # Interface for audio playback
+│       │
+│       └── GetHistory/                 # History retrieval feature
+│           ├── GetHistoryHandler.cs
+│           ├── GetHistoryRequest.cs
+│           ├── GetHistoryValidator.cs
+│           ├── HistoryEntry.cs
+│           ├── CommandType.cs                   # Enum for command types
+│           └── IHistoryRepository.cs            # Interface for history access
 │
 ├── YetAnotherTranslator.Infrastructure/  # External integrations
-│   ├── Llm/                            # Official Anthropic SDK provider
-│   │   └── AnthropicLlmProvider.cs
-│   ├── Tts/                            # ElevenLabs provider
-│   │   └── ElevenLabsTtsProvider.cs
-│   ├── Secrets/                        # Azure Key Vault provider
-│   │   └── AzureKeyVaultSecretsProvider.cs
-│   ├── Persistence/                    # EF Core DbContext, repositories
-│   │   ├── TranslatorDbContext.cs
-│   │   ├── HistoryRepository.cs
-│   │   └── Migrations/
-│   └── Configuration/                  # Config validation
-│       ├── AppConfiguration.cs
-│       └── ConfigurationValidator.cs
+│   ├── Llm/                            # LLM provider implementation
+│   │   └── AnthropicProvider.cs        # Implements ILlmProvider from Core handlers
+│   ├── Tts/                            # TTS provider implementation
+│   │   ├── ElevenLabsProvider.cs       # Implements ITtsProvider
+│   │   └── PortAudioPlayer.cs          # Implements IAudioPlayer
+│   ├── Secrets/                        # Secret manager implementation
+│   │   └── AzureKeyVaultProvider.cs    # Implements ISecretsProvider
+│   ├── Persistence/                    # Database implementation
+│   │   ├── TranslatorDbContext.cs      # EF Core DbContext
+│   │   ├── Entities/                   # Database entities
+│   │   │   ├── HistoryEntryEntity.cs
+│   │   │   ├── TranslationCacheEntity.cs
+│   │   │   ├── TextTranslationCacheEntity.cs
+│   │   │   └── PronunciationCacheEntity.cs
+│   │   ├── Repositories/               # Repository implementations
+│   │   │   └── HistoryRepository.cs    # Implements IHistoryRepository
+│   │   └── Migrations/                 # EF Core migrations
+│   └── Configuration/                  # Configuration models and validation
+│       ├── ApplicationConfiguration.cs
+│       ├── SecretManagerConfiguration.cs
+│       ├── LlmProviderConfiguration.cs
+│       ├── TtsProviderConfiguration.cs
+│       ├── DatabaseConfiguration.cs
+│       └── Validators/                 # FluentValidation validators for config
 │
-└── YetAnotherTranslator.Cli/            # User interface
-    ├── Repl/                           # PrettyPrompt integration
-    │   ├── ReplEngine.cs
-    │   └── CommandParser.cs
-    ├── Display/                        # Spectre.Console formatting
-    │   ├── TranslationTableFormatter.cs
-    │   ├── GrammarReviewFormatter.cs
-    │   └── HistoryFormatter.cs
-    └── Program.cs                      # Entry point
+└── YetAnotherTranslator.Cli/           # User interface
+    ├── Repl/                           # REPL engine
+    │   ├── ReplEngine.cs               # Main REPL loop
+    │   ├── CommandParser.cs            # Parse user commands
+    │   └── Command.cs                  # Command model
+    ├── Display/                        # Output formatting
+    │   └── DisplayFormatter.cs         # Spectre.Console table formatting
+    └── Program.cs                      # Entry point, DI setup, config loading
 
 tests/
 └── YetAnotherTranslator.Tests.Integration/
     ├── Features/                       # Feature integration tests
-    │   ├── TranslateWordTests.cs
+    │   ├── TranslateWordTests.cs       # Tests TranslateWordHandler end-to-end
     │   ├── TranslateTextTests.cs
     │   ├── ReviewGrammarTests.cs
     │   └── PlayPronunciationTests.cs
     ├── Infrastructure/                 # Test infrastructure
     │   ├── TestBase.cs                 # Base class with Testcontainers + WireMock setup
     │   └── WireMockFixtures/           # Reusable WireMock response fixtures
+    │       ├── AnthropicFixtures.cs
+    │       └── ElevenLabsFixtures.cs
     └── Helpers/
+        └── VerifySettings.cs           # Verify snapshot configuration
 ```
 
-**Structure Decision**: Multi-project solution following Clean Architecture principles. Core project contains business logic and defines interfaces. Infrastructure project implements external integrations (Anthropic SDK, ElevenLabs SDK, Azure Key Vault, EF Core). CLI project handles user interaction via PrettyPrompt REPL and Spectre.Console display. Integration tests only, using Testcontainers for real PostgreSQL and WireMock.Net for external API mocking.
+**Structure Decision**: Multi-project solution with self-contained handler namespaces
+
+**Key Design Principles**:
+
+1. **Self-Contained Handlers**: Each handler namespace (`YetAnotherTranslator.Core.Handlers.{HandlerName}`) contains:
+
+   - Handler class with business logic
+   - Request/Result models specific to that handler
+   - FluentValidation validator for the request
+   - Interface definitions for dependencies (ILlmProvider, ITtsProvider, etc.)
+
+2. **Interface Sharing**: Some interfaces (like ILlmProvider) may appear in multiple handler namespaces. This is intentional:
+
+   - Each handler defines the interface contract it needs
+   - If multiple handlers need the same interface, they can either:
+     - Define it independently in their namespace (true self-containment)
+     - Share a common interface from a shared namespace (pragmatic choice)
+   - For v1, we'll use shared interfaces in `YetAnotherTranslator.Core.Interfaces` for pragmatism while keeping handlers self-contained
+
+3. **Clean Boundaries**:
+
+   - **Core** has zero dependencies on Infrastructure or CLI
+   - **Infrastructure** references Core to implement interfaces
+   - **CLI** references both Core (handlers) and Infrastructure (DI registration)
+
+4. **Testability**:
+   - Integration tests reference all projects
+   - Real PostgreSQL via Testcontainers
+   - Mocked external APIs via WireMock.Net
+   - Verify for snapshot testing of complex results
+
+This structure balances:
+
+- **Modularity**: Each handler is independently understandable
+- **Pragmatism**: Shared interfaces avoid duplication
+- **Testability**: Clean boundaries enable comprehensive integration testing
+- **Simplicity**: No over-engineering with commands, queries, or mediator patterns
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
+**No violations to track** - Constitution Check passed all gates. The three-project structure (Core + Infrastructure + CLI) is justified as the minimum for clean architecture and testability.
 
-*No violations - all complexity justified in Constitution Check section above.*
