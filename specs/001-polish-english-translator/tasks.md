@@ -16,6 +16,7 @@
 ## Path Conventions
 
 Multi-project solution structure:
+
 - **Core**: `src/YetAnotherTranslator.Core/`
 - **Infrastructure**: `src/YetAnotherTranslator.Infrastructure/`
 - **CLI**: `src/YetAnotherTranslator.Cli/`
@@ -364,6 +365,7 @@ Task: "Create TranslationCacheEntity"
 6. Deploy/demo if ready
 
 **MVP Delivers**:
+
 - Configuration validation and secure credential management
 - Polish→English and English→Polish word translation
 - Multiple translations ranked by popularity
@@ -412,3 +414,4 @@ With multiple developers:
 - Use Verify for snapshot testing complex LLM responses
 - Follow "return early" pattern per constitution
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
+
