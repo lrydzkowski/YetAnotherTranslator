@@ -93,27 +93,27 @@ Multi-project solution structure:
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T023 [P] [US6] Integration test for missing config file in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
-- [ ] T024 [P] [US6] Integration test for malformed JSON config in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
-- [ ] T024a [P] [US6] Integration test verifying malformed JSON error includes line and column numbers in output (validates FR-029 requirement) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
-- [ ] T025 [P] [US6] Integration test for incomplete config (missing LLM provider) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
-- [ ] T026 [P] [US6] Integration test for invalid Azure Key Vault URL in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
-- [ ] T027 [P] [US6] Integration test for valid config successfully launches REPL in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
-- [ ] T027a [P] [US6] Integration test for Azure Key Vault network failure (timeout) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
-- [ ] T027b [P] [US6] Integration test for Azure Key Vault permission denied (403) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
-- [ ] T027c [P] [US6] Integration test for secret not found (404) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
-- [ ] T027d [P] [US6] Integration test for LLM provider connection failure at startup (validates User Story 6 Acceptance Scenario 8) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
+- [x] T023 [P] [US6] Integration test for missing config file in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
+- [x] T024 [P] [US6] Integration test for malformed JSON config in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
+- [x] T024a [P] [US6] Integration test verifying malformed JSON error includes line and column numbers in output (validates FR-029 requirement) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
+- [x] T025 [P] [US6] Integration test for incomplete config (missing LLM provider) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
+- [x] T026 [P] [US6] Integration test for invalid Azure Key Vault URL in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
+- [x] T027 [P] [US6] Integration test for valid config successfully launches REPL in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
+- [x] T027a [P] [US6] Integration test for Azure Key Vault network failure (timeout) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
+- [x] T027b [P] [US6] Integration test for Azure Key Vault permission denied (403) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
+- [x] T027c [P] [US6] Integration test for secret not found (404) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
+- [x] T027d [P] [US6] Integration test for LLM provider connection failure at startup (validates User Story 6 Acceptance Scenario 8) in tests/YetAnotherTranslator.Tests.Integration/Features/ConfigurationValidationTests.cs
 
 ### Implementation for User Story 6
 
-- [ ] T028 [P] [US6] Create ApplicationConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/ApplicationConfiguration.cs
-- [ ] T029 [P] [US6] Create SecretManagerConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/SecretManagerConfiguration.cs
-- [ ] T030 [P] [US6] Create LlmProviderConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/LlmProviderConfiguration.cs
-- [ ] T031 [P] [US6] Create TtsProviderConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/TtsProviderConfiguration.cs
-- [ ] T032 [P] [US6] Create DatabaseConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/DatabaseConfiguration.cs
-- [ ] T033 [US6] Create ConfigurationValidator with FluentValidation in src/YetAnotherTranslator.Infrastructure/Configuration/ConfigurationValidator.cs
-- [ ] T034 [US6] Implement configuration loading from standard user config directory in src/YetAnotherTranslator.Cli/Program.cs
-- [ ] T035 [US6] Implement startup validation that fails fast with clear error messages and exits with non-zero status code on failures in src/YetAnotherTranslator.Cli/Program.cs
+- [x] T028 [P] [US6] Create ApplicationConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/ApplicationConfiguration.cs
+- [x] T029 [P] [US6] Create SecretManagerConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/SecretManagerConfiguration.cs
+- [x] T030 [P] [US6] Create LlmProviderConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/LlmProviderConfiguration.cs
+- [x] T031 [P] [US6] Create TtsProviderConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/TtsProviderConfiguration.cs
+- [x] T032 [P] [US6] Create DatabaseConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/DatabaseConfiguration.cs
+- [x] T033 [US6] Create ConfigurationValidator with FluentValidation in src/YetAnotherTranslator.Infrastructure/Configuration/ConfigurationValidator.cs
+- [x] T034 [US6] Implement configuration loading from standard user config directory in src/YetAnotherTranslator.Cli/Program.cs
+- [x] T035 [US6] Implement startup validation that fails fast with clear error messages and exits with non-zero status code on failures in src/YetAnotherTranslator.Cli/Program.cs
 
 **Checkpoint**: Configuration validation complete - application can safely start with valid config
 

@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using YetAnotherTranslator.Core.Exceptions;
+using YetAnotherTranslator.Infrastructure.Configuration;
 using YetAnotherTranslator.Infrastructure.Persistence;
 
 namespace YetAnotherTranslator.Cli;
@@ -13,20 +15,38 @@ internal class Program
     {
         try
         {
-            IHost host = CreateHostBuilder(args).Build();
+            ApplicationConfiguration appConfig = await ValidateAndLoadConfigurationAsync();
+
+            IHost host = CreateHostBuilder(args, appConfig).Build();
             await host.RunAsync();
 
             return 0;
         }
+        catch (ConfigurationException ex)
+        {
+            await Console.Error.WriteLineAsync($"Configuration error: {ex.Message}");
+            return 1;
+        }
+        catch (ExternalServiceException ex)
+        {
+            await Console.Error.WriteLineAsync($"Service connection error ({ex.ServiceName}): {ex.Message}");
+            return 1;
+        }
         catch (Exception ex)
         {
             await Console.Error.WriteLineAsync($"Fatal error: {ex.Message}");
-
             return 1;
         }
     }
 
-    private static IHostBuilder CreateHostBuilder(string[] args)
+    private static async Task<ApplicationConfiguration> ValidateAndLoadConfigurationAsync()
+    {
+        var loader = new ConfigurationLoader();
+        ApplicationConfiguration config = await loader.LoadConfigurationAsync();
+        return config;
+    }
+
+    private static IHostBuilder CreateHostBuilder(string[] args, ApplicationConfiguration appConfig)
     {
         return Host.CreateDefaultBuilder(args)
             .ConfigureAppConfiguration(
@@ -38,7 +58,7 @@ internal class Program
                     config.AddCommandLine(args);
                 }
             )
-            .ConfigureServices((context, services) => { ConfigureServices(services, context.Configuration); })
+            .ConfigureServices((context, services) => { ConfigureServices(services, appConfig); })
             .ConfigureLogging(
                 (context, logging) =>
                 {
@@ -49,14 +69,12 @@ internal class Program
             );
     }
 
-    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    private static void ConfigureServices(IServiceCollection services, ApplicationConfiguration appConfig)
     {
+        services.AddSingleton(appConfig);
+
         services.AddDbContext<TranslatorDbContext>(
-            options =>
-            {
-                string connectionString = configuration.GetConnectionString("DefaultConnection") ?? "";
-                options.UseNpgsql(connectionString);
-            }
+            options => { options.UseNpgsql(appConfig.Database.ConnectionString); }
         );
     }
 }

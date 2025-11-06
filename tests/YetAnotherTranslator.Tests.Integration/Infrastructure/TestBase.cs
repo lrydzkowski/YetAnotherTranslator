@@ -13,7 +13,7 @@ public abstract class TestBase : IAsyncLifetime
     protected IServiceProvider ServiceProvider { get; private set; } = null!;
     protected TranslatorDbContext DbContext { get; private set; } = null!;
 
-    public async Task InitializeAsync()
+    public virtual async Task InitializeAsync()
     {
         PostgresContainer = new PostgreSqlBuilder()
             .WithImage("postgres:16-alpine")
@@ -35,7 +35,7 @@ public abstract class TestBase : IAsyncLifetime
         await DbContext.Database.MigrateAsync();
     }
 
-    public async Task DisposeAsync()
+    public virtual async Task DisposeAsync()
     {
         if (DbContext != null)
         {
