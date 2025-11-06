@@ -24,7 +24,8 @@
       "Bash(if [ -f .gitignore ])",
       "Bash(then head -20 .gitignore)",
       "Bash(else echo \"NO_GITIGNORE\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(dotnet test:*)"
     ],
     "deny": [],
     "ask": []

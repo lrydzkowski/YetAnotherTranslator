@@ -47,16 +47,16 @@ Multi-project solution structure:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T011 Create directory structure: Core/{Handlers,Interfaces}, Infrastructure/{Llm,Tts,Secrets,Persistence,Configuration}, CLI/{Repl,Display}
+- [X] T011 Create directory structure: Core/{Handlers,Interfaces}, Infrastructure/{Llm,Tts,Secrets,Persistence,Configuration}, CLI/{Repl,Display}
   - Note: Core/Models and Core/Validation directories NOT created; handlers are self-contained with models/validators in their own namespaces
   - Shared interfaces live in Core/Interfaces separate from handler namespaces
-- [ ] T012 [P] Create ILlmProvider interface in src/YetAnotherTranslator.Core/Interfaces/ILlmProvider.cs
-- [ ] T013 [P] Create ITtsProvider interface in src/YetAnotherTranslator.Core/Interfaces/ITtsProvider.cs
-- [ ] T014 [P] Create ISecretsProvider interface in src/YetAnotherTranslator.Core/Interfaces/ISecretsProvider.cs
-- [ ] T015 [P] Create IHistoryRepository interface in src/YetAnotherTranslator.Core/Interfaces/IHistoryRepository.cs
-- [ ] T016 [P] Create CommandType enum in src/YetAnotherTranslator.Core/Handlers/GetHistory/CommandType.cs
-- [ ] T017 Create TranslatorDbContext in src/YetAnotherTranslator.Infrastructure/Persistence/TranslatorDbContext.cs with DbSets for HistoryEntry, TranslationCache, TextTranslationCache, PronunciationCache
-- [ ] T018 Create initial EF Core migration InitialSchema using dotnet ef migrations add
+- [X] T012 [P] Create ILlmProvider interface in src/YetAnotherTranslator.Core/Interfaces/ILlmProvider.cs
+- [X] T013 [P] Create ITtsProvider interface in src/YetAnotherTranslator.Core/Interfaces/ITtsProvider.cs
+- [X] T014 [P] Create ISecretsProvider interface in src/YetAnotherTranslator.Core/Interfaces/ISecretsProvider.cs
+- [X] T015 [P] Create IHistoryRepository interface in src/YetAnotherTranslator.Core/Interfaces/IHistoryRepository.cs
+- [X] T016 [P] Create CommandType enum in src/YetAnotherTranslator.Core/Handlers/GetHistory/CommandType.cs
+- [X] T017 Create TranslatorDbContext in src/YetAnotherTranslator.Infrastructure/Persistence/TranslatorDbContext.cs with DbSets for HistoryEntry, TranslationCache, TextTranslationCache, PronunciationCache
+- [X] T018 Create initial EF Core migration InitialSchema using dotnet ef migrations add
   - Entities included: HistoryEntryEntity, TranslationCacheEntity, TextTranslationCacheEntity, PronunciationCacheEntity, LlmResponseCacheEntity
   - TranslationCacheEntity fields: Id (uuid PK), CacheKey (varchar unique index, SHA256 hash), SourceLanguage (varchar), TargetLanguage (varchar), InputText (text), ResultJson (jsonb with translations array including cmuArpabet field), CreatedAt (timestamp with time zone)
   - TextTranslationCacheEntity fields: Id (uuid PK), CacheKey (varchar unique index), SourceLanguage (varchar), TargetLanguage (varchar), InputText (text), TranslatedText (text), CreatedAt (timestamp with time zone)
@@ -72,12 +72,12 @@ Multi-project solution structure:
     * Verify unique indexes exist on all cache_key columns
     * Test migration rollback: `dotnet ef database update 0` succeeds and drops all tables
     * Re-apply migration to verify idempotency
-- [ ] T019 [P] Create TestBase class in tests/YetAnotherTranslator.Tests.Integration/Infrastructure/TestBase.cs with Testcontainers PostgreSQL setup and WireMock server initialization
+- [X] T019 [P] Create TestBase class in tests/YetAnotherTranslator.Tests.Integration/Infrastructure/TestBase.cs with Testcontainers PostgreSQL setup and WireMock server initialization
   - Implement IAsyncLifetime or IDisposable for proper Testcontainers cleanup (stop and dispose PostgreSQL container, stop WireMock server)
   - Ensure each test gets isolated database state (either fresh container or database reset between tests)
-- [ ] T020 [P] Create WireMock fixtures directory tests/YetAnotherTranslator.Tests.Integration/Infrastructure/WireMockFixtures/
-- [ ] T021 [P] Setup dependency injection container configuration in src/YetAnotherTranslator.Cli/Program.cs
-- [ ] T022 Create error handling infrastructure and base exception types in src/YetAnotherTranslator.Core/Exceptions/
+- [X] T020 [P] Create WireMock fixtures directory tests/YetAnotherTranslator.Tests.Integration/Infrastructure/WireMockFixtures/
+- [X] T021 [P] Setup dependency injection container configuration in src/YetAnotherTranslator.Cli/Program.cs
+- [X] T022 Create error handling infrastructure and base exception types in src/YetAnotherTranslator.Core/Exceptions/
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
