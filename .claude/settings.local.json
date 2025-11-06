@@ -16,7 +16,15 @@
       "Bash(nul)",
       "Bash(powershell -ExecutionPolicy Bypass -File .specify/scripts/powershell/update-agent-context.ps1 -AgentType claude)",
       "Bash(powershell -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json)",
-      "Bash(powershell -ExecutionPolicy Bypass -File:*)"
+      "Bash(powershell -ExecutionPolicy Bypass -File:*)",
+      "Bash(dotnet new:*)",
+      "Bash(dotnet sln:*)",
+      "Bash(dotnet sln add:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(if [ -f .gitignore ])",
+      "Bash(then head -20 .gitignore)",
+      "Bash(else echo \"NO_GITIGNORE\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []

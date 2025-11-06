@@ -28,16 +28,16 @@ Multi-project solution structure:
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create solution file YetAnotherTranslator.sln in repository root
-- [ ] T002 Create Core project src/YetAnotherTranslator.Core/YetAnotherTranslator.Core.csproj targeting .NET 10
-- [ ] T003 [P] Create Infrastructure project src/YetAnotherTranslator.Infrastructure/YetAnotherTranslator.Infrastructure.csproj targeting .NET 10
-- [ ] T004 [P] Create CLI project src/YetAnotherTranslator.Cli/YetAnotherTranslator.Cli.csproj targeting .NET 10
-- [ ] T005 [P] Create Integration test project tests/YetAnotherTranslator.Tests.Integration/YetAnotherTranslator.Tests.Integration.csproj
-- [ ] T006 Configure project references: Infrastructure references Core, CLI references Core and Infrastructure, Tests reference all
-- [ ] T007 [P] Add Core dependencies: FluentValidation, FluentValidation.DependencyInjectionExtensions
-- [ ] T008 [P] Add Infrastructure dependencies: Anthropic SDK, ElevenLabs-DotNet, Azure.Security.KeyVault.Secrets, Azure.Identity, Npgsql.EntityFrameworkCore.PostgreSQL, Microsoft.EntityFrameworkCore.Design, PortAudioSharp
-- [ ] T009 [P] Add CLI dependencies: PrettyPrompt, Spectre.Console
-- [ ] T010 [P] Add Test dependencies: xUnit, xUnit.runner.visualstudio, Microsoft.NET.Test.Sdk, FluentAssertions, NSubstitute, Testcontainers.PostgreSql, WireMock.Net, Verify.Xunit
+- [X] T001 Create solution file YetAnotherTranslator.sln in repository root
+- [X] T002 Create Core project src/YetAnotherTranslator.Core/YetAnotherTranslator.Core.csproj targeting .NET 10
+- [X] T003 [P] Create Infrastructure project src/YetAnotherTranslator.Infrastructure/YetAnotherTranslator.Infrastructure.csproj targeting .NET 10
+- [X] T004 [P] Create CLI project src/YetAnotherTranslator.Cli/YetAnotherTranslator.Cli.csproj targeting .NET 10
+- [X] T005 [P] Create Integration test project tests/YetAnotherTranslator.Tests.Integration/YetAnotherTranslator.Tests.Integration.csproj
+- [X] T006 Configure project references: Infrastructure references Core, CLI references Core and Infrastructure, Tests reference all
+- [X] T007 [P] Add Core dependencies: FluentValidation, FluentValidation.DependencyInjectionExtensions
+- [X] T008 [P] Add Infrastructure dependencies: Anthropic SDK, ElevenLabs-DotNet, Azure.Security.KeyVault.Secrets, Azure.Identity, Npgsql.EntityFrameworkCore.PostgreSQL, Microsoft.EntityFrameworkCore.Design, PortAudioSharp
+- [X] T009 [P] Add CLI dependencies: PrettyPrompt, Spectre.Console
+- [X] T010 [P] Add Test dependencies: xUnit, xUnit.runner.visualstudio, Microsoft.NET.Test.Sdk, FluentAssertions, NSubstitute, Testcontainers.PostgreSql, WireMock.Net, Verify.Xunit
 
 ---
 
