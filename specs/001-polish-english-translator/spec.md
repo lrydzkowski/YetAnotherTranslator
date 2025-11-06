@@ -10,7 +10,7 @@
 ### Session 2025-11-01
 
 - Q: Should pronunciation playback accept part of speech parameter for words with different pronunciations based on usage? → A: Yes, pronunciation should accept optional part of speech parameter since words can have different pronunciations (e.g., "record" as noun vs verb)
-- Q: How should users invoke different operations (CLI command structure)? → A: REPL-style interface with command prefixes: `/t` (translate word auto-detect), `/tp` (translate Polish word), `/te` (translate English word), `/tt` (translate text auto-detect), `/ttp` (translate Polish text), `/tte` (translate English text), `/r` (review English text), `/p` (pronounce English), `/h` (help), `/c` (clear screen), `/q` (quit)
+- Q: How should users invoke different operations (CLI command structure)? → A: REPL-style interface with command prefixes (see FR-017a through FR-017l for complete command reference)
 - Q: How should users access their operation history in the REPL? → A: `/history` or `/hist` command
 - Q: How should word translation results be displayed in the REPL? → A: Table format with columns for rank, translation, part of speech, countability, CMU Arpabet (for English translations), and examples
 - Q: How should users input multi-line text in the REPL for text translation and review? → A: Single-line only with escaped newlines (`\n`) for multi-line content
@@ -183,10 +183,10 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - **FR-003**: System MUST display part of speech information for each word translation
 - **FR-004**: System MUST indicate countability status (countable/uncountable) for noun translations
 - **FR-005**: System MUST provide example sentences demonstrating usage for each translation
-- **FR-005a**: System MUST provide CMU Arpabet phonetic transcription for English word translations when translating Polish→English (not applicable to English→Polish direction)
-- **FR-005a1**: System MUST provide part-of-speech-specific CMU Arpabet transcriptions for words with pronunciation variants (e.g., "record" as noun: "R EH1 K ER0 D", as verb: "R IH0 K AO1 R D")
-- **FR-005b**: System MUST save CMU Arpabet pronunciation data in operation history and cache for offline access
-- **FR-005c**: System MUST gracefully handle CMU Arpabet generation failures by displaying "N/A" in the Arpabet column (consistent with countability column format) rather than failing the entire translation operation
+- **FR-006a**: System MUST provide CMU Arpabet phonetic transcription for English word translations when translating Polish→English (not applicable to English→Polish direction)
+- **FR-006a1**: System MUST provide part-of-speech-specific CMU Arpabet transcriptions for words with pronunciation variants (e.g., "record" as noun: "R EH1 K ER0 D", as verb: "R IH0 K AO1 R D"). LLM temperature setting of 0.3 provides sufficient consistency for translation while allowing POS-variant discrimination when explicitly requested in prompt structure.
+- **FR-006b**: System MUST save CMU Arpabet pronunciation data in TranslationCache entity for offline access. Offline retrieval: When internet unavailable, system retrieves cached translation results including CMU Arpabet from local PostgreSQL database and displays them without API calls.
+- **FR-006c**: System MUST gracefully handle CMU Arpabet generation failures by displaying "N/A" in the Arpabet column (consistent with countability column format) rather than failing the entire translation operation
 - **FR-006**: System MUST translate text snippets from Polish to English
 - **FR-007**: System MUST translate text snippets from English to Polish
 - **FR-008**: System MUST review English text and identify grammar errors with correction suggestions
@@ -198,8 +198,10 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - **FR-012**: System MUST save history of all grammar review operations
 - **FR-013**: System MUST save history of all pronunciation requests
 - **FR-014**: System MUST allow users to retrieve and view their operation history
+- **FR-014a**: System MUST handle operation history datasets up to 10,000 entries within SC-008 performance threshold (1 second); larger datasets must remain functional but may exceed performance threshold
+- **FR-014b**: System MUST display most recent 100 history entries by default; for larger result sets, users may specify limit via optional parameter (e.g., `/history --limit 500`) to retrieve more entries
 - **FR-015**: System MUST handle Polish diacritical characters correctly in all operations
-- **FR-016**: System MUST provide clear error messages when operations fail
+- **FR-016**: System MUST provide clear error messages when operations fail. Error message format guidelines: (1) State what failed (operation/component), (2) Explain why it failed (root cause), (3) Provide user action if applicable (remediation step). Example: "Translation failed: Unable to connect to Anthropic API. Check internet connectivity and verify API key in Azure Key Vault."
 - **FR-017**: System MUST provide a REPL (Read-Eval-Print Loop) interactive interface
 - **FR-017a**: System MUST support `/t <word>` or `/translate <word>` command for word translation with automatic language detection
 - **FR-017b**: System MUST support `/tp <word>` or `/translate-polish <word>` command for Polish-to-English word translation
@@ -208,39 +210,46 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - **FR-017e**: System MUST support `/ttp <text>` or `/translate-text-polish <text>` command for Polish-to-English text translation
 - **FR-017f**: System MUST support `/tte <text>` or `/translate-text-english <text>` command for English-to-Polish text translation
 - **FR-017g**: System MUST support `/r <text>` or `/review <text>` command for English grammar and vocabulary review
-- **FR-017h**: System MUST support `/p <text>` or `/playback <text>` command for English pronunciation playback with optional part of speech parameter
+- **FR-017h**: System MUST support `/p <text>` or `/playback <text>` command for English pronunciation playback with optional part of speech parameter. Syntax: `/p <text> [--pos <noun|verb|adjective|adverb>]` or `/playback <text> --pos verb`
 - **FR-017i**: System MUST support `/history` or `/hist` command to display operation history
 - **FR-017j**: System MUST support `/h` or `/help` command to display help information
 - **FR-017k**: System MUST support `/c` or `/clear` command to clear the screen
 - **FR-017l**: System MUST support `/q` or `/quit` command to quit the application
 - **FR-018**: System MUST output results to standard output
 - **FR-019**: System MUST output errors to standard error
-- **FR-020**: System MUST automatically detect source language (Polish vs English) when using auto-detect commands (`/t`, `/tt`); explicit commands (`/tp`, `/te`, `/ttp`, `/tte`) specify source language without detection. If detection confidence is low (e.g., proper nouns, numbers, ambiguous words), system MUST return error per FR-041 asking user to use explicit language commands.
+- **FR-020**: System MUST automatically detect source language (Polish vs English) when using auto-detect commands (`/t`, `/tt`) via DetectLanguageAsync interface method; explicit commands (`/tp`, `/te`, `/ttp`, `/tte`) specify source language without detection. DetectLanguageAsync MUST return confidence score (0-100%). If detection confidence is below 80% (e.g., proper nouns, numbers, ambiguous words), system MUST return error per FR-041 asking user to use explicit language commands.
 - **FR-021**: System MUST display word translation results in table format with columns for rank, translation, part of speech, countability, CMU Arpabet (for English translations), and example sentences
 - **FR-022**: System MUST accept text input as single-line commands with support for escaped newlines (`\n`) to represent multi-line content
 - **FR-023**: System MUST use LLM-based implementation for word translation (including CMU Arpabet generation), text translation, and grammar review functions
 - **FR-024**: System MUST leverage LLM's inherent spelling correction capabilities without implementing separate spell-checking logic
-- **FR-025**: System MUST use Anthropic Claude as LLM provider (v1 scope: single LLM provider; pluggable multi-provider architecture deferred to future releases)
+- **FR-025**: System MUST use Anthropic as LLM provider (v1 scope: single LLM provider; pluggable multi-provider architecture deferred to future releases)
 - **FR-026**: System MUST allow users to configure Anthropic LLM settings (model, temperature, max tokens) via JSON configuration file (v1 scope: single provider configuration; multi-provider operation mapping deferred to future releases)
 - **FR-027**: System MUST read configuration from a JSON configuration file located in the standard user config directory (e.g., `~/.config/translator/config.json` on Linux, `%APPDATA%\translator\config.json` on Windows) on startup
-- **FR-028**: System MUST validate that all required configuration fields are present at startup
-- **FR-029**: System MUST validate configuration file syntax (valid JSON) at startup and provide error messages with line and column information for JSON syntax errors
-- **FR-030**: System MUST display clear error messages indicating missing or invalid configuration fields when validation fails
+- **FR-028**: System MUST validate that all required configuration fields are present at startup. Error message format: "Configuration validation failed: Missing required field(s): [field1], [field2]. Expected location: [config file path]". Exit code: 1
+- **FR-029**: System MUST validate configuration file syntax (valid JSON) at startup and provide error messages with line and column information for JSON syntax errors. Error message format: "Configuration file syntax error at line [N], column [M]: [specific JSON error]. File: [config file path]". Exit code: 1
+- **FR-030**: System MUST display clear error messages indicating missing or invalid configuration fields when validation fails. Error message format: "Configuration validation failed: [field name] is invalid. Reason: [specific validation error]. Expected: [expected format/value]". Exit code: 1
 - **FR-031**: System MUST exit with a non-zero status code when configuration validation fails
-- **FR-032**: System MUST integrate with Azure Key Vault for securely storing and retrieving API credentials for LLM and TTS providers (v1 scope: Azure Key Vault only; multi-backend support for HashiCorp Vault and AWS Secrets Manager deferred to future releases)
-- **FR-033**: System MUST support Azure Key Vault configuration via configuration file (v1 scope: single backend; configurable multi-backend selection deferred to future releases)
+- **FR-031a**: System MUST use standardized exit codes: 0 (success), 1 (configuration/validation errors per FR-028/FR-029/FR-030), 2 (secret manager errors per FR-036), 3 (LLM/TTS API connection or operational errors)
+- **FR-032**: System MUST integrate with secret manager for securely storing and retrieving API credentials for LLM and TTS providers (v1 scope: Azure Key Vault only; multi-backend support for HashiCorp Vault and AWS Secrets Manager deferred to future releases)
+- **FR-033**: System MUST support secret manager (Azure Key Vault in v1) configuration via configuration file (v1 scope: single backend; configurable multi-backend selection deferred to future releases)
 - **FR-034**: System MUST store references to secrets (not the actual credentials) in the local configuration file
 - **FR-035**: System MUST retrieve actual API credentials from configured secret manager at runtime
-- **FR-036**: System MUST provide clear error messages when secret manager is unavailable or fails to return credentials
+- **FR-036**: System MUST provide clear error messages when secret manager is unavailable or fails to return credentials. Error message formats:
+  - Connection failure: "Failed to connect to Azure Key Vault at [URL]. Error: [specific error]. Verify network connectivity and Key Vault URL in configuration."
+  - Authentication failure (403): "Access denied to Azure Key Vault at [URL]. Verify authentication: Run 'az login' for development or check managed identity permissions in production."
+  - Secret not found (404): "Secret '[secret-name]' not found in Azure Key Vault at [URL]. Verify secret reference in configuration matches Key Vault secret name."
+  - Timeout: "Connection to Azure Key Vault at [URL] timed out after [N] seconds. Check network connectivity."
+  All secret manager errors result in exit code: 2
 - **FR-037**: System MUST proceed to REPL when all configuration is valid and credentials are successfully retrieved
 - **FR-038**: System MUST support UTF-8 encoding throughout the application to correctly display and accept Polish diacritical characters (ą, ć, ę, ł, ń, ó, ś, ź, ż)
 - **FR-039**: System MUST fall back to cached results when offline for translation operations and display clear error message when no cached result is available
 - **FR-040**: System MUST fall back to cached LLM responses when offline for LLM provider operations and display clear error message when no cache entry exists
-- **FR-041**: System MUST display clear error message when language detection fails or is uncertain, asking user to use explicit language commands (`/tp`, `/te`, `/ttp`, `/tte`) instead of auto-detect commands
+- **FR-041**: System MUST display clear error message when language detection fails or is uncertain, asking user to use explicit language commands (`/tp`, `/te`, `/ttp`, `/tte`) instead of auto-detect commands. Error message format: "Language detection failed: Confidence score [X]% below threshold (80%). Use explicit commands: /tp (Polish→English), /te (English→Polish), /ttp (Polish text→English), /tte (English text→Polish)."
 - **FR-042**: System MUST detect the language before performing grammar review and display error message stating grammar review only supports English text when non-English text is detected
 - **FR-043**: System MUST display error message showing the invalid command and suggest using `/help` or `/h` to see available commands when user enters an invalid REPL command
 - **FR-044**: System MUST provide the closest conceptual equivalent with an explanation when a word has no direct translation equivalent between Polish and English
 - **FR-045**: System MUST store operation history without automatic cleanup or storage limits, allowing users to manage their own data
+- **FR-046**: System MUST implement cache expiration policy: 30 days for translation cache (TranslationCache), 30 days for pronunciation cache (PronunciationCache), 30 days for LLM response cache (LlmResponseCache). Expired cache entries MAY be cleaned up manually or via scheduled task; cache retrieval logic MUST check expiration timestamp and treat expired entries as cache misses.
 
 ### Key Entities
 
@@ -258,16 +267,16 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 
 ### Measurable Outcomes
 
-- **SC-001**: Users can translate a single word and receive results in under 3 seconds
+- **SC-001**: Users can translate a single word and receive results in under 3 seconds (end-to-end including network round-trip to LLM API)
 - **SC-002**: Word translations display at least 3 different translations when multiple meanings exist
 - **SC-003**: 100% of word translations include example sentences demonstrating usage
-- **SC-004**: Text snippet translation handles inputs up to 5000 characters without errors
-- **SC-005**: Grammar review identifies common grammar mistakes (subject-verb agreement, tense errors, article usage) with 90% accuracy (aspirational target dependent on LLM provider capabilities; actual accuracy measured against manually validated test dataset during integration testing)
+- **SC-004**: Text snippet translation handles inputs up to 5000 characters without errors (Limit rationale: Anthropic Claude Sonnet 4.5 has 200k token context window; 5000 characters ≈ 1250 tokens input + 2000 tokens output + 1000 tokens system prompt = 4250 tokens total, well within limits with safety margin for multi-turn conversations)
+- **SC-005**: Grammar review correctly identifies the following grammar patterns in test dataset with ≥95% detection rate: (1) subject-verb agreement errors (e.g., "he go" → "he goes"), (2) incorrect article usage (e.g., "a apple" → "an apple"), (3) basic tense errors (e.g., "I go yesterday" → "I went yesterday"), (4) double negatives (e.g., "don't have no" → "don't have any"), (5) incorrect plural forms (e.g., "two childs" → "two children"). Test dataset with these 5 patterns will be created during integration testing phase. Rationale: LLMs are probabilistic; ≥95% threshold balances reliability with realistic expectations for non-deterministic systems per Constitution Principle V (Simplicity).
 - **SC-006**: Pronunciation audio plays within 2 seconds of request
 - **SC-007**: Operation history persists across sessions and retains all past operations
-- **SC-008**: Users can access their complete operation history in under 1 second
+- **SC-008**: Users can access their complete operation history in under 1 second (applies to datasets up to 10,000 history entries; larger datasets may exceed 1s threshold but must remain functional)
 - **SC-009**: System handles Polish diacritical characters without corruption or errors
-- **SC-010**: 95% of operations complete successfully with appropriate error messages for failures
+- **SC-010**: 95% of operations complete successfully with appropriate error messages for failures. Clarification: This 95% threshold applies ONLY to external service availability (LLM/TTS API uptime, network connectivity), NOT application logic errors. Application errors from invalid input, configuration, or code defects MUST be handled with fail-fast error reporting per Constitution Principle IV and are NOT tolerated within the 5% failure budget. The 5% failure budget accommodates transient external service issues (rate limiting, timeouts, temporary outages).
 - **SC-011**: Configuration validation at startup completes in under 1 second for valid configuration
 - **SC-012**: Configuration validation provides actionable error messages listing all missing/invalid fields in a single check
 
@@ -279,7 +288,7 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - Users can manually create and edit JSON configuration files
 - Users can authenticate to Azure Key Vault via Azure CLI (az login) or managed identity in production environments
 - Users can manually store API credentials in their secret manager and obtain secret references (paths/IDs)
-- LLM providers (e.g., OpenAI, Anthropic, Google, etc.) can provide popularity rankings for translations
+- LLM providers (e.g., OpenAI, Anthropic, Google) can provide popularity rankings for translations
 - LLM providers can provide linguistic metadata (parts of speech, countability, example sentences)
 - LLM providers can generate accurate CMU Arpabet phonetic transcriptions for English words
 - LLM providers can perform grammar and vocabulary review with high accuracy
@@ -289,8 +298,8 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - Operation history, LLM provider configuration (excluding credentials), TTS provider configuration (excluding credentials), and secret manager configuration storage in standard user config directory on local filesystem is acceptable
 - Azure Key Vault provides reliable and available access to stored credentials at runtime
 - REPL-style interactive interface is suitable for user interaction
-- LLM providers can reliably perform language auto-detection to distinguish between Polish and English text
-- Text snippet translation limit of 5000 characters is reasonable for CLI usage and aligns with common LLM token limits
+- LLM providers can reliably perform language auto-detection to distinguish between Polish and English text with confidence scoring
+- Text snippet translation limit of 5000 characters is reasonable for CLI usage (rationale: Anthropic Claude Sonnet 4.5 has 200k token context; 5000 chars ≈ 1250 tokens input + 2000 output + 1000 system = 4250 total, providing 195k token safety margin)
 - Different LLM providers offer compatible APIs or can be abstracted through a common interface
 - ElevenLabs SDK (ElevenLabs-DotNet) provides reliable .NET integration for audio generation
 - Azure Key Vault SDK provides reliable .NET integration via Azure.Security.KeyVault.Secrets and Azure.Identity packages

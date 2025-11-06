@@ -148,15 +148,13 @@ src/
 │       │   ├── TranslateWordRequest.cs          # Request model
 │       │   ├── TranslateWordValidator.cs        # FluentValidation validator
 │       │   ├── TranslationResult.cs             # Result model
-│       │   ├── Translation.cs                   # Nested translation model
-│       │   └── ILlmProvider.cs                  # Interface for LLM operations
+│       │   └── Translation.cs                   # Nested translation model
 │       │
 │       ├── TranslateText/              # Text translation feature
 │       │   ├── TranslateTextHandler.cs
 │       │   ├── TranslateTextRequest.cs
 │       │   ├── TranslateTextValidator.cs
-│       │   ├── TextTranslationResult.cs
-│       │   └── ILlmProvider.cs                  # (may share with TranslateWord or be distinct)
+│       │   └── TextTranslationResult.cs
 │       │
 │       ├── ReviewGrammar/              # Grammar review feature
 │       │   ├── ReviewGrammarHandler.cs
@@ -164,31 +162,34 @@ src/
 │       │   ├── ReviewGrammarValidator.cs
 │       │   ├── GrammarReviewResult.cs
 │       │   ├── GrammarIssue.cs
-│       │   ├── VocabularySuggestion.cs
-│       │   └── ILlmProvider.cs                  # (may share with others)
+│       │   └── VocabularySuggestion.cs
 │       │
 │       ├── PlayPronunciation/          # Pronunciation playback feature
 │       │   ├── PlayPronunciationHandler.cs
 │       │   ├── PlayPronunciationRequest.cs
 │       │   ├── PlayPronunciationValidator.cs
-│       │   ├── PronunciationResult.cs
-│       │   ├── ITtsProvider.cs                  # Interface for TTS operations
-│       │   └── IAudioPlayer.cs                  # Interface for audio playback
+│       │   └── PronunciationResult.cs
 │       │
 │       └── GetHistory/                 # History retrieval feature
 │           ├── GetHistoryHandler.cs
 │           ├── GetHistoryRequest.cs
 │           ├── GetHistoryValidator.cs
 │           ├── HistoryEntry.cs
-│           ├── CommandType.cs                   # Enum for command types
-│           └── IHistoryRepository.cs            # Interface for history access
+│           └── CommandType.cs                   # Enum for command types
+│   │
+│   └── Interfaces/                     # Shared interfaces (not in handler namespaces)
+│       ├── ILlmProvider.cs             # Interface for LLM operations
+│       ├── ITtsProvider.cs             # Interface for TTS operations
+│       ├── IAudioPlayer.cs             # Interface for audio playback
+│       ├── ISecretsProvider.cs         # Interface for secrets management
+│       └── IHistoryRepository.cs       # Interface for history access
 │
 ├── YetAnotherTranslator.Infrastructure/  # External integrations
 │   ├── Llm/                            # LLM provider implementation
 │   │   └── AnthropicProvider.cs        # Implements ILlmProvider from Core handlers
 │   ├── Tts/                            # TTS provider implementation
-│   │   ├── ElevenLabsProvider.cs       # Implements ITtsProvider
-│   │   └── PortAudioPlayer.cs          # Implements IAudioPlayer
+│   │   ├── ElevenLabsProvider.cs       # Implements ITtsProvider (text-to-speech generation)
+│   │   └── PortAudioPlayer.cs          # Implements IAudioPlayer (audio playback via PortAudioSharp)
 │   ├── Secrets/                        # Secret manager implementation
 │   │   └── AzureKeyVaultProvider.cs    # Implements ISecretsProvider
 │   ├── Persistence/                    # Database implementation
@@ -243,15 +244,9 @@ tests/
    - Handler class with business logic
    - Request/Result models specific to that handler
    - FluentValidation validator for the request
-   - Interface definitions for dependencies (ILlmProvider, ITtsProvider, etc.)
+   - Note: Shared interfaces (ILlmProvider, ITtsProvider, etc.) are defined separately in Core.Interfaces namespace
 
-2. **Interface Sharing**: Some interfaces (like ILlmProvider) may appear in multiple handler namespaces. This is intentional:
-
-   - Each handler defines the interface contract it needs
-   - If multiple handlers need the same interface, they can either:
-     - Define it independently in their namespace (true self-containment)
-     - Share a common interface from a shared namespace (pragmatic choice)
-   - For v1, we'll use shared interfaces in `YetAnotherTranslator.Core.Interfaces` for pragmatism while keeping handlers self-contained
+2. **Interface Sharing**: Shared interfaces (ILlmProvider, ITtsProvider, IAudioPlayer, ISecretsProvider, IHistoryRepository) are defined in `YetAnotherTranslator.Core.Interfaces` namespace, separate from handler namespaces. This pragmatic choice avoids duplication while keeping handler business logic self-contained. Each handler namespace contains only its models, validators, and handler class—no interface definitions.
 
 3. **Clean Boundaries**:
 
