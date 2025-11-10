@@ -76,5 +76,49 @@ internal class Program
         services.AddDbContext<TranslatorDbContext>(
             options => { options.UseNpgsql(appConfig.Database.ConnectionString); }
         );
+
+        services.AddScoped<Core.Interfaces.IHistoryRepository, Infrastructure.Persistence.HistoryRepository>();
+        services.AddScoped<Core.Interfaces.ISecretsProvider>(sp =>
+            new Infrastructure.Secrets.AzureKeyVaultSecretsProvider(appConfig.SecretManager.KeyVaultUrl)
+        );
+
+        services.AddScoped<Core.Interfaces.ILlmProvider>(sp =>
+        {
+            var secretsProvider = sp.GetRequiredService<Core.Interfaces.ISecretsProvider>();
+            string apiKey = secretsProvider.GetSecretAsync(appConfig.LlmProvider.ApiKeySecretName).Result;
+            return new Infrastructure.Llm.AnthropicLlmProvider(apiKey, appConfig.LlmProvider.Model);
+        });
+
+        services.AddScoped<FluentValidation.IValidator<Core.Handlers.TranslateWord.TranslateWordRequest>,
+            Core.Handlers.TranslateWord.TranslateWordValidator>();
+
+        services.AddScoped<Core.Handlers.TranslateWord.TranslateWordHandler>();
+
+        services.AddSingleton<Repl.CommandParser>();
+        services.AddScoped<Repl.ReplEngine>();
+
+        services.AddHostedService<ReplHostedService>();
+    }
+}
+
+public class ReplHostedService : IHostedService
+{
+    private readonly IServiceProvider _serviceProvider;
+
+    public ReplHostedService(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var replEngine = scope.ServiceProvider.GetRequiredService<Repl.ReplEngine>();
+        await replEngine.RunAsync(cancellationToken);
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
     }
 }

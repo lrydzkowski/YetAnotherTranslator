@@ -1,4 +1,6 @@
 using System.Net;
+using System.Text;
+using System.Text.Json;
 using YetAnotherTranslator.Core.Exceptions;
 using YetAnotherTranslator.Core.Interfaces;
 
@@ -20,7 +22,7 @@ public class TestLlmProvider : ILlmProvider
 
     public async Task<string> DetectLanguageAsync(string text, CancellationToken cancellationToken = default)
     {
-        return await TestConnectionAsync(cancellationToken);
+        return await CallApiAsync(new { text }, cancellationToken);
     }
 
     public async Task<string> TranslateWordAsync(
@@ -29,7 +31,7 @@ public class TestLlmProvider : ILlmProvider
         string targetLanguage,
         CancellationToken cancellationToken = default)
     {
-        return await TestConnectionAsync(cancellationToken);
+        return await CallApiAsync(new { word, sourceLanguage, targetLanguage }, cancellationToken);
     }
 
     public async Task<string> TranslateTextAsync(
@@ -38,25 +40,50 @@ public class TestLlmProvider : ILlmProvider
         string targetLanguage,
         CancellationToken cancellationToken = default)
     {
-        return await TestConnectionAsync(cancellationToken);
+        return await CallApiAsync(new { text, sourceLanguage, targetLanguage }, cancellationToken);
     }
 
     public async Task<string> ReviewGrammarAsync(string text, CancellationToken cancellationToken = default)
     {
-        return await TestConnectionAsync(cancellationToken);
+        return await CallApiAsync(new { text }, cancellationToken);
     }
 
-    private async Task<string> TestConnectionAsync(CancellationToken cancellationToken)
+    private async Task<string> CallApiAsync(object requestData, CancellationToken cancellationToken)
     {
         try
         {
-            var response = await _httpClient.GetAsync(
+            var jsonContent = JsonSerializer.Serialize(requestData);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(
                 $"{_baseUrl}/v1/messages",
+                content,
                 cancellationToken
             );
 
+            if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
+            {
+                throw new ExternalServiceException(
+                    "Anthropic",
+                    "Failed to connect to Anthropic API: Service Unavailable"
+                );
+            }
+
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStringAsync(cancellationToken);
+            string responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            var responseDoc = JsonDocument.Parse(responseBody);
+            if (responseDoc.RootElement.TryGetProperty("content", out var contentArray) &&
+                contentArray.GetArrayLength() > 0)
+            {
+                var firstContent = contentArray[0];
+                if (firstContent.TryGetProperty("text", out var textProp))
+                {
+                    return textProp.GetString() ?? string.Empty;
+                }
+            }
+
+            return responseBody;
         }
         catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
         {
@@ -73,6 +100,10 @@ public class TestLlmProvider : ILlmProvider
                 $"Failed to connect to Anthropic API: {ex.Message}",
                 ex
             );
+        }
+        catch (ExternalServiceException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

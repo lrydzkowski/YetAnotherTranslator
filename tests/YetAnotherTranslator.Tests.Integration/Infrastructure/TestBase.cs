@@ -66,5 +66,8 @@ public abstract class TestBase : IAsyncLifetime
             options =>
                 options.UseNpgsql(PostgresContainer.GetConnectionString())
         );
+
+        services.AddScoped<YetAnotherTranslator.Core.Interfaces.IHistoryRepository,
+            YetAnotherTranslator.Infrastructure.Persistence.HistoryRepository>();
     }
 }

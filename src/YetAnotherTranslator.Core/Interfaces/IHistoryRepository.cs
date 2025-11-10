@@ -1,29 +1,31 @@
+using YetAnotherTranslator.Core.Handlers.GetHistory;
+using YetAnotherTranslator.Core.Handlers.TranslateWord;
+
 namespace YetAnotherTranslator.Core.Interfaces;
 
 public interface IHistoryRepository
 {
-    Task SaveHistoryAsync<T>(
-        string commandType,
-        string inputText,
-        T result,
+    Task<TranslationResult?> GetCachedTranslationAsync(
+        string word,
+        string sourceLanguage,
+        string targetLanguage,
         CancellationToken cancellationToken = default
-    )
-        where T : class;
+    );
 
-    Task<List<HistoryEntry>> GetHistoryAsync(int limit = 100, CancellationToken cancellationToken = default);
+    Task SaveTranslationAsync(
+        TranslationResult result,
+        CancellationToken cancellationToken = default
+    );
 
-    Task<T?> GetCachedTranslationAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
-        where T : class;
+    Task SaveHistoryAsync(
+        CommandType commandType,
+        string inputText,
+        string outputText,
+        CancellationToken cancellationToken = default
+    );
 
-    Task SaveCachedTranslationAsync<T>(string cacheKey, T result, CancellationToken cancellationToken = default)
-        where T : class;
-}
-
-public class HistoryEntry
-{
-    public Guid Id { get; set; }
-    public string CommandType { get; set; } = string.Empty;
-    public string InputText { get; set; } = string.Empty;
-    public string OutputText { get; set; } = string.Empty;
-    public DateTimeOffset Timestamp { get; set; }
+    Task<List<HistoryEntry>> GetHistoryAsync(
+        int limit = 50,
+        CancellationToken cancellationToken = default
+    );
 }
