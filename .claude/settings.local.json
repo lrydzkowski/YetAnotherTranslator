@@ -25,7 +25,10 @@
       "Bash(then head -20 .gitignore)",
       "Bash(else echo \"NO_GITIGNORE\")",
       "Bash(fi)",
-      "Bash(dotnet test:*)"
+      "Bash(dotnet test:*)",
+      "Bash(dotnet ef migrations list:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"Get-Content specs\\001-polish-english-translator\\spec.md | Select-String -Pattern ''User Story 6|Acceptance Scenario'' -Context 0,5\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command:*)"
     ],
     "deny": [],
     "ask": []

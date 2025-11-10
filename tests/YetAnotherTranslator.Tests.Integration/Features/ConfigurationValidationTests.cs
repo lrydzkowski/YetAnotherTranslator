@@ -173,4 +173,114 @@ public class ConfigurationValidationTests : TestBase
         config.TtsProvider.VoiceId.Should().Be("test-voice-id");
         config.Database.ConnectionString.Should().Be("Host=localhost;Database=test;Username=test;Password=test");
     }
+
+    [Fact]
+    public async Task SecretsProvider_NetworkTimeout_ThrowsExternalServiceException()
+    {
+        WireMockServer.Given(
+            WireMock.RequestBuilders.Request
+                .Create()
+                .WithPath("/secrets/test-key")
+                .UsingGet()
+        )
+        .RespondWith(
+            WireMock.ResponseBuilders.Response
+                .Create()
+                .WithDelay(TimeSpan.FromSeconds(10))
+                .WithStatusCode(200)
+        );
+
+        var provider = new Infrastructure.TestSecretsProvider(WireMockServer.Url!);
+
+        Func<Task> act = async () => await provider.GetSecretAsync("test-key");
+
+        await act.Should()
+            .ThrowAsync<ExternalServiceException>()
+            .Where(ex =>
+                ex.ServiceName == "AzureKeyVault" &&
+                ex.Message.Contains("timed out")
+            );
+    }
+
+    [Fact]
+    public async Task SecretsProvider_PermissionDenied_ThrowsExternalServiceException()
+    {
+        WireMockServer.Given(
+            WireMock.RequestBuilders.Request
+                .Create()
+                .WithPath("/secrets/test-key")
+                .UsingGet()
+        )
+        .RespondWith(
+            WireMock.ResponseBuilders.Response
+                .Create()
+                .WithStatusCode(403)
+        );
+
+        var provider = new Infrastructure.TestSecretsProvider(WireMockServer.Url!);
+
+        Func<Task> act = async () => await provider.GetSecretAsync("test-key");
+
+        await act.Should()
+            .ThrowAsync<ExternalServiceException>()
+            .Where(ex =>
+                ex.ServiceName == "AzureKeyVault" &&
+                ex.Message.Contains("Access denied") &&
+                ex.Message.Contains("az login")
+            );
+    }
+
+    [Fact]
+    public async Task SecretsProvider_SecretNotFound_ThrowsExternalServiceException()
+    {
+        WireMockServer.Given(
+            WireMock.RequestBuilders.Request
+                .Create()
+                .WithPath("/secrets/nonexistent-key")
+                .UsingGet()
+        )
+        .RespondWith(
+            WireMock.ResponseBuilders.Response
+                .Create()
+                .WithStatusCode(404)
+        );
+
+        var provider = new Infrastructure.TestSecretsProvider(WireMockServer.Url!);
+
+        Func<Task> act = async () => await provider.GetSecretAsync("nonexistent-key");
+
+        await act.Should()
+            .ThrowAsync<ExternalServiceException>()
+            .Where(ex =>
+                ex.ServiceName == "AzureKeyVault" &&
+                ex.Message.Contains("not found")
+            );
+    }
+
+    [Fact]
+    public async Task LlmProvider_ConnectionFailure_ThrowsExternalServiceException()
+    {
+        WireMockServer.Given(
+            WireMock.RequestBuilders.Request
+                .Create()
+                .WithPath("/v1/messages")
+                .UsingGet()
+        )
+        .RespondWith(
+            WireMock.ResponseBuilders.Response
+                .Create()
+                .WithStatusCode(503)
+        );
+
+        var provider = new Infrastructure.TestLlmProvider(WireMockServer.Url!);
+
+        Func<Task> act = async () => await provider.DetectLanguageAsync("test");
+
+        await act.Should()
+            .ThrowAsync<ExternalServiceException>()
+            .Where(ex =>
+                ex.ServiceName == "Anthropic" &&
+                ex.Message.Contains("Failed to connect")
+            );
+    }
 }
