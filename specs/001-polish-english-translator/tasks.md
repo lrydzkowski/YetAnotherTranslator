@@ -216,16 +216,16 @@ Multi-project solution structure:
 
 ### Integration Tests for User Story 3
 
-- [ ] T074 [P] [US3] Integration test for text with grammar errors in tests/YetAnotherTranslator.Tests.Integration/Features/ReviewGrammarTests.cs
-- [ ] T075 [P] [US3] Integration test for grammatically correct text with vocabulary suggestions in tests/YetAnotherTranslator.Tests.Integration/Features/ReviewGrammarTests.cs
-- [ ] T076 [P] [US3] Integration test for non-English text detection in tests/YetAnotherTranslator.Tests.Integration/Features/ReviewGrammarTests.cs
+- [x] T074 [P] [US3] Integration test for text with grammar errors in tests/YetAnotherTranslator.Tests.Integration/Features/ReviewGrammarTests.cs
+- [x] T075 [P] [US3] Integration test for grammatically correct text with vocabulary suggestions in tests/YetAnotherTranslator.Tests.Integration/Features/ReviewGrammarTests.cs
+- [x] T076 [P] [US3] Integration test for non-English text detection in tests/YetAnotherTranslator.Tests.Integration/Features/ReviewGrammarTests.cs
 
 ### Implementation for User Story 3
 
-- [ ] T077 [P] [US3] Create GrammarReviewResult model with nested GrammarIssue and VocabularySuggestion types in src/YetAnotherTranslator.Core/Handlers/ReviewGrammar/GrammarReviewResult.cs
-- [ ] T078 [P] [US3] Create ReviewGrammarRequest record in src/YetAnotherTranslator.Core/Handlers/ReviewGrammar/ReviewGrammarRequest.cs
-- [ ] T079 [US3] Create ReviewGrammarRequestValidator in src/YetAnotherTranslator.Core/Handlers/ReviewGrammar/ReviewGrammarValidator.cs
-- [ ] T080 [US3] Implement ReviewGrammarAsync method with language detection in AnthropicLlmProvider in src/YetAnotherTranslator.Infrastructure/Llm/AnthropicLlmProvider.cs
+- [x] T077 [P] [US3] Create GrammarReviewResult model with nested GrammarIssue and VocabularySuggestion types in src/YetAnotherTranslator.Core/Handlers/ReviewGrammar/GrammarReviewResult.cs
+- [x] T078 [P] [US3] Create ReviewGrammarRequest record in src/YetAnotherTranslator.Core/Handlers/ReviewGrammar/ReviewGrammarRequest.cs
+- [x] T079 [US3] Create ReviewGrammarRequestValidator in src/YetAnotherTranslator.Core/Handlers/ReviewGrammar/ReviewGrammarValidator.cs
+- [x] T080 [US3] Implement ReviewGrammarAsync method with language detection in AnthropicLlmProvider in src/YetAnotherTranslator.Infrastructure/Llm/AnthropicLlmProvider.cs (already existed from Phase 2)
   - First call DetectLanguageAsync to verify English text; if not English, return error per FR-042
   - Temperature: 0.5 for balanced grammar analysis (rationale: higher than translation 0.3 to allow nuanced vocabulary suggestions while maintaining consistency for grammar rules)
   - MaxTokens: 4096 for detailed grammar feedback
@@ -233,13 +233,13 @@ Multi-project solution structure:
   - Parse structured JSON response into GrammarReviewResult with nested GrammarIssue and VocabularySuggestion types
   - Handle edge case: Text is grammatically correct but has vocabulary suggestions
   - Include retry logic for API failures with exponential backoff (3 attempts: immediate, wait 1s, wait 2s)
-- [ ] T081 [US3] Implement ReviewGrammarHandler in src/YetAnotherTranslator.Core/Handlers/ReviewGrammarHandler.cs
-- [ ] T082 [US3] Add /r, /review command support to CommandParser in src/YetAnotherTranslator.Cli/Repl/CommandParser.cs
-- [ ] T083 [US3] Create GrammarReviewFormatter for formatted output in src/YetAnotherTranslator.Cli/Display/GrammarReviewFormatter.cs
-- [ ] T084 [US3] Wire up dependency injection for US3 components in src/YetAnotherTranslator.Cli/Program.cs
+- [x] T081 [US3] Implement ReviewGrammarHandler in src/YetAnotherTranslator.Core/Handlers/ReviewGrammarHandler.cs
+- [x] T082 [US3] Add /r, /review command support to CommandParser in src/YetAnotherTranslator.Cli/Repl/CommandParser.cs (already existed)
+- [x] T083 [US3] Create GrammarReviewFormatter for formatted output in src/YetAnotherTranslator.Cli/Display/GrammarReviewFormatter.cs
+- [x] T084 [US3] Wire up dependency injection for US3 components in src/YetAnotherTranslator.Cli/Program.cs
   - Verification: Call serviceProvider.GetRequiredService<ReviewGrammarHandler>() to ensure dependencies resolve correctly
 
-**Checkpoint**: Grammar review fully functional - users can review English text for grammar and vocabulary
+**Checkpoint**: ✅ Grammar review fully functional - users can review English text for grammar and vocabulary
 
 ---
 

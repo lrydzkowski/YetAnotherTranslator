@@ -5,6 +5,7 @@ using YetAnotherTranslator.Core.Exceptions;
 using YetAnotherTranslator.Core.Handlers.GetHistory;
 using YetAnotherTranslator.Core.Handlers.TranslateWord;
 using YetAnotherTranslator.Core.Handlers.TranslateText;
+using YetAnotherTranslator.Core.Handlers.ReviewGrammar;
 using YetAnotherTranslator.Core.Models;
 
 namespace YetAnotherTranslator.Cli.Repl;
@@ -14,16 +15,19 @@ public class ReplEngine
     private readonly CommandParser _parser;
     private readonly TranslateWordHandler _translateWordHandler;
     private readonly TranslateTextHandler _translateTextHandler;
+    private readonly ReviewGrammarHandler _reviewGrammarHandler;
     private readonly Prompt _prompt;
 
     public ReplEngine(
         CommandParser parser,
         TranslateWordHandler translateWordHandler,
-        TranslateTextHandler translateTextHandler)
+        TranslateTextHandler translateTextHandler,
+        ReviewGrammarHandler reviewGrammarHandler)
     {
         _parser = parser ?? throw new ArgumentNullException(nameof(parser));
         _translateWordHandler = translateWordHandler ?? throw new ArgumentNullException(nameof(translateWordHandler));
         _translateTextHandler = translateTextHandler ?? throw new ArgumentNullException(nameof(translateTextHandler));
+        _reviewGrammarHandler = reviewGrammarHandler ?? throw new ArgumentNullException(nameof(reviewGrammarHandler));
         _prompt = new Prompt();
     }
 
@@ -96,6 +100,10 @@ public class ReplEngine
 
             case CommandType.TranslateText:
                 await HandleTranslateTextAsync(command, cancellationToken);
+                return false;
+
+            case CommandType.ReviewGrammar:
+                await HandleReviewGrammarAsync(command, cancellationToken);
                 return false;
 
             case CommandType.Invalid:
@@ -194,6 +202,26 @@ public class ReplEngine
                 ctx.Status("Done");
                 AnsiConsole.WriteLine();
                 TextTranslationFormatter.Display(result);
+            });
+    }
+
+    private async Task HandleReviewGrammarAsync(Command command, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(command.Argument))
+        {
+            AnsiConsole.MarkupLine("[yellow]Please provide text to review.[/]");
+            return;
+        }
+
+        var request = new ReviewGrammarRequest(command.Argument);
+
+        await AnsiConsole.Status()
+            .StartAsync("Reviewing grammar...", async ctx =>
+            {
+                GrammarReviewResult result = await _reviewGrammarHandler.HandleAsync(request, cancellationToken);
+                ctx.Status("Done");
+                AnsiConsole.WriteLine();
+                GrammarReviewFormatter.Display(result);
             });
     }
 
