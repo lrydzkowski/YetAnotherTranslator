@@ -20,49 +20,6 @@ public class TranslatorDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<HistoryEntryEntity>(
-            entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => e.CreatedAt);
-            }
-        );
-
-        modelBuilder.Entity<TranslationCacheEntity>(
-            entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => e.CacheKey).IsUnique();
-                entity.HasIndex(e => e.CreatedAt);
-            }
-        );
-
-        modelBuilder.Entity<TextTranslationCacheEntity>(
-            entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => e.CacheKey).IsUnique();
-                entity.HasIndex(e => e.CreatedAt);
-            }
-        );
-
-        modelBuilder.Entity<PronunciationCacheEntity>(
-            entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => e.CacheKey).IsUnique();
-                entity.HasIndex(e => e.CreatedAt);
-            }
-        );
-
-        modelBuilder.Entity<LlmResponseCacheEntity>(
-            entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => e.CacheKey).IsUnique();
-                entity.HasIndex(e => e.ExpiresAt);
-                entity.HasIndex(e => e.CreatedAt);
-            }
-        );
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(TranslatorDbContext).Assembly);
     }
 }
