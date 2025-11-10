@@ -70,6 +70,5 @@ public abstract class TestBase : IAsyncLifetime
         await DbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE translation_cache CASCADE");
         await DbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE text_translation_cache CASCADE");
         await DbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE pronunciation_cache CASCADE");
-        await DbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE llm_response_cache CASCADE");
     }
 }

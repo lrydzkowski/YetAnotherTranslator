@@ -32,7 +32,7 @@ public class TranslateWordHandler
         {
             TranslationResult? cached = await _historyRepository.GetCachedTranslationAsync(
                 request.Word,
-                request.SourceLanguage,
+                request.SourceLanguage.ToString(),
                 request.TargetLanguage,
                 cancellationToken
             );
@@ -45,7 +45,7 @@ public class TranslateWordHandler
 
         string llmResponse = await _llmProvider.TranslateWordAsync(
             request.Word,
-            request.SourceLanguage,
+            request.SourceLanguage.ToString(),
             request.TargetLanguage,
             cancellationToken
         );
@@ -102,7 +102,7 @@ public class TranslateWordHandler
 
             return new TranslationResult
             {
-                SourceLanguage = request.SourceLanguage,
+                SourceLanguage = request.SourceLanguage.ToString(),
                 TargetLanguage = request.TargetLanguage,
                 InputText = request.Word,
                 Translations = translations

@@ -65,7 +65,7 @@ public class ReviewGrammarHandler
 
             if (detectedLanguage != "English")
             {
-                throw new FluentValidation.ValidationException(
+                throw new ValidationException(
                     $"Grammar review only supports English text. Detected language: {detectedLanguage}"
                 );
             }

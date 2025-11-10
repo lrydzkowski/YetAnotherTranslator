@@ -1,6 +1,5 @@
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 
 namespace YetAnotherTranslator.Infrastructure.Persistence;
 
@@ -21,27 +20,6 @@ public static class CacheKeyGenerator
     public static string GeneratePronunciationKey(string text, string? partOfSpeech = null)
     {
         string input = $"{text}:{partOfSpeech ?? string.Empty}";
-        return ComputeHash(input);
-    }
-
-    public static string GenerateLlmResponseKey(string operationType, object parameters)
-    {
-        string parametersJson = JsonSerializer.Serialize(
-            parameters,
-            new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = false
-            }
-        );
-
-        var sortedParams = JsonSerializer.Deserialize<Dictionary<string, object>>(parametersJson);
-        var sortedJson = JsonSerializer.Serialize(
-            sortedParams!.OrderBy(kvp => kvp.Key),
-            new JsonSerializerOptions { WriteIndented = false }
-        );
-
-        string input = $"{operationType}:{sortedJson}";
         return ComputeHash(input);
     }
 

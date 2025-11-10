@@ -5,15 +5,15 @@ namespace YetAnotherTranslator.Core.Handlers.GetHistory;
 
 public class GetHistoryHandler
 {
-    private readonly IHistoryRepository _historyRepository;
     private readonly IValidator<GetHistoryRequest> _validator;
+    private readonly IHistoryRepository _historyRepository;
 
     public GetHistoryHandler(
-        IHistoryRepository historyRepository,
-        IValidator<GetHistoryRequest> validator)
+        IValidator<GetHistoryRequest> validator,
+        IHistoryRepository historyRepository)
     {
-        _historyRepository = historyRepository ?? throw new ArgumentNullException(nameof(historyRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+        _historyRepository = historyRepository ?? throw new ArgumentNullException(nameof(historyRepository));
     }
 
     public async Task<GetHistoryResult> HandleAsync(
