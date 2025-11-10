@@ -156,6 +156,67 @@ public class HistoryRepository : IHistoryRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<byte[]?> GetCachedPronunciationAsync(
+        string text,
+        string? partOfSpeech,
+        CancellationToken cancellationToken = default)
+    {
+        string cacheKey = CacheKeyGenerator.GeneratePronunciationKey(text, partOfSpeech);
+
+        PronunciationCacheEntity? cached = await _context.PronunciationCache
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.CacheKey == cacheKey, cancellationToken);
+
+        if (cached == null)
+        {
+            return null;
+        }
+
+        if (DateTime.UtcNow - cached.CreatedAt > TimeSpan.FromDays(30))
+        {
+            return null;
+        }
+
+        return cached.AudioData;
+    }
+
+    public async Task SavePronunciationAsync(
+        string text,
+        string? partOfSpeech,
+        byte[] audioData,
+        string voiceId,
+        CancellationToken cancellationToken = default)
+    {
+        if (audioData == null || audioData.Length == 0)
+        {
+            throw new ArgumentException("Audio data cannot be empty", nameof(audioData));
+        }
+
+        string cacheKey = CacheKeyGenerator.GeneratePronunciationKey(text, partOfSpeech);
+
+        var existingCache = await _context.PronunciationCache
+            .FirstOrDefaultAsync(c => c.CacheKey == cacheKey, cancellationToken);
+
+        if (existingCache != null)
+        {
+            return;
+        }
+
+        var cacheEntity = new PronunciationCacheEntity
+        {
+            Id = Guid.NewGuid(),
+            CacheKey = cacheKey,
+            Text = text,
+            PartOfSpeech = partOfSpeech,
+            AudioData = audioData,
+            VoiceId = voiceId,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.PronunciationCache.Add(cacheEntity);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task SaveHistoryAsync(
         CommandType commandType,
         string inputText,

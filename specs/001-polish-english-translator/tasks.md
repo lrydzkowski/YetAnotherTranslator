@@ -251,31 +251,31 @@ Multi-project solution structure:
 
 ### Integration Tests for User Story 4
 
-- [ ] T085 [P] [US4] Integration test for word pronunciation in tests/YetAnotherTranslator.Tests.Integration/Features/PlayPronunciationTests.cs
-- [ ] T086 [P] [US4] Integration test for phrase pronunciation in tests/YetAnotherTranslator.Tests.Integration/Features/PlayPronunciationTests.cs
-- [ ] T087 [P] [US4] Integration test for pronunciation with part-of-speech parameter in tests/YetAnotherTranslator.Tests.Integration/Features/PlayPronunciationTests.cs
-- [ ] T088 [P] [US4] Integration test for pronunciation cache hit in tests/YetAnotherTranslator.Tests.Integration/Features/PlayPronunciationTests.cs
+- [x] T085 [P] [US4] Integration test for word pronunciation in tests/YetAnotherTranslator.Tests.Integration/Features/PlayPronunciationTests.cs
+- [x] T086 [P] [US4] Integration test for phrase pronunciation in tests/YetAnotherTranslator.Tests.Integration/Features/PlayPronunciationTests.cs
+- [x] T087 [P] [US4] Integration test for pronunciation with part-of-speech parameter in tests/YetAnotherTranslator.Tests.Integration/Features/PlayPronunciationTests.cs
+- [x] T088 [P] [US4] Integration test for pronunciation cache hit in tests/YetAnotherTranslator.Tests.Integration/Features/PlayPronunciationTests.cs
 
 ### Implementation for User Story 4
 
-- [ ] T089 [P] [US4] Create PronunciationResult model in src/YetAnotherTranslator.Core/Handlers/PlayPronunciation/PronunciationResult.cs
-- [ ] T090 [P] [US4] Create PlayPronunciationRequest record in src/YetAnotherTranslator.Core/Handlers/PlayPronunciation/PlayPronunciationRequest.cs
-- [ ] T091 [P] [US4] Create PronunciationCacheEntity in src/YetAnotherTranslator.Infrastructure/Persistence/Entities/PronunciationCacheEntity.cs
+- [x] T089 [P] [US4] Create PronunciationResult model in src/YetAnotherTranslator.Core/Handlers/PlayPronunciation/PronunciationResult.cs
+- [x] T090 [P] [US4] Create PlayPronunciationRequest record in src/YetAnotherTranslator.Core/Handlers/PlayPronunciation/PlayPronunciationRequest.cs
+- [x] T091 [P] [US4] Create PronunciationCacheEntity in src/YetAnotherTranslator.Infrastructure/Persistence/Entities/PronunciationCacheEntity.cs (already existed from Phase 2)
   - Cache key includes both text and part-of-speech: SHA256("text:partOfSpeech") where partOfSpeech is empty string if not provided
   - Allows different pronunciations for same word with different POS (e.g., "record" as noun vs verb)
-- [ ] T092 [US4] Create PlayPronunciationRequestValidator in src/YetAnotherTranslator.Core/Handlers/PlayPronunciation/PlayPronunciationValidator.cs
-- [ ] T093 [US4] Implement ElevenLabsTtsProvider with GenerateSpeechAsync in src/YetAnotherTranslator.Infrastructure/Tts/ElevenLabsTtsProvider.cs
+- [x] T092 [US4] Create PlayPronunciationRequestValidator in src/YetAnotherTranslator.Core/Handlers/PlayPronunciation/PlayPronunciationValidator.cs
+- [x] T093 [US4] Implement ElevenLabsTtsProvider with GenerateSpeechAsync in src/YetAnotherTranslator.Infrastructure/Tts/ElevenLabsTtsProvider.cs
   - ITtsProvider interface signature: Task<byte[]> GenerateSpeechAsync(string text, string? partOfSpeech = null, CancellationToken ct = default)
   - partOfSpeech parameter optional; when provided, may be included in TTS request metadata or used to adjust pronunciation hint
-- [ ] T094 [US4] Implement audio playback using PortAudioSharp in src/YetAnotherTranslator.Infrastructure/Tts/PortAudioPlayer.cs
+- [x] T094 [US4] Implement audio playback using PortAudioSharp in src/YetAnotherTranslator.Infrastructure/Tts/PortAudioPlayer.cs
   - Corrected filename: PortAudioPlayer.cs (not AudioPlaybackService.cs) per plan.md
   - Implements IAudioPlayer interface for cross-platform audio playback
-- [ ] T095 [US4] Implement PlayPronunciationHandler with caching and error handling in src/YetAnotherTranslator.Core/Handlers/PlayPronunciationHandler.cs
-- [ ] T096 [US4] Add /p, /playback command support with optional part-of-speech to CommandParser in src/YetAnotherTranslator.Cli/Repl/CommandParser.cs
-- [ ] T097 [US4] Wire up dependency injection for US4 components in src/YetAnotherTranslator.Cli/Program.cs
+- [x] T095 [US4] Implement PlayPronunciationHandler with caching and error handling in src/YetAnotherTranslator.Core/Handlers/PlayPronunciation/PlayPronunciationHandler.cs
+- [x] T096 [US4] Add /p, /playback command support with optional part-of-speech to CommandParser in src/YetAnotherTranslator.Cli/Repl/CommandParser.cs (already existed)
+- [x] T097 [US4] Wire up dependency injection for US4 components in src/YetAnotherTranslator.Cli/Program.cs
   - Verification: Call serviceProvider.GetRequiredService<PlayPronunciationHandler>() to ensure dependencies resolve correctly
 
-**Checkpoint**: Pronunciation playback fully functional - users can hear English pronunciation
+**Checkpoint**: ✅ Pronunciation playback fully functional - users can hear English pronunciation
 
 ---
 

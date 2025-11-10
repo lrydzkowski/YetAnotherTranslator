@@ -89,6 +89,15 @@ internal class Program
             return new Infrastructure.Llm.AnthropicLlmProvider(apiKey, appConfig.LlmProvider.Model);
         });
 
+        services.AddScoped<Core.Interfaces.ITtsProvider>(sp =>
+        {
+            var secretsProvider = sp.GetRequiredService<Core.Interfaces.ISecretsProvider>();
+            string apiKey = secretsProvider.GetSecretAsync(appConfig.TtsProvider.ApiKeySecretName).Result;
+            return new Infrastructure.Tts.ElevenLabsTtsProvider(apiKey, appConfig.TtsProvider.VoiceId);
+        });
+
+        services.AddScoped<Core.Interfaces.IAudioPlayer, Infrastructure.Tts.PortAudioPlayer>();
+
         services.AddScoped<FluentValidation.IValidator<Core.Handlers.TranslateWord.TranslateWordRequest>,
             Core.Handlers.TranslateWord.TranslateWordValidator>();
 
@@ -103,6 +112,11 @@ internal class Program
             Core.Handlers.ReviewGrammar.ReviewGrammarValidator>();
 
         services.AddScoped<Core.Handlers.ReviewGrammar.ReviewGrammarHandler>();
+
+        services.AddScoped<FluentValidation.IValidator<Core.Handlers.PlayPronunciation.PlayPronunciationRequest>,
+            Core.Handlers.PlayPronunciation.PlayPronunciationValidator>();
+
+        services.AddScoped<Core.Handlers.PlayPronunciation.PlayPronunciationHandler>();
 
         services.AddSingleton<Repl.CommandParser>();
         services.AddScoped<Repl.ReplEngine>();

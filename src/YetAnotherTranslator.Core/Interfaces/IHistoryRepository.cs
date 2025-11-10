@@ -30,6 +30,20 @@ public interface IHistoryRepository
         CancellationToken cancellationToken = default
     );
 
+    Task<byte[]?> GetCachedPronunciationAsync(
+        string text,
+        string? partOfSpeech,
+        CancellationToken cancellationToken = default
+    );
+
+    Task SavePronunciationAsync(
+        string text,
+        string? partOfSpeech,
+        byte[] audioData,
+        string voiceId,
+        CancellationToken cancellationToken = default
+    );
+
     Task SaveHistoryAsync(
         CommandType commandType,
         string inputText,

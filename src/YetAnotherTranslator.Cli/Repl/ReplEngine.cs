@@ -6,6 +6,7 @@ using YetAnotherTranslator.Core.Handlers.GetHistory;
 using YetAnotherTranslator.Core.Handlers.TranslateWord;
 using YetAnotherTranslator.Core.Handlers.TranslateText;
 using YetAnotherTranslator.Core.Handlers.ReviewGrammar;
+using YetAnotherTranslator.Core.Handlers.PlayPronunciation;
 using YetAnotherTranslator.Core.Models;
 
 namespace YetAnotherTranslator.Cli.Repl;
@@ -16,18 +17,21 @@ public class ReplEngine
     private readonly TranslateWordHandler _translateWordHandler;
     private readonly TranslateTextHandler _translateTextHandler;
     private readonly ReviewGrammarHandler _reviewGrammarHandler;
+    private readonly PlayPronunciationHandler _playPronunciationHandler;
     private readonly Prompt _prompt;
 
     public ReplEngine(
         CommandParser parser,
         TranslateWordHandler translateWordHandler,
         TranslateTextHandler translateTextHandler,
-        ReviewGrammarHandler reviewGrammarHandler)
+        ReviewGrammarHandler reviewGrammarHandler,
+        PlayPronunciationHandler playPronunciationHandler)
     {
         _parser = parser ?? throw new ArgumentNullException(nameof(parser));
         _translateWordHandler = translateWordHandler ?? throw new ArgumentNullException(nameof(translateWordHandler));
         _translateTextHandler = translateTextHandler ?? throw new ArgumentNullException(nameof(translateTextHandler));
         _reviewGrammarHandler = reviewGrammarHandler ?? throw new ArgumentNullException(nameof(reviewGrammarHandler));
+        _playPronunciationHandler = playPronunciationHandler ?? throw new ArgumentNullException(nameof(playPronunciationHandler));
         _prompt = new Prompt();
     }
 
@@ -104,6 +108,10 @@ public class ReplEngine
 
             case CommandType.ReviewGrammar:
                 await HandleReviewGrammarAsync(command, cancellationToken);
+                return false;
+
+            case CommandType.PlayPronunciation:
+                await HandlePlayPronunciationAsync(command, cancellationToken);
                 return false;
 
             case CommandType.Invalid:
@@ -222,6 +230,46 @@ public class ReplEngine
                 ctx.Status("Done");
                 AnsiConsole.WriteLine();
                 GrammarReviewFormatter.Display(result);
+            });
+    }
+
+    private async Task HandlePlayPronunciationAsync(Command command, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(command.Argument))
+        {
+            AnsiConsole.MarkupLine("[yellow]Please provide text for pronunciation.[/]");
+            return;
+        }
+
+        // Parse the argument to check for part-of-speech parameter
+        // Format: "word [pos:noun]"
+        string text = command.Argument;
+        string? partOfSpeech = null;
+
+        if (text.Contains("[pos:") && text.Contains("]"))
+        {
+            int posStart = text.IndexOf("[pos:", StringComparison.Ordinal);
+            int posEnd = text.IndexOf("]", posStart, StringComparison.Ordinal);
+            if (posStart >= 0 && posEnd > posStart)
+            {
+                partOfSpeech = text.Substring(posStart + 5, posEnd - posStart - 5);
+                text = text.Substring(0, posStart).Trim();
+            }
+        }
+
+        var request = new PlayPronunciationRequest(text, partOfSpeech, !command.NoCache);
+
+        await AnsiConsole.Status()
+            .StartAsync("Playing pronunciation...", async ctx =>
+            {
+                PronunciationResult result = await _playPronunciationHandler.HandleAsync(request, cancellationToken);
+                ctx.Status("Done");
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine($"[green]✓ Played pronunciation for:[/] {Markup.Escape(result.Text)}");
+                if (result.PartOfSpeech != null)
+                {
+                    AnsiConsole.MarkupLine($"[dim]Part of speech: {Markup.Escape(result.PartOfSpeech)}[/]");
+                }
             });
     }
 
