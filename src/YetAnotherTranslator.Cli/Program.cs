@@ -94,6 +94,11 @@ internal class Program
 
         services.AddScoped<Core.Handlers.TranslateWord.TranslateWordHandler>();
 
+        services.AddScoped<FluentValidation.IValidator<Core.Handlers.TranslateText.TranslateTextRequest>,
+            Core.Handlers.TranslateText.TranslateTextValidator>();
+
+        services.AddScoped<Core.Handlers.TranslateText.TranslateTextHandler>();
+
         services.AddSingleton<Repl.CommandParser>();
         services.AddScoped<Repl.ReplEngine>();
 

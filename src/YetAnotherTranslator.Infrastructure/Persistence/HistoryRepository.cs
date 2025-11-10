@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using YetAnotherTranslator.Core.Handlers.GetHistory;
 using YetAnotherTranslator.Core.Handlers.TranslateWord;
+using YetAnotherTranslator.Core.Handlers.TranslateText;
 using YetAnotherTranslator.Core.Interfaces;
 using YetAnotherTranslator.Infrastructure.Persistence.Entities;
 
@@ -83,6 +84,75 @@ public class HistoryRepository : IHistoryRepository
         };
 
         _context.TranslationCache.Add(cacheEntity);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<TextTranslationResult?> GetCachedTextTranslationAsync(
+        string text,
+        string sourceLanguage,
+        string targetLanguage,
+        CancellationToken cancellationToken = default)
+    {
+        string cacheKey = CacheKeyGenerator.GenerateTextTranslationKey(sourceLanguage, targetLanguage, text);
+
+        TextTranslationCacheEntity? cached = await _context.TextTranslationCache
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.CacheKey == cacheKey, cancellationToken);
+
+        if (cached == null)
+        {
+            return null;
+        }
+
+        if (DateTime.UtcNow - cached.CreatedAt > TimeSpan.FromDays(30))
+        {
+            return null;
+        }
+
+        return new TextTranslationResult
+        {
+            SourceLanguage = cached.SourceLanguage,
+            TargetLanguage = cached.TargetLanguage,
+            InputText = cached.InputText,
+            TranslatedText = cached.TranslatedText
+        };
+    }
+
+    public async Task SaveTextTranslationAsync(
+        TextTranslationResult result,
+        CancellationToken cancellationToken = default)
+    {
+        if (result == null)
+        {
+            throw new ArgumentNullException(nameof(result));
+        }
+
+        string cacheKey = CacheKeyGenerator.GenerateTextTranslationKey(
+            result.SourceLanguage,
+            result.TargetLanguage,
+            result.InputText
+        );
+
+        var existingCache = await _context.TextTranslationCache
+            .FirstOrDefaultAsync(c => c.CacheKey == cacheKey, cancellationToken);
+
+        if (existingCache != null)
+        {
+            return;
+        }
+
+        var cacheEntity = new TextTranslationCacheEntity
+        {
+            Id = Guid.NewGuid(),
+            CacheKey = cacheKey,
+            SourceLanguage = result.SourceLanguage,
+            TargetLanguage = result.TargetLanguage,
+            InputText = result.InputText,
+            TranslatedText = result.TranslatedText,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.TextTranslationCache.Add(cacheEntity);
         await _context.SaveChangesAsync(cancellationToken);
     }
 

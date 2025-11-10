@@ -12,6 +12,12 @@ public static class CacheKeyGenerator
         return ComputeHash(input);
     }
 
+    public static string GenerateTextTranslationKey(string sourceLanguage, string targetLanguage, string inputText)
+    {
+        string input = $"text:{sourceLanguage}:{targetLanguage}:{inputText}";
+        return ComputeHash(input);
+    }
+
     public static string GeneratePronunciationKey(string text, string? partOfSpeech = null)
     {
         string input = $"{text}:{partOfSpeech ?? string.Empty}";

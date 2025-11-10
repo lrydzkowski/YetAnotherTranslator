@@ -1,5 +1,6 @@
 using YetAnotherTranslator.Core.Handlers.GetHistory;
 using YetAnotherTranslator.Core.Handlers.TranslateWord;
+using YetAnotherTranslator.Core.Handlers.TranslateText;
 
 namespace YetAnotherTranslator.Core.Interfaces;
 
@@ -14,6 +15,18 @@ public interface IHistoryRepository
 
     Task SaveTranslationAsync(
         TranslationResult result,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<TextTranslationResult?> GetCachedTextTranslationAsync(
+        string text,
+        string sourceLanguage,
+        string targetLanguage,
+        CancellationToken cancellationToken = default
+    );
+
+    Task SaveTextTranslationAsync(
+        TextTranslationResult result,
         CancellationToken cancellationToken = default
     );
 
