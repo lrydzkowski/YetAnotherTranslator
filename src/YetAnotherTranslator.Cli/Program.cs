@@ -118,6 +118,11 @@ internal class Program
 
         services.AddScoped<Core.Handlers.PlayPronunciation.PlayPronunciationHandler>();
 
+        services.AddScoped<FluentValidation.IValidator<Core.Handlers.GetHistory.GetHistoryRequest>,
+            Core.Handlers.GetHistory.GetHistoryValidator>();
+
+        services.AddScoped<Core.Handlers.GetHistory.GetHistoryHandler>();
+
         services.AddSingleton<Repl.CommandParser>();
         services.AddScoped<Repl.ReplEngine>();
 

@@ -287,19 +287,19 @@ Multi-project solution structure:
 
 ### Integration Tests for User Story 5
 
-- [ ] T098 [P] [US5] Integration test for history display after multiple operations in tests/YetAnotherTranslator.Tests.Integration/Features/HistoryTests.cs
-- [ ] T099 [P] [US5] Integration test for empty history in tests/YetAnotherTranslator.Tests.Integration/Features/HistoryTests.cs
+- [x] T098 [P] [US5] Integration test for history display after multiple operations in tests/YetAnotherTranslator.Tests.Integration/Features/HistoryTests.cs
+- [x] T099 [P] [US5] Integration test for empty history in tests/YetAnotherTranslator.Tests.Integration/Features/HistoryTests.cs
 
 ### Implementation for User Story 5
 
-- [ ] T100 [US5] Implement GetHistoryAsync method in HistoryRepository in src/YetAnotherTranslator.Infrastructure/Persistence/HistoryRepository.cs
-- [ ] T101 [US5] Implement GetHistoryHandler in src/YetAnotherTranslator.Core/Handlers/GetHistory/GetHistoryHandler.cs
-- [ ] T102 [US5] Add /history, /hist command support to CommandParser in src/YetAnotherTranslator.Cli/Repl/CommandParser.cs
-- [ ] T103 [US5] Create HistoryFormatter for table output in src/YetAnotherTranslator.Cli/Display/HistoryFormatter.cs
-- [ ] T104 [US5] Wire up dependency injection for US5 components in src/YetAnotherTranslator.Cli/Program.cs
+- [x] T100 [US5] Implement GetHistoryAsync method in HistoryRepository in src/YetAnotherTranslator.Infrastructure/Persistence/HistoryRepository.cs (already existed from Phase 2)
+- [x] T101 [US5] Implement GetHistoryHandler in src/YetAnotherTranslator.Core/Handlers/GetHistory/GetHistoryHandler.cs
+- [x] T102 [US5] Add /history, /hist command support to CommandParser in src/YetAnotherTranslator.Cli/Repl/CommandParser.cs (already existed)
+- [x] T103 [US5] Create HistoryFormatter for table output in src/YetAnotherTranslator.Cli/Display/HistoryFormatter.cs
+- [x] T104 [US5] Wire up dependency injection for US5 components in src/YetAnotherTranslator.Cli/Program.cs
   - Verification: Call serviceProvider.GetRequiredService<GetHistoryHandler>() to ensure dependencies resolve correctly
 
-**Checkpoint**: History tracking fully functional - users can view all past operations
+**Checkpoint**: ✅ History tracking fully functional - users can view all past operations
 
 ---
 

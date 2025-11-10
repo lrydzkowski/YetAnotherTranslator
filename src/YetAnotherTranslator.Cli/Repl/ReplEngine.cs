@@ -18,6 +18,7 @@ public class ReplEngine
     private readonly TranslateTextHandler _translateTextHandler;
     private readonly ReviewGrammarHandler _reviewGrammarHandler;
     private readonly PlayPronunciationHandler _playPronunciationHandler;
+    private readonly GetHistoryHandler _getHistoryHandler;
     private readonly Prompt _prompt;
 
     public ReplEngine(
@@ -25,13 +26,15 @@ public class ReplEngine
         TranslateWordHandler translateWordHandler,
         TranslateTextHandler translateTextHandler,
         ReviewGrammarHandler reviewGrammarHandler,
-        PlayPronunciationHandler playPronunciationHandler)
+        PlayPronunciationHandler playPronunciationHandler,
+        GetHistoryHandler getHistoryHandler)
     {
         _parser = parser ?? throw new ArgumentNullException(nameof(parser));
         _translateWordHandler = translateWordHandler ?? throw new ArgumentNullException(nameof(translateWordHandler));
         _translateTextHandler = translateTextHandler ?? throw new ArgumentNullException(nameof(translateTextHandler));
         _reviewGrammarHandler = reviewGrammarHandler ?? throw new ArgumentNullException(nameof(reviewGrammarHandler));
         _playPronunciationHandler = playPronunciationHandler ?? throw new ArgumentNullException(nameof(playPronunciationHandler));
+        _getHistoryHandler = getHistoryHandler ?? throw new ArgumentNullException(nameof(getHistoryHandler));
         _prompt = new Prompt();
     }
 
@@ -112,6 +115,10 @@ public class ReplEngine
 
             case CommandType.PlayPronunciation:
                 await HandlePlayPronunciationAsync(command, cancellationToken);
+                return false;
+
+            case CommandType.GetHistory:
+                await HandleGetHistoryAsync(cancellationToken);
                 return false;
 
             case CommandType.Invalid:
@@ -270,6 +277,20 @@ public class ReplEngine
                 {
                     AnsiConsole.MarkupLine($"[dim]Part of speech: {Markup.Escape(result.PartOfSpeech)}[/]");
                 }
+            });
+    }
+
+    private async Task HandleGetHistoryAsync(CancellationToken cancellationToken)
+    {
+        var request = new GetHistoryRequest(Limit: 50);
+
+        await AnsiConsole.Status()
+            .StartAsync("Retrieving history...", async ctx =>
+            {
+                GetHistoryResult result = await _getHistoryHandler.HandleAsync(request, cancellationToken);
+                ctx.Status("Done");
+                AnsiConsole.WriteLine();
+                HistoryFormatter.Display(result);
             });
     }
 
