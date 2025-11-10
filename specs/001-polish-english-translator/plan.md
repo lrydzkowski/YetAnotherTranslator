@@ -205,9 +205,9 @@ src/
 │   └── Configuration/                  # Configuration models and validation
 │       ├── ApplicationConfiguration.cs
 │       ├── SecretManagerConfiguration.cs
-│       ├── LlmProviderConfiguration.cs
-│       ├── TtsProviderConfiguration.cs
-│       ├── DatabaseConfiguration.cs
+│       ├── LlmProviderOptions.cs
+│       ├── TtsProviderOptions.cs
+│       ├── DatabaseOptions.cs
 │       └── Validators/                 # FluentValidation validators for config
 │
 └── YetAnotherTranslator.Cli/           # User interface

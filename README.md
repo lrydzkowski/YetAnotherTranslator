@@ -331,7 +331,7 @@ Short form:
 | `/quit`, `/q` | Exit the application | `/quit` |
 
 **Flags:**
-- `--no-cache` - Bypass cache and force fresh API call (works with `/t*`, `/tt*`, `/p`)
+- `--no-cache` - Bypass cache and force fresh API call (works with `/t*`, `/tt*`, `/r`, `/p`)
 
 ## Architecture
 

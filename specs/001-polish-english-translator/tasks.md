@@ -57,14 +57,14 @@ Multi-project solution structure:
 - [X] T016 [P] Create CommandType enum in src/YetAnotherTranslator.Core/Handlers/GetHistory/CommandType.cs
 - [X] T017 Create TranslatorDbContext in src/YetAnotherTranslator.Infrastructure/Persistence/TranslatorDbContext.cs with DbSets for HistoryEntry, TranslationCache, TextTranslationCache, PronunciationCache
 - [X] T018 Create initial EF Core migration InitialSchema using dotnet ef migrations add
-  - Entities included: HistoryEntryEntity, TranslationCacheEntity, TextTranslationCacheEntity, PronunciationCacheEntity, LlmResponseCacheEntity
+  - Entities included: HistoryEntryEntity, TranslationCacheEntity, TextTranslationCacheEntity, PronunciationCacheEntity
+  - Note: LlmResponseCacheEntity was initially planned but removed during consistency refactoring (not needed for v1 implementation)
   - TranslationCacheEntity fields: Id (uuid PK), CacheKey (varchar unique index, SHA256 hash), SourceLanguage (varchar), TargetLanguage (varchar), InputText (text), ResultJson (jsonb with translations array including cmuArpabet field), CreatedAt (timestamp with time zone)
   - TextTranslationCacheEntity fields: Id (uuid PK), CacheKey (varchar unique index), SourceLanguage (varchar), TargetLanguage (varchar), InputText (text), TranslatedText (text), CreatedAt (timestamp with time zone)
   - PronunciationCacheEntity fields: Id (uuid PK), CacheKey (varchar unique index, SHA256 of text+partOfSpeech), Text (text), PartOfSpeech (varchar nullable), AudioData (bytea), VoiceId (varchar), CreatedAt (timestamp with time zone)
-  - LlmResponseCacheEntity fields: Id (uuid PK), CacheKey (varchar unique index), OperationType (varchar), RequestHash (varchar), ResponseJson (jsonb), CreatedAt (timestamp with time zone), ExpiresAt (timestamp with time zone nullable)
-  - Indexes: Primary keys, unique indexes on all cache_key columns, timestamp indexes for history queries, index on LlmResponseCacheEntity.ExpiresAt for cleanup queries
-  - Cache expiration: All cache entities have 30-day expiration per FR-046; cache retrieval MUST check CreatedAt/ExpiresAt and treat expired entries as cache misses
-  - Cache cleanup strategy: Manual cleanup via SQL query (DELETE FROM llm_response_cache WHERE expires_at < NOW()) or scheduled background task; cleanup is optional (caches grow unbounded until manually cleaned)
+  - Indexes: Primary keys, unique indexes on all cache_key columns, timestamp indexes for history queries
+  - Cache expiration: All cache entities have 30-day expiration per FR-046; cache retrieval MUST check CreatedAt and treat expired entries as cache misses
+  - Cache cleanup strategy: Manual cleanup via SQL query or scheduled background task; cleanup is optional (caches grow unbounded until manually cleaned)
   - Command: `dotnet ef migrations add InitialSchema --project src/YetAnotherTranslator.Infrastructure --startup-project src/YetAnotherTranslator.Cli`
   - Verification checklist:
     * Run migration and verify all 5 tables created (HistoryEntry, TranslationCache, TextTranslationCache, PronunciationCache, LlmResponseCache)
@@ -108,9 +108,9 @@ Multi-project solution structure:
 
 - [x] T028 [P] [US6] Create ApplicationConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/ApplicationConfiguration.cs
 - [x] T029 [P] [US6] Create SecretManagerConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/SecretManagerConfiguration.cs
-- [x] T030 [P] [US6] Create LlmProviderConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/LlmProviderConfiguration.cs
-- [x] T031 [P] [US6] Create TtsProviderConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/TtsProviderConfiguration.cs
-- [x] T032 [P] [US6] Create DatabaseConfiguration model in src/YetAnotherTranslator.Infrastructure/Configuration/DatabaseConfiguration.cs
+- [x] T030 [P] [US6] Create LlmProviderOptions model in src/YetAnotherTranslator.Infrastructure/Configuration/LlmProviderOptions.cs (renamed from LlmProviderConfiguration for consistency)
+- [x] T031 [P] [US6] Create TtsProviderOptions model in src/YetAnotherTranslator.Infrastructure/Configuration/TtsProviderOptions.cs (renamed from TtsProviderConfiguration for consistency)
+- [x] T032 [P] [US6] Create DatabaseOptions model in src/YetAnotherTranslator.Infrastructure/Configuration/DatabaseOptions.cs (renamed from DatabaseConfiguration for consistency)
 - [x] T033 [US6] Create ConfigurationValidator with FluentValidation in src/YetAnotherTranslator.Infrastructure/Configuration/ConfigurationValidator.cs
 - [x] T034 [US6] Implement configuration loading from standard user config directory in src/YetAnotherTranslator.Cli/Program.cs
 - [x] T035 [US6] Implement startup validation that fails fast with clear error messages and exits with non-zero status code on failures in src/YetAnotherTranslator.Cli/Program.cs
