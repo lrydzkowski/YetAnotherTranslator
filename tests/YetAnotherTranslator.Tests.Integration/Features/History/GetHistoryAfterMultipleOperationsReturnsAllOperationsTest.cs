@@ -1,24 +1,23 @@
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using YetAnotherTranslator.Core.Handlers.GetHistory;
-using YetAnotherTranslator.Core.Handlers.TranslateWord;
-using YetAnotherTranslator.Core.Handlers.TranslateText;
-using YetAnotherTranslator.Core.Handlers.ReviewGrammar;
-using YetAnotherTranslator.Core.Models;
-using YetAnotherTranslator.Tests.Integration.Infrastructure;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
+using YetAnotherTranslator.Core.Handlers.GetHistory;
+using YetAnotherTranslator.Core.Handlers.ReviewGrammar;
+using YetAnotherTranslator.Core.Handlers.TranslateText;
+using YetAnotherTranslator.Core.Handlers.TranslateWord;
+using YetAnotherTranslator.Core.Models;
+using YetAnotherTranslator.Tests.Integration.Infrastructure;
 
-namespace YetAnotherTranslator.Tests.Integration.Features;
+namespace YetAnotherTranslator.Tests.Integration.Features.History;
 
-public class HistoryTests : TestBase
+public class GetHistoryAfterMultipleOperationsReturnsAllOperationsTest : TestBase
 {
     private GetHistoryHandler _handler = null!;
     private TranslateWordHandler _translateWordHandler = null!;
     private TranslateTextHandler _translateTextHandler = null!;
     private ReviewGrammarHandler _reviewGrammarHandler = null!;
 
-    public HistoryTests(IntegrationTestFixture fixture) : base(fixture)
+    public GetHistoryAfterMultipleOperationsReturnsAllOperationsTest(IntegrationTestFixture fixture) : base(fixture)
     {
     }
 
@@ -30,7 +29,6 @@ public class HistoryTests : TestBase
 
         // Create GetHistoryHandler
         var getHistoryValidator = new GetHistoryValidator();
-        var getHistoryRequest = new GetHistoryRequest();
         _handler = new GetHistoryHandler(historyRepository, getHistoryValidator);
 
         // Create other handlers for performing operations
@@ -47,21 +45,7 @@ public class HistoryTests : TestBase
     }
 
     [Fact]
-    public async Task GetHistory_EmptyHistory_ReturnsEmptyList()
-    {
-        // Arrange
-        var request = new GetHistoryRequest(Limit: 50);
-
-        // Act
-        var result = await _handler.HandleAsync(request, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Entries.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task GetHistory_AfterMultipleOperations_ReturnsAllOperations()
+    public async Task Run()
     {
         // Arrange - Perform multiple operations to populate history
 
@@ -169,68 +153,9 @@ public class HistoryTests : TestBase
         var getHistoryRequest = new GetHistoryRequest(Limit: 50);
         var result = await _handler.HandleAsync(getHistoryRequest, CancellationToken.None);
 
-        // Assert
-        result.Should().NotBeNull();
-        result.Entries.Should().HaveCount(3);
-
-        // Verify entries are ordered by timestamp (most recent first)
-        result.Entries.Should().BeInDescendingOrder(e => e.Timestamp);
-
-        // Verify command types
-        result.Entries.Select(e => e.CommandType).Should().Contain(new[]
-        {
-            CommandType.TranslateWord,
-            CommandType.TranslateText,
-            CommandType.ReviewGrammar
-        });
-
-        // Verify input texts are captured
-        result.Entries.Should().Contain(e => e.InputText == "pies");
-        result.Entries.Should().Contain(e => e.InputText == "To jest zdanie testowe.");
-        result.Entries.Should().Contain(e => e.InputText == "The dogs is barking");
-    }
-
-    [Fact]
-    public async Task GetHistory_WithLimit_ReturnsLimitedResults()
-    {
-        // Arrange - Perform 5 operations
-        string mockResponse = @"{
-  ""translations"": [
-    {
-      ""rank"": 1,
-      ""word"": ""test"",
-      ""partOfSpeech"": ""noun"",
-      ""countability"": ""uncountable"",
-      ""cmuArpabet"": ""T EH1 S T"",
-      ""examples"": [""This is a test.""]
-    }
-  ]
-}";
-
-        WireMockServer.Given(
-            Request.Create()
-                .WithPath("/v1/messages")
-                .UsingPost()
-        )
-        .RespondWith(
-            Response.Create()
-                .WithStatusCode(200)
-                .WithBody($@"{{""content"":[{{""type"":""text"",""text"":{System.Text.Json.JsonSerializer.Serialize(mockResponse)}}}]}}")
-        );
-
-        for (int i = 0; i < 5; i++)
-        {
-            var request = new TranslateWordRequest($"word{i}", "Polish", "English", UseCache: false);
-            await _translateWordHandler.HandleAsync(request, CancellationToken.None);
-        }
-
-        // Act - Request only 3 entries
-        var getHistoryRequest = new GetHistoryRequest(Limit: 3);
-        var result = await _handler.HandleAsync(getHistoryRequest, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Entries.Should().HaveCount(3);
-        result.Entries.Should().BeInDescendingOrder(e => e.Timestamp);
+        // Assert - Use Verify but scrub timestamps for stable snapshots
+        var settings = new VerifySettings();
+        settings.ScrubMember("Timestamp");
+        await Verify(result, settings);
     }
 }
