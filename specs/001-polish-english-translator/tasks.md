@@ -179,32 +179,32 @@ Multi-project solution structure:
 
 ### Integration Tests for User Story 2
 
-- [ ] T061 [P] [US2] Integration test for Polish text translation in tests/YetAnotherTranslator.Tests.Integration/Features/TranslateTextTests.cs
-- [ ] T062 [P] [US2] Integration test for English text translation in tests/YetAnotherTranslator.Tests.Integration/Features/TranslateTextTests.cs
-- [ ] T063 [P] [US2] Integration test for text exceeding 5000 characters in tests/YetAnotherTranslator.Tests.Integration/Features/TranslateTextTests.cs
-- [ ] T064 [P] [US2] Integration test for multi-line text with escaped newlines in tests/YetAnotherTranslator.Tests.Integration/Features/TranslateTextTests.cs
+- [x] T061 [P] [US2] Integration test for Polish text translation in tests/YetAnotherTranslator.Tests.Integration/Features/TranslateTextTests.cs
+- [x] T062 [P] [US2] Integration test for English text translation in tests/YetAnotherTranslator.Tests.Integration/Features/TranslateTextTests.cs
+- [x] T063 [P] [US2] Integration test for text exceeding 5000 characters in tests/YetAnotherTranslator.Tests.Integration/Features/TranslateTextTests.cs
+- [x] T064 [P] [US2] Integration test for multi-line text with escaped newlines in tests/YetAnotherTranslator.Tests.Integration/Features/TranslateTextTests.cs
 
 ### Implementation for User Story 2
 
-- [ ] T065 [P] [US2] Create TextTranslationResult model in src/YetAnotherTranslator.Core/Handlers/TranslateText/TextTranslationResult.cs
-- [ ] T066 [P] [US2] Create TranslateTextRequest record in src/YetAnotherTranslator.Core/Handlers/TranslateText/TranslateTextRequest.cs
-- [ ] T066a [P] [US2] Create SourceLanguage enum (Polish, English, Auto) in src/YetAnotherTranslator.Core/Models/SourceLanguage.cs for use in TranslateTextRequest and word translation; CommandParser sets Auto for /tt and /t commands (auto-detect), Polish for /ttp and /tp, English for /tte and /te
-- [ ] T067 [P] [US2] Create TextTranslationCacheEntity in src/YetAnotherTranslator.Infrastructure/Persistence/Entities/TextTranslationCacheEntity.cs
-- [ ] T068 [US2] Create TranslateTextRequestValidator with 5000 character limit in src/YetAnotherTranslator.Core/Handlers/TranslateText/TranslateTextValidator.cs
-- [ ] T069 [US2] Implement TranslateTextAsync method in AnthropicLlmProvider in src/YetAnotherTranslator.Infrastructure/Llm/AnthropicLlmProvider.cs
+- [x] T065 [P] [US2] Create TextTranslationResult model in src/YetAnotherTranslator.Core/Handlers/TranslateText/TextTranslationResult.cs
+- [x] T066 [P] [US2] Create TranslateTextRequest record in src/YetAnotherTranslator.Core/Handlers/TranslateText/TranslateTextRequest.cs
+- [x] T066a [P] [US2] Create SourceLanguage enum (Polish, English, Auto) in src/YetAnotherTranslator.Core/Models/SourceLanguage.cs for use in TranslateTextRequest and word translation; CommandParser sets Auto for /tt and /t commands (auto-detect), Polish for /ttp and /tp, English for /tte and /te
+- [x] T067 [P] [US2] Create TextTranslationCacheEntity in src/YetAnotherTranslator.Infrastructure/Persistence/Entities/TextTranslationCacheEntity.cs (already existed from Phase 2)
+- [x] T068 [US2] Create TranslateTextRequestValidator with 5000 character limit in src/YetAnotherTranslator.Core/Handlers/TranslateText/TranslateTextValidator.cs
+- [x] T069 [US2] Implement TranslateTextAsync method in AnthropicLlmProvider in src/YetAnotherTranslator.Infrastructure/Llm/AnthropicLlmProvider.cs (already existed from Phase 2)
   - Temperature: 0.3 for consistent translations (rationale: maintain consistency with word translation temperature)
   - MaxTokens: 4096 for text snippets (larger than word translations to accommodate 5000 char input + translation output)
   - First call DetectLanguageAsync (implemented in T050a) if source language is Auto; if confidence < 80%, return error per FR-020/FR-041
   - Preserve paragraph structure and formatting in translation
   - Simple plain text response (no JSON parsing needed for text translation)
   - Handle 5000 character limit with clear error if exceeded (validation should catch this, but double-check as defense in depth)
-- [ ] T070 [US2] Implement TranslateTextHandler with caching in src/YetAnotherTranslator.Core/Handlers/TranslateTextHandler.cs
-- [ ] T071 [US2] Add /tt, /ttp, /tte command support to CommandParser in src/YetAnotherTranslator.Cli/Repl/CommandParser.cs
-- [ ] T072 [US2] Create TextTranslationFormatter for plain text output in src/YetAnotherTranslator.Cli/Display/TextTranslationFormatter.cs
-- [ ] T073 [US2] Wire up dependency injection for US2 components in src/YetAnotherTranslator.Cli/Program.cs
+- [x] T070 [US2] Implement TranslateTextHandler with caching in src/YetAnotherTranslator.Core/Handlers/TranslateTextHandler.cs
+- [x] T071 [US2] Add /tt, /ttp, /tte command support to CommandParser in src/YetAnotherTranslator.Cli/Repl/CommandParser.cs (already existed)
+- [x] T072 [US2] Create TextTranslationFormatter for plain text output in src/YetAnotherTranslator.Cli/Display/TextTranslationFormatter.cs
+- [x] T073 [US2] Wire up dependency injection for US2 components in src/YetAnotherTranslator.Cli/Program.cs
   - Verification: Call serviceProvider.GetRequiredService<TranslateTextHandler>() to ensure dependencies resolve correctly
 
-**Checkpoint**: Text translation fully functional - users can translate text snippets up to 5000 characters
+**Checkpoint**: ✅ Text translation fully functional - users can translate text snippets up to 5000 characters
 
 ---
 
