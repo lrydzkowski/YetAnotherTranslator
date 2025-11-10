@@ -110,36 +110,34 @@ A powerful CLI tool for Polish-English translation with linguistic analysis, gra
      --value "Host=localhost;Database=yet_another_translator;Username=postgres;Password=..."
    ```
 
-5. **Create configuration file**
+5. **Configure application settings**
 
-   **Windows**: `%APPDATA%\translator\config.json`
-   **macOS/Linux**: `~/.config/translator/config.json`
+   Edit `src/YetAnotherTranslator.Cli/appsettings.Development.json`:
 
    ```json
    {
-     "secretManager": {
-       "type": "azure-keyvault",
-       "keyVaultUrl": "https://yet-another-translator-kv.vault.azure.net"
+     "KeyVault": {
+       "VaultName": "yet-another-translator-kv"
      },
-     "llmProvider": {
-       "type": "anthropic",
-       "secretReference": "anthropic-api-key",
-       "model": "claude-3-5-sonnet-20241022",
-       "maxTokens": 4096,
-       "temperature": 0.3
+     "LlmProvider": {
+       "Provider": "Anthropic",
+       "Model": "claude-3-5-sonnet-20241022",
+       "ApiKeySecretName": "anthropic-api-key",
+       "MaxTokens": 4096,
+       "Temperature": 0.3
      },
-     "ttsProvider": {
-       "type": "elevenlabs",
-       "secretReference": "elevenlabs-api-key",
-       "voiceId": "21m00Tcm4TlvDq8ikWAM"
+     "TtsProvider": {
+       "Provider": "ElevenLabs",
+       "ApiKeySecretName": "elevenlabs-api-key",
+       "VoiceId": "21m00Tcm4TlvDq8ikWAM"
      },
-     "database": {
-       "secretReference": "postgres-connection-string",
-       "maxRetryCount": 3,
-       "commandTimeout": 30
+     "Database": {
+       "ConnectionStringSecretName": "postgres-connection-string"
      }
    }
    ```
+
+   **Note**: Replace `yet-another-translator-kv` with your actual Key Vault name. Secrets are automatically loaded from Azure Key Vault using the secret names specified in configuration.
 
 6. **Run the application**
    ```bash

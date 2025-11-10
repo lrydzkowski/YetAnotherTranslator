@@ -196,59 +196,38 @@ postgres-connection-string
 
 ## Step 4: Configure Application
 
-### Locate Configuration Directory
+### Edit Configuration File
 
-**Windows**:
-
-```powershell
-$configDir = "$env:APPDATA\translator"
-New-Item -ItemType Directory -Path $configDir -Force
-```
-
-**macOS/Linux**:
-
-```bash
-mkdir -p ~/.config/translator
-```
-
-### Create Configuration File
-
-**Windows**: Create `%APPDATA%\translator\config.json`
-
-**macOS/Linux**: Create `~/.config/translator/config.json`
-
-**File Contents**:
+The application uses `appsettings.json` for configuration. Edit `src/YetAnotherTranslator.Cli/appsettings.Development.json`:
 
 ```json
 {
-  "secretManager": {
-    "type": "azure-keyvault",
-    "keyVaultUrl": "https://yet-another-translator-kv.vault.azure.net"
+  "KeyVault": {
+    "VaultName": "yet-another-translator-kv"
   },
-  "llmProvider": {
-    "type": "anthropic",
-    "secretReference": "anthropic-api-key",
-    "model": "claude-3-5-sonnet-20241022",
-    "maxTokens": 4096,
-    "temperature": 0.3
+  "LlmProvider": {
+    "Provider": "Anthropic",
+    "Model": "claude-3-5-sonnet-20241022",
+    "ApiKeySecretName": "anthropic-api-key",
+    "MaxTokens": 4096,
+    "Temperature": 0.3
   },
-  "ttsProvider": {
-    "type": "elevenlabs",
-    "secretReference": "elevenlabs-api-key",
-    "voiceId": "21m00Tcm4TlvDq8ikWAM",
-    "model": null
+  "TtsProvider": {
+    "Provider": "ElevenLabs",
+    "ApiKeySecretName": "elevenlabs-api-key",
+    "VoiceId": "21m00Tcm4TlvDq8ikWAM"
   },
-  "database": {
-    "secretReference": "postgres-connection-string",
-    "maxRetryCount": 3,
-    "commandTimeout": 30
+  "Database": {
+    "ConnectionStringSecretName": "postgres-connection-string"
   }
 }
 ```
 
 **Important**: Replace `yet-another-translator-kv` with your actual Key Vault name!
 
-### Get ElevenLabs Voice ID
+**How it works**: The application automatically loads secrets from Azure Key Vault using the specified secret names. No manual secret retrieval needed.
+
+### Get ElevenLabs Voice ID (Optional)
 
 ```bash
 # List available voices (requires ElevenLabs API key)
@@ -256,14 +235,16 @@ curl -X GET "https://api.elevenlabs.io/v1/voices" \
   -H "xi-api-key: <your-elevenlabs-api-key>"
 ```
 
-Choose a voice ID and update `voiceId` in config.json. Default (`21m00Tcm4TlvDq8ikWAM`) is Rachel (US English female).
+Choose a voice ID and update `VoiceId` in appsettings.Development.json. Default (`21m00Tcm4TlvDq8ikWAM`) is Rachel (US English female).
 
 ### Validate Configuration
 
+Ensure the JSON is valid:
+
 ```bash
 # Validate JSON syntax
-cat ~/.config/translator/config.json | jq .
-# (Windows PowerShell: Get-Content $env:APPDATA\translator\config.json | ConvertFrom-Json)
+cat src/YetAnotherTranslator.Cli/appsettings.Development.json | jq .
+# (Windows PowerShell: Get-Content src/YetAnotherTranslator.Cli/appsettings.Development.json | ConvertFrom-Json)
 ```
 
 **Expected Output**: JSON printed without errors
@@ -345,20 +326,19 @@ Goodbye!
 
 ### Error: "Configuration file not found"
 
-**Cause**: config.json not in expected location
+**Cause**: appsettings.Development.json not found or invalid
 
 **Fix**:
 
 ```bash
-# Verify file exists at correct path
-# Windows:
-dir %APPDATA%\translator\config.json
+# Verify file exists
+ls src/YetAnotherTranslator.Cli/appsettings.Development.json
 
-# macOS/Linux:
-ls ~/.config/translator/config.json
+# Verify JSON is valid
+cat src/YetAnotherTranslator.Cli/appsettings.Development.json | jq .
 ```
 
-If missing, create it following Step 4.
+If missing or invalid, update it following Step 4.
 
 ### Error: "Failed to authenticate with Azure Key Vault"
 

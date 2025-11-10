@@ -1,6 +1,8 @@
 namespace YetAnotherTranslator.Infrastructure.Configuration;
 
-public class DatabaseConfiguration
+public class DatabaseOptions
 {
-    public string ConnectionString { get; set; } = string.Empty;
+    public const string SectionName = "Database";
+
+    public string ConnectionStringSecretName { get; set; } = string.Empty;
 }

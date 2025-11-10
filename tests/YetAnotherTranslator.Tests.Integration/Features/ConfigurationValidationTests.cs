@@ -1,4 +1,7 @@
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using YetAnotherTranslator.Core.Exceptions;
 using YetAnotherTranslator.Infrastructure.Configuration;
 using YetAnotherTranslator.Tests.Integration.Infrastructure;
@@ -7,171 +10,145 @@ namespace YetAnotherTranslator.Tests.Integration.Features;
 
 public class ConfigurationValidationTests : TestBase
 {
-    private readonly string _testConfigDirectory;
-    private readonly string _testConfigPath;
-
-    public ConfigurationValidationTests()
+    [Fact]
+    public void Configuration_WithValidSettings_LoadsSuccessfully()
     {
-        _testConfigDirectory = Path.Combine(Path.GetTempPath(), $"translator_test_{Guid.NewGuid()}");
-        _testConfigPath = Path.Combine(_testConfigDirectory, "config.json");
-    }
-
-    public override async Task InitializeAsync()
-    {
-        await base.InitializeAsync();
-        Directory.CreateDirectory(_testConfigDirectory);
-        Environment.SetEnvironmentVariable("APPDATA", Path.GetTempPath());
-    }
-
-    public override async Task DisposeAsync()
-    {
-        if (Directory.Exists(_testConfigDirectory))
+        var configData = new Dictionary<string, string?>
         {
-            Directory.Delete(_testConfigDirectory, true);
-        }
+            ["KeyVault:VaultName"] = "test-vault",
+            ["LlmProvider:Provider"] = "Anthropic",
+            ["LlmProvider:Model"] = "claude-3-5-sonnet-20241022",
+            ["LlmProvider:ApiKeySecretName"] = "anthropic-api-key",
+            ["LlmProvider:MaxTokens"] = "4096",
+            ["LlmProvider:Temperature"] = "0.3",
+            ["TtsProvider:Provider"] = "ElevenLabs",
+            ["TtsProvider:ApiKeySecretName"] = "elevenlabs-api-key",
+            ["TtsProvider:VoiceId"] = "test-voice-id",
+            ["Database:ConnectionStringSecretName"] = "postgres-connection-string"
+        };
 
-        await base.DisposeAsync();
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
+
+        var services = new ServiceCollection();
+        services.Configure<KeyVaultOptions>(config.GetSection(KeyVaultOptions.SectionName));
+        services.Configure<LlmProviderOptions>(config.GetSection(LlmProviderOptions.SectionName));
+        services.Configure<TtsProviderOptions>(config.GetSection(TtsProviderOptions.SectionName));
+        services.Configure<DatabaseOptions>(config.GetSection(DatabaseOptions.SectionName));
+
+        var provider = services.BuildServiceProvider();
+
+        var keyVaultOptions = provider.GetRequiredService<IOptions<KeyVaultOptions>>().Value;
+        var llmOptions = provider.GetRequiredService<IOptions<LlmProviderOptions>>().Value;
+        var ttsOptions = provider.GetRequiredService<IOptions<TtsProviderOptions>>().Value;
+        var dbOptions = provider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+
+        keyVaultOptions.VaultName.Should().Be("test-vault");
+        keyVaultOptions.VaultUri.Should().Be("https://test-vault.vault.azure.net");
+        llmOptions.Provider.Should().Be("Anthropic");
+        llmOptions.Model.Should().Be("claude-3-5-sonnet-20241022");
+        llmOptions.MaxTokens.Should().Be(4096);
+        llmOptions.Temperature.Should().Be(0.3);
+        ttsOptions.Provider.Should().Be("ElevenLabs");
+        ttsOptions.VoiceId.Should().Be("test-voice-id");
+        dbOptions.ConnectionStringSecretName.Should().Be("postgres-connection-string");
     }
 
     [Fact]
-    public async Task LoadConfiguration_MissingConfigFile_ThrowsConfigurationException()
+    public void Configuration_WithMissingVaultName_ReturnsEmptyVaultUri()
     {
-        var loader = new ConfigurationLoader(_testConfigPath);
+        var configData = new Dictionary<string, string?>
+        {
+            ["KeyVault:VaultName"] = ""
+        };
 
-        Func<Task> act = async () => await loader.LoadConfigurationAsync();
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
 
-        await act.Should()
-            .ThrowAsync<ConfigurationException>()
-            .WithMessage("Configuration file not found at:*");
+        var services = new ServiceCollection();
+        services.Configure<KeyVaultOptions>(config.GetSection(KeyVaultOptions.SectionName));
+
+        var provider = services.BuildServiceProvider();
+        var keyVaultOptions = provider.GetRequiredService<IOptions<KeyVaultOptions>>().Value;
+
+        keyVaultOptions.VaultUri.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task LoadConfiguration_MalformedJson_ThrowsConfigurationExceptionWithLineAndColumn()
+    public void LlmProviderOptions_BindsCorrectlyFromConfiguration()
     {
-        string malformedJson = @"{
-  ""SecretManager"": {
-    ""Provider"": ""AzureKeyVault""
-    ""KeyVaultUrl"": ""https://test.vault.azure.net""
-  }
-}";
-        await File.WriteAllTextAsync(_testConfigPath, malformedJson);
+        var configData = new Dictionary<string, string?>
+        {
+            ["LlmProvider:Provider"] = "Anthropic",
+            ["LlmProvider:Model"] = "claude-3-5-sonnet-20241022",
+            ["LlmProvider:ApiKeySecretName"] = "test-key",
+            ["LlmProvider:MaxTokens"] = "2048",
+            ["LlmProvider:Temperature"] = "0.5"
+        };
 
-        var loader = new ConfigurationLoader(_testConfigPath);
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
 
-        Func<Task> act = async () => await loader.LoadConfigurationAsync();
+        var services = new ServiceCollection();
+        services.Configure<LlmProviderOptions>(config.GetSection(LlmProviderOptions.SectionName));
 
-        await act.Should()
-            .ThrowAsync<ConfigurationException>()
-            .Where(
-                ex => ex.Message.Contains("Malformed JSON")
-                    && ex.Message.Contains("Line:")
-                    && ex.Message.Contains("Position:")
-            );
+        var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<IOptions<LlmProviderOptions>>().Value;
+
+        options.Provider.Should().Be("Anthropic");
+        options.Model.Should().Be("claude-3-5-sonnet-20241022");
+        options.ApiKeySecretName.Should().Be("test-key");
+        options.MaxTokens.Should().Be(2048);
+        options.Temperature.Should().Be(0.5);
     }
 
     [Fact]
-    public async Task LoadConfiguration_MissingLlmProvider_ThrowsConfigurationException()
+    public void TtsProviderOptions_BindsCorrectlyFromConfiguration()
     {
-        string incompleteConfig = @"{
-  ""SecretManager"": {
-    ""Provider"": ""AzureKeyVault"",
-    ""KeyVaultUrl"": ""https://test.vault.azure.net""
-  },
-  ""TtsProvider"": {
-    ""Provider"": ""ElevenLabs"",
-    ""ApiKeySecretName"": ""elevenlabs-api-key"",
-    ""VoiceId"": ""test-voice-id""
-  },
-  ""Database"": {
-    ""ConnectionString"": ""Host=localhost;Database=test;Username=test;Password=test""
-  }
-}";
-        await File.WriteAllTextAsync(_testConfigPath, incompleteConfig);
+        var configData = new Dictionary<string, string?>
+        {
+            ["TtsProvider:Provider"] = "ElevenLabs",
+            ["TtsProvider:ApiKeySecretName"] = "tts-key",
+            ["TtsProvider:VoiceId"] = "voice-123"
+        };
 
-        var loader = new ConfigurationLoader(_testConfigPath);
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
 
-        Func<Task> act = async () => await loader.LoadConfigurationAsync();
+        var services = new ServiceCollection();
+        services.Configure<TtsProviderOptions>(config.GetSection(TtsProviderOptions.SectionName));
 
-        await act.Should()
-            .ThrowAsync<ConfigurationException>()
-            .WithMessage("*LlmProvider*required*");
+        var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<IOptions<TtsProviderOptions>>().Value;
+
+        options.Provider.Should().Be("ElevenLabs");
+        options.ApiKeySecretName.Should().Be("tts-key");
+        options.VoiceId.Should().Be("voice-123");
     }
 
     [Fact]
-    public async Task LoadConfiguration_InvalidKeyVaultUrl_ThrowsConfigurationException()
+    public void DatabaseOptions_BindsCorrectlyFromConfiguration()
     {
-        string invalidUrlConfig = @"{
-  ""SecretManager"": {
-    ""Provider"": ""AzureKeyVault"",
-    ""KeyVaultUrl"": ""http://invalid-url""
-  },
-  ""LlmProvider"": {
-    ""Provider"": ""Anthropic"",
-    ""Model"": ""claude-sonnet-4.5"",
-    ""ApiKeySecretName"": ""anthropic-api-key"",
-    ""MaxTokens"": 2048,
-    ""Temperature"": 0.3
-  },
-  ""TtsProvider"": {
-    ""Provider"": ""ElevenLabs"",
-    ""ApiKeySecretName"": ""elevenlabs-api-key"",
-    ""VoiceId"": ""test-voice-id""
-  },
-  ""Database"": {
-    ""ConnectionString"": ""Host=localhost;Database=test;Username=test;Password=test""
-  }
-}";
-        await File.WriteAllTextAsync(_testConfigPath, invalidUrlConfig);
+        var configData = new Dictionary<string, string?>
+        {
+            ["Database:ConnectionStringSecretName"] = "db-connection"
+        };
 
-        var loader = new ConfigurationLoader(_testConfigPath);
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
 
-        Func<Task> act = async () => await loader.LoadConfigurationAsync();
+        var services = new ServiceCollection();
+        services.Configure<DatabaseOptions>(config.GetSection(DatabaseOptions.SectionName));
 
-        await act.Should()
-            .ThrowAsync<ConfigurationException>()
-            .WithMessage("*KeyVaultUrl*HTTPS*");
-    }
+        var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
 
-    [Fact]
-    public async Task LoadConfiguration_ValidConfig_LoadsSuccessfully()
-    {
-        string validConfig = @"{
-  ""SecretManager"": {
-    ""Provider"": ""AzureKeyVault"",
-    ""KeyVaultUrl"": ""https://test.vault.azure.net""
-  },
-  ""LlmProvider"": {
-    ""Provider"": ""Anthropic"",
-    ""Model"": ""claude-sonnet-4.5"",
-    ""ApiKeySecretName"": ""anthropic-api-key"",
-    ""MaxTokens"": 2048,
-    ""Temperature"": 0.3
-  },
-  ""TtsProvider"": {
-    ""Provider"": ""ElevenLabs"",
-    ""ApiKeySecretName"": ""elevenlabs-api-key"",
-    ""VoiceId"": ""test-voice-id""
-  },
-  ""Database"": {
-    ""ConnectionString"": ""Host=localhost;Database=test;Username=test;Password=test""
-  }
-}";
-        await File.WriteAllTextAsync(_testConfigPath, validConfig);
-
-        var loader = new ConfigurationLoader(_testConfigPath);
-
-        ApplicationConfiguration config = await loader.LoadConfigurationAsync();
-
-        config.Should().NotBeNull();
-        config.SecretManager.Provider.Should().Be("AzureKeyVault");
-        config.SecretManager.KeyVaultUrl.Should().Be("https://test.vault.azure.net");
-        config.LlmProvider.Provider.Should().Be("Anthropic");
-        config.LlmProvider.Model.Should().Be("claude-sonnet-4.5");
-        config.LlmProvider.MaxTokens.Should().Be(2048);
-        config.LlmProvider.Temperature.Should().Be(0.3);
-        config.TtsProvider.Provider.Should().Be("ElevenLabs");
-        config.TtsProvider.VoiceId.Should().Be("test-voice-id");
-        config.Database.ConnectionString.Should().Be("Host=localhost;Database=test;Username=test;Password=test");
+        options.ConnectionStringSecretName.Should().Be("db-connection");
     }
 
     [Fact]
