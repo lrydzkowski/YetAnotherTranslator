@@ -6,45 +6,45 @@ A powerful CLI tool for Polish-English translation with linguistic analysis, gra
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-production--ready-brightgreen)
 
-## 🌟 Features
+## Features
 
-### 📚 Word Translation
+### Word Translation
 - **Bidirectional translation** between Polish and English
 - **Multiple translations** ranked by popularity
 - **Linguistic metadata**: parts of speech, countability, CMU Arpabet phonetics
 - **Example sentences** demonstrating word usage
 - **Auto-language detection** for convenience
 
-### 📝 Text Translation
+### Text Translation
 - Translate **text snippets** up to 5,000 characters
 - Supports both Polish→English and English→Polish
 - Preserves paragraph structure and formatting
 - Smart language detection with 80% confidence threshold
 
-### ✍️ Grammar & Vocabulary Review
+### Grammar & Vocabulary Review
 - Identifies **grammar errors** with corrections
 - Suggests **vocabulary improvements**
 - English-only support with automatic language detection
 - Detailed explanations for each issue
 
-### 🔊 Pronunciation Playback
+### Pronunciation Playback
 - Play **audio pronunciation** for English words and phrases
 - Supports **part-of-speech variants** (e.g., "record" as noun vs verb)
 - High-quality text-to-speech via ElevenLabs
 - Cross-platform audio support (Windows/macOS/Linux)
 
-### 📜 Operation History
+### Operation History
 - Track all translation, review, and pronunciation operations
 - View history with timestamps and operation types
 - Searchable command history
 
-### ⚡ Performance & Caching
+### Performance & Caching
 - **30-day caching** for instant results
 - Word translation: <3s (first call), <0.2s (cached)
 - Text translation: <5s (first call), <0.2s (cached)
 - Pronunciation: <2s (first call), <0.2s (cached)
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -146,7 +146,7 @@ A powerful CLI tool for Polish-English translation with linguistic analysis, gra
    dotnet run --project src/YetAnotherTranslator.Cli
    ```
 
-## 📖 Usage Tutorial
+## Usage Tutorial
 
 ### Starting the REPL
 
@@ -314,7 +314,7 @@ Short form:
 > /q
 ```
 
-## 📋 Command Reference
+## Command Reference
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -335,7 +335,7 @@ Short form:
 **Flags:**
 - `--no-cache` - Bypass cache and force fresh API call (works with `/t*`, `/tt*`, `/p`)
 
-## 🏗️ Architecture
+## Architecture
 
 ### Technology Stack
 
@@ -377,7 +377,7 @@ tests/
 - **Cache-Aside** - Automatic 30-day caching
 - **Dependency Injection** - .NET DI container
 
-## 🧪 Testing
+## Testing
 
 Run the comprehensive integration test suite:
 
@@ -392,7 +392,7 @@ dotnet test
 - All 6 user stories validated
 - UTF-8 encoding validation
 
-## 📚 Documentation
+## Documentation
 
 - **[Quickstart Guide](specs/001-polish-english-translator/quickstart.md)** - Detailed setup instructions (695 lines)
 - **[Feature Specification](specs/001-polish-english-translator/spec.md)** - Complete requirements and user stories
@@ -401,7 +401,7 @@ dotnet test
 - **[CLAUDE.md](CLAUDE.md)** - Technology context for AI assistants
 - **[Implementation Review](IMPLEMENTATION_REVIEW.md)** - Comprehensive code review (100/100 score)
 
-## 🔒 Security
+## Security
 
 - **No secrets in config files** - All credentials stored in Azure Key Vault
 - **Azure RBAC** - Role-based access control
@@ -409,7 +409,7 @@ dotnet test
 - **SQL parameterization** - EF Core prevents injection attacks
 - **Input validation** - FluentValidation on all requests
 
-## 🚀 Performance
+## Performance
 
 | Operation | First Call | Cached | Target |
 |-----------|------------|--------|--------|
@@ -419,7 +419,7 @@ dotnet test
 | Pronunciation | 1-2s | 0.1-0.2s | <2s |
 | History | N/A | <0.5s | <1s |
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### "Configuration file not found"
 Create `config.json` in the standard user config directory (see Installation step 5).
@@ -440,7 +440,7 @@ dotnet ef database update --project src/YetAnotherTranslator.Infrastructure --st
 
 For more troubleshooting, see the [Quickstart Guide](specs/001-polish-english-translator/quickstart.md#troubleshooting).
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please follow these guidelines:
 
@@ -450,11 +450,11 @@ Contributions are welcome! Please follow these guidelines:
 4. Update documentation
 5. Maintain 100% specification compliance
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
-## 🎯 Status
+## Status
 
 **Production Ready** - All features implemented and tested
 - ✅ 6 user stories complete
@@ -463,7 +463,7 @@ This project is licensed under the MIT License.
 - ✅ 48+ integration tests passing
 - ✅ 100/100 implementation score
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Anthropic** for Claude AI
 - **ElevenLabs** for high-quality TTS
@@ -472,4 +472,4 @@ This project is licensed under the MIT License.
 
 ---
 
-**Built with ❤️ using .NET 10 and Claude Sonnet 4.5**
+**Built with .NET 10 and Claude Sonnet 4.5**
