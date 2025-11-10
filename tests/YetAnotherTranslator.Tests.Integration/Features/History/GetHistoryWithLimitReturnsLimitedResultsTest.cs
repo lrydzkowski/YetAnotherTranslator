@@ -3,6 +3,7 @@ using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using YetAnotherTranslator.Core.Handlers.GetHistory;
 using YetAnotherTranslator.Core.Handlers.TranslateWord;
+using YetAnotherTranslator.Core.Models;
 using YetAnotherTranslator.Tests.Integration.Infrastructure;
 
 namespace YetAnotherTranslator.Tests.Integration.Features.History;
@@ -62,7 +63,7 @@ public class GetHistoryWithLimitReturnsLimitedResultsTest : TestBase
 
         for (int i = 0; i < 5; i++)
         {
-            var request = new TranslateWordRequest($"word{i}", "Polish", "English", UseCache: false);
+            var request = new TranslateWordRequest($"word{i}", SourceLanguage.Polish, "English", UseCache: false);
             await _translateWordHandler.HandleAsync(request, CancellationToken.None);
         }
 

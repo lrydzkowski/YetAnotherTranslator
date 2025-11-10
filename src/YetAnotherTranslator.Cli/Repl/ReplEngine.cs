@@ -139,18 +139,20 @@ public class ReplEngine
             return;
         }
 
-        string sourceLanguage;
+        SourceLanguage sourceLanguage;
         string targetLanguage;
 
         if (command.AutoDetectLanguage)
         {
             AnsiConsole.MarkupLine("[dim]Auto-detection not yet implemented. Using Polish→English.[/]");
-            sourceLanguage = "Polish";
+            sourceLanguage = SourceLanguage.Polish;
             targetLanguage = "English";
         }
         else
         {
-            sourceLanguage = command.SourceLanguage ?? "Polish";
+            sourceLanguage = (command.SourceLanguage ?? "Polish") == "Polish"
+                ? SourceLanguage.Polish
+                : SourceLanguage.English;
             targetLanguage = command.TargetLanguage ?? "English";
         }
 
@@ -167,7 +169,7 @@ public class ReplEngine
                 TranslationResult result = await _translateWordHandler.HandleAsync(request, cancellationToken);
                 ctx.Status("Done");
                 AnsiConsole.WriteLine();
-                TranslationTableFormatter.DisplayTranslations(result);
+                TranslationTableFormatter.Display(result);
             });
     }
 
@@ -228,7 +230,7 @@ public class ReplEngine
             return;
         }
 
-        var request = new ReviewGrammarRequest(command.Argument);
+        var request = new ReviewGrammarRequest(command.Argument, !command.NoCache);
 
         await AnsiConsole.Status()
             .StartAsync("Reviewing grammar...", async ctx =>

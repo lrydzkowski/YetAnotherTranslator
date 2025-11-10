@@ -5,7 +5,7 @@ namespace YetAnotherTranslator.Cli.Display;
 
 public static class TranslationTableFormatter
 {
-    public static void DisplayTranslations(TranslationResult result)
+    public static void Display(TranslationResult result)
     {
         if (result == null || result.Translations.Count == 0)
         {

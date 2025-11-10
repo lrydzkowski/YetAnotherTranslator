@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using YetAnotherTranslator.Core.Handlers.TranslateWord;
+using YetAnotherTranslator.Core.Models;
 using YetAnotherTranslator.Tests.Integration.Infrastructure;
 
 namespace YetAnotherTranslator.Tests.Integration.Features.TranslateWord;
@@ -52,7 +53,7 @@ public class TranslateWordEnglishToPolishNoCmuArpabetTest : TestBase
                 .WithBody($@"{{""content"":[{{""type"":""text"",""text"":{System.Text.Json.JsonSerializer.Serialize(mockResponse)}}}]}}")
         );
 
-        var request = new TranslateWordRequest("cat", "English", "Polish", UseCache: false);
+        var request = new TranslateWordRequest("cat", SourceLanguage.English, "Polish", UseCache: false);
 
         // Act
         TranslationResult result = await _handler.HandleAsync(request);

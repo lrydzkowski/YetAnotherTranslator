@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using YetAnotherTranslator.Core.Handlers.TranslateWord;
+using YetAnotherTranslator.Core.Models;
 using YetAnotherTranslator.Tests.Integration.Infrastructure;
 
 namespace YetAnotherTranslator.Tests.Integration.Features.TranslateWord;
@@ -53,7 +54,7 @@ public class TranslateWordNullCmuArpabetSavedToCacheAndDisplaysNATest : TestBase
                 .WithBody($@"{{""content"":[{{""type"":""text"",""text"":{System.Text.Json.JsonSerializer.Serialize(mockResponse)}}}]}}")
         );
 
-        var request = new TranslateWordRequest("ksenofobia", "Polish", "English", UseCache: true);
+        var request = new TranslateWordRequest("ksenofobia", SourceLanguage.Polish, "English", UseCache: true);
 
         // Act
         TranslationResult firstResult = await _handler.HandleAsync(request);

@@ -1,17 +1,17 @@
 using FluentValidation;
+using YetAnotherTranslator.Core.Constants;
 
 namespace YetAnotherTranslator.Core.Handlers.ReviewGrammar;
 
 public class ReviewGrammarValidator : AbstractValidator<ReviewGrammarRequest>
 {
-    private const int MaxTextLength = 5000;
 
     public ReviewGrammarValidator()
     {
         RuleFor(x => x.Text)
             .NotEmpty()
             .WithMessage("Text cannot be empty")
-            .MaximumLength(MaxTextLength)
-            .WithMessage($"Text cannot exceed {MaxTextLength} characters");
+            .MaximumLength(ValidationConstants.MaxTextLength)
+            .WithMessage($"Text cannot exceed {ValidationConstants.MaxTextLength} characters");
     }
 }

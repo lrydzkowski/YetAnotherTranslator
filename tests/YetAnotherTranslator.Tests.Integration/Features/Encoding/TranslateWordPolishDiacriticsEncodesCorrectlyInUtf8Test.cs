@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using YetAnotherTranslator.Core.Handlers.TranslateWord;
+using YetAnotherTranslator.Core.Models;
 using YetAnotherTranslator.Tests.Integration.Infrastructure;
 
 namespace YetAnotherTranslator.Tests.Integration.Features.Encoding;
@@ -63,7 +64,7 @@ public class TranslateWordPolishDiacriticsEncodesCorrectlyInUtf8Test : TestBase
                 .WithBody($@"{{""content"":[{{""type"":""text"",""text"":{System.Text.Json.JsonSerializer.Serialize(mockResponse)}}}]}}")
         );
 
-        var request = new TranslateWordRequest(polishChar, "Polish", "English", UseCache: false);
+        var request = new TranslateWordRequest(polishChar, SourceLanguage.Polish, "English", UseCache: false);
 
         // Act
         var result = await _handler.HandleAsync(request, CancellationToken.None);

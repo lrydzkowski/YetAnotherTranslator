@@ -73,7 +73,7 @@ public class GetHistoryAfterMultipleOperationsReturnsAllOperationsTest : TestBas
                 .WithBody($@"{{""content"":[{{""type"":""text"",""text"":{System.Text.Json.JsonSerializer.Serialize(wordTranslationResponse)}}}]}}")
         );
 
-        var translateWordRequest = new TranslateWordRequest("pies", "Polish", "English", UseCache: false);
+        var translateWordRequest = new TranslateWordRequest("pies", SourceLanguage.Polish, "English", UseCache: false);
         await _translateWordHandler.HandleAsync(translateWordRequest, CancellationToken.None);
 
         // 2. Translate text (Polish to English)

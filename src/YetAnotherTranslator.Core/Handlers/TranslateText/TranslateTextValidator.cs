@@ -1,18 +1,18 @@
 using FluentValidation;
+using YetAnotherTranslator.Core.Constants;
 
 namespace YetAnotherTranslator.Core.Handlers.TranslateText;
 
 public class TranslateTextValidator : AbstractValidator<TranslateTextRequest>
 {
-    private const int MaxTextLength = 5000;
 
     public TranslateTextValidator()
     {
         RuleFor(x => x.Text)
             .NotEmpty()
             .WithMessage("Text cannot be empty")
-            .MaximumLength(MaxTextLength)
-            .WithMessage($"Text cannot exceed {MaxTextLength} characters");
+            .MaximumLength(ValidationConstants.MaxTextLength)
+            .WithMessage($"Text cannot exceed {ValidationConstants.MaxTextLength} characters");
 
         RuleFor(x => x.TargetLanguage)
             .NotEmpty()

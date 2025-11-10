@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using YetAnotherTranslator.Core.Handlers.TranslateWord;
+using YetAnotherTranslator.Core.Models;
 using YetAnotherTranslator.Tests.Integration.Infrastructure;
 
 namespace YetAnotherTranslator.Tests.Integration.Features.TranslateWord;
@@ -28,7 +29,7 @@ public class TranslateWordEmptyWordThrowsValidationExceptionTest : TestBase
     public async Task Run()
     {
         // Arrange
-        var request = new TranslateWordRequest("", "Polish", "English");
+        var request = new TranslateWordRequest("", SourceLanguage.Polish, "English");
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ValidationException>(

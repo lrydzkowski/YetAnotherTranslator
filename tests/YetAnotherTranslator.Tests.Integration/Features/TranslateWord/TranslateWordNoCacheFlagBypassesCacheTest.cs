@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using YetAnotherTranslator.Core.Handlers.TranslateWord;
+using YetAnotherTranslator.Core.Models;
 using YetAnotherTranslator.Tests.Integration.Infrastructure;
 
 namespace YetAnotherTranslator.Tests.Integration.Features.TranslateWord;
@@ -81,7 +82,7 @@ public class TranslateWordNoCacheFlagBypassesCacheTest : TestBase
                 .WithBody($@"{{""content"":[{{""type"":""text"",""text"":{System.Text.Json.JsonSerializer.Serialize(mockResponse2)}}}]}}")
         );
 
-        var request = new TranslateWordRequest("dom", "Polish", "English", UseCache: false);
+        var request = new TranslateWordRequest("dom", SourceLanguage.Polish, "English", UseCache: false);
 
         // Act
         TranslationResult firstResult = await _handler.HandleAsync(request);
