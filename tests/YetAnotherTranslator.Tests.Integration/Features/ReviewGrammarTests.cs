@@ -11,6 +11,10 @@ public class ReviewGrammarTests : TestBase
 {
     private ReviewGrammarHandler _handler = null!;
 
+    public ReviewGrammarTests(IntegrationTestFixture fixture) : base(fixture)
+    {
+    }
+
     public override async Task InitializeAsync()
     {
         await base.InitializeAsync();

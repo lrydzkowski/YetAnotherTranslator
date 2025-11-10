@@ -7,6 +7,10 @@ namespace YetAnotherTranslator.Tests.Integration.Features;
 
 public class ReplCommandTests : TestBase
 {
+    public ReplCommandTests(IntegrationTestFixture fixture) : base(fixture)
+    {
+    }
+
     [Fact]
     public void CommandParser_QuitCommand_ParsesCorrectly()
     {

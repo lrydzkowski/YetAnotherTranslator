@@ -12,6 +12,10 @@ public class EncodingTests : TestBase
 {
     private TranslateWordHandler _handler = null!;
 
+    public EncodingTests(IntegrationTestFixture fixture) : base(fixture)
+    {
+    }
+
     public override async Task InitializeAsync()
     {
         await base.InitializeAsync();

@@ -10,6 +10,10 @@ namespace YetAnotherTranslator.Tests.Integration.Features;
 
 public class ConfigurationValidationTests : TestBase
 {
+    public ConfigurationValidationTests(IntegrationTestFixture fixture) : base(fixture)
+    {
+    }
+
     [Fact]
     public void Configuration_WithValidSettings_LoadsSuccessfully()
     {

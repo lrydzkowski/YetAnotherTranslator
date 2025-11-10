@@ -12,6 +12,10 @@ public class TranslateTextTests : TestBase
 {
     private TranslateTextHandler _handler = null!;
 
+    public TranslateTextTests(IntegrationTestFixture fixture) : base(fixture)
+    {
+    }
+
     public override async Task InitializeAsync()
     {
         await base.InitializeAsync();

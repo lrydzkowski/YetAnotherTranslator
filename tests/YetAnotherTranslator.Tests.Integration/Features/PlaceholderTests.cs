@@ -4,6 +4,10 @@ namespace YetAnotherTranslator.Tests.Integration.Features;
 
 public class PlaceholderTests : TestBase
 {
+    public PlaceholderTests(IntegrationTestFixture fixture) : base(fixture)
+    {
+    }
+
     [Fact]
     public async Task TestInfrastructure_ShouldWork()
     {

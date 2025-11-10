@@ -18,6 +18,10 @@ public class HistoryTests : TestBase
     private TranslateTextHandler _translateTextHandler = null!;
     private ReviewGrammarHandler _reviewGrammarHandler = null!;
 
+    public HistoryTests(IntegrationTestFixture fixture) : base(fixture)
+    {
+    }
+
     public override async Task InitializeAsync()
     {
         await base.InitializeAsync();

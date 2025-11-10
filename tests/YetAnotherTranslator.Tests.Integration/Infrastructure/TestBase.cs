@@ -6,26 +6,23 @@ using YetAnotherTranslator.Infrastructure.Persistence;
 
 namespace YetAnotherTranslator.Tests.Integration.Infrastructure;
 
+[Collection("IntegrationTests")]
 public abstract class TestBase : IAsyncLifetime
 {
-    protected PostgreSqlContainer PostgresContainer { get; private set; } = null!;
-    protected WireMockServer WireMockServer { get; private set; } = null!;
+    private readonly IntegrationTestFixture _fixture;
+
+    protected PostgreSqlContainer PostgresContainer => _fixture.PostgresContainer;
+    protected WireMockServer WireMockServer => _fixture.WireMockServer;
     protected IServiceProvider ServiceProvider { get; private set; } = null!;
     protected TranslatorDbContext DbContext { get; private set; } = null!;
 
+    protected TestBase(IntegrationTestFixture fixture)
+    {
+        _fixture = fixture;
+    }
+
     public virtual async Task InitializeAsync()
     {
-        PostgresContainer = new PostgreSqlBuilder()
-            .WithImage("postgres:16-alpine")
-            .WithDatabase("translator_test")
-            .WithUsername("postgres")
-            .WithPassword("postgres")
-            .Build();
-
-        await PostgresContainer.StartAsync();
-
-        WireMockServer = WireMockServer.Start();
-
         ServiceCollection services = new();
         ConfigureServices(services);
 
@@ -37,6 +34,8 @@ public abstract class TestBase : IAsyncLifetime
 
     public virtual async Task DisposeAsync()
     {
+        await CleanupDatabaseAsync();
+
         if (DbContext != null)
         {
             await DbContext.DisposeAsync();
@@ -51,13 +50,7 @@ public abstract class TestBase : IAsyncLifetime
             disposable.Dispose();
         }
 
-        WireMockServer?.Stop();
-        WireMockServer?.Dispose();
-
-        if (PostgresContainer != null)
-        {
-            await PostgresContainer.DisposeAsync();
-        }
+        WireMockServer.Reset();
     }
 
     protected virtual void ConfigureServices(IServiceCollection services)
@@ -69,5 +62,14 @@ public abstract class TestBase : IAsyncLifetime
 
         services.AddScoped<YetAnotherTranslator.Core.Interfaces.IHistoryRepository,
             YetAnotherTranslator.Infrastructure.Persistence.HistoryRepository>();
+    }
+
+    private async Task CleanupDatabaseAsync()
+    {
+        await DbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE history_entries CASCADE");
+        await DbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE translation_cache CASCADE");
+        await DbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE text_translation_cache CASCADE");
+        await DbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE pronunciation_cache CASCADE");
+        await DbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE llm_response_cache CASCADE");
     }
 }

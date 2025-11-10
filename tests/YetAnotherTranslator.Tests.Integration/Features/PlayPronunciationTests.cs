@@ -10,6 +10,10 @@ public class PlayPronunciationTests : TestBase
     private PlayPronunciationHandler _handler = null!;
     private TestAudioPlayer _audioPlayer = null!;
 
+    public PlayPronunciationTests(IntegrationTestFixture fixture) : base(fixture)
+    {
+    }
+
     public override async Task InitializeAsync()
     {
         await base.InitializeAsync();
