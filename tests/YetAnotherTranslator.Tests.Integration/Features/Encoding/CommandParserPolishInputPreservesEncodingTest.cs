@@ -1,6 +1,7 @@
 using System.Text;
 using YetAnotherTranslator.Cli.Repl;
 using YetAnotherTranslator.Tests.Integration.Infrastructure;
+using Encoding = System.Text.Encoding;
 
 namespace YetAnotherTranslator.Tests.Integration.Features.Encoding;
 

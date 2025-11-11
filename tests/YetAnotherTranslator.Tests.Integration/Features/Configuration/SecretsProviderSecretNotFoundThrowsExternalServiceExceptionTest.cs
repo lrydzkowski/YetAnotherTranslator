@@ -27,7 +27,7 @@ public class SecretsProviderSecretNotFoundThrowsExternalServiceExceptionTest : T
                 .WithStatusCode(404)
         );
 
-        var provider = new Infrastructure.TestSecretsProvider(WireMockServer.Url!);
+        var provider = new TestSecretsProvider(WireMockServer.Url!);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ExternalServiceException>(

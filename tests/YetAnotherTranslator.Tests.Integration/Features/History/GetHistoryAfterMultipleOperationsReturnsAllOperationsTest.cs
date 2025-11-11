@@ -29,7 +29,7 @@ public class GetHistoryAfterMultipleOperationsReturnsAllOperationsTest : TestBas
 
         // Create GetHistoryHandler
         var getHistoryValidator = new GetHistoryValidator();
-        _handler = new GetHistoryHandler(historyRepository, getHistoryValidator);
+        _handler = new GetHistoryHandler(getHistoryValidator, historyRepository);
 
         // Create other handlers for performing operations
         var llmProvider = new TestLlmProvider(WireMockServer.Url!);

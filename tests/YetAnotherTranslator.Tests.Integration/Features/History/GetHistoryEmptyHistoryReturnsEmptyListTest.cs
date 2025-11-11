@@ -18,7 +18,7 @@ public class GetHistoryEmptyHistoryReturnsEmptyListTest : TestBase
 
         var historyRepository = ServiceProvider.GetRequiredService<Core.Interfaces.IHistoryRepository>();
         var getHistoryValidator = new GetHistoryValidator();
-        _handler = new GetHistoryHandler(historyRepository, getHistoryValidator);
+        _handler = new GetHistoryHandler(getHistoryValidator, historyRepository);
     }
 
     [Fact]

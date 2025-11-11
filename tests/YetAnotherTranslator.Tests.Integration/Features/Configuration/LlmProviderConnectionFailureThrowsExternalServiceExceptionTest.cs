@@ -27,7 +27,7 @@ public class LlmProviderConnectionFailureThrowsExternalServiceExceptionTest : Te
                 .WithStatusCode(503)
         );
 
-        var provider = new Infrastructure.TestLlmProvider(WireMockServer.Url!);
+        var provider = new TestLlmProvider(WireMockServer.Url!);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ExternalServiceException>(

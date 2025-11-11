@@ -28,7 +28,7 @@ public class SecretsProviderNetworkTimeoutThrowsExternalServiceExceptionTest : T
                 .WithStatusCode(200)
         );
 
-        var provider = new Infrastructure.TestSecretsProvider(WireMockServer.Url!);
+        var provider = new TestSecretsProvider(WireMockServer.Url!);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ExternalServiceException>(
