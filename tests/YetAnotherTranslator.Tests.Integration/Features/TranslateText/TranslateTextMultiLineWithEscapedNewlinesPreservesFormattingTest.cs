@@ -38,7 +38,7 @@ public class TranslateTextMultiLineWithEscapedNewlinesPreservesFormattingTest : 
             Request.Create()
                 .WithPath("/v1/messages")
                 .UsingPost()
-                .WithBody(b => b.Contains("Detect the language"))
+                .WithBody(b => b!.Contains("Detect the language"))
         )
         .RespondWith(
             Response.Create()
@@ -51,7 +51,7 @@ public class TranslateTextMultiLineWithEscapedNewlinesPreservesFormattingTest : 
             Request.Create()
                 .WithPath("/v1/messages")
                 .UsingPost()
-                .WithBody(b => !b.Contains("Detect the language"))
+                .WithBody(b => !b!.Contains("Detect the language"))
         )
         .RespondWith(
             Response.Create()

@@ -1,11 +1,9 @@
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using YetAnotherTranslator.Core.Handlers.TranslateWord;
 using YetAnotherTranslator.Core.Models;
 using YetAnotherTranslator.Tests.Integration.Infrastructure;
-using Encoding = System.Text.Encoding;
 
 namespace YetAnotherTranslator.Tests.Integration.Features.Encoding;
 
@@ -71,8 +69,8 @@ public class TranslateWordPolishDiacriticsEncodesCorrectlyInUtf8Test : TestBase
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 
         // Verify UTF-8 encoding
-        byte[] utf8Bytes = Encoding.UTF8.GetBytes(result.InputText);
-        string decodedText = Encoding.UTF8.GetString(utf8Bytes);
+        byte[] utf8Bytes = System.Text.Encoding.UTF8.GetBytes(result.InputText);
+        string decodedText = System.Text.Encoding.UTF8.GetString(utf8Bytes);
 
         // Assert
         await Verify(new

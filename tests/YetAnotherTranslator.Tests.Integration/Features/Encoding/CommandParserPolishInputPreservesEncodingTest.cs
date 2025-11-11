@@ -1,7 +1,5 @@
-using System.Text;
 using YetAnotherTranslator.Cli.Repl;
 using YetAnotherTranslator.Tests.Integration.Infrastructure;
-using Encoding = System.Text.Encoding;
 
 namespace YetAnotherTranslator.Tests.Integration.Features.Encoding;
 
@@ -22,8 +20,8 @@ public class CommandParserPolishInputPreservesEncodingTest : TestBase
         var command = parser.Parse(polishInput);
 
         // Verify UTF-8 encoding is preserved
-        byte[] utf8Bytes = Encoding.UTF8.GetBytes(command.Argument);
-        string decodedText = Encoding.UTF8.GetString(utf8Bytes);
+        byte[] utf8Bytes = System.Text.Encoding.UTF8.GetBytes(command.Argument);
+        string decodedText = System.Text.Encoding.UTF8.GetString(utf8Bytes);
 
         // Assert
         Verify(new
