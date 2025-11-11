@@ -31,11 +31,21 @@ internal static class ServiceCollectionExtensions
         IConfiguration configuration
     )
     {
-        services.Configure<KeyVaultOptions>(configuration.GetSection(KeyVaultOptions.SectionName));
-        services.Configure<LlmProviderOptions>(configuration.GetSection(LlmProviderOptions.SectionName));
-        services.Configure<TtsProviderOptions>(configuration.GetSection(TtsProviderOptions.SectionName));
-        services.Configure<DatabaseOptions>(configuration.GetSection(DatabaseOptions.SectionName));
+        services.AddOptionsType<KeyVaultOptions>(configuration, KeyVaultOptions.SectionName)
+            .AddOptionsType<LlmProviderOptions>(configuration, LlmProviderOptions.SectionName)
+            .AddOptionsType<TtsProviderOptions>(configuration, TtsProviderOptions.SectionName)
+            .AddOptionsType<DatabaseOptions>(configuration, DatabaseOptions.SectionName);
 
+        return services;
+    }
+
+    private static IServiceCollection AddOptionsType<TOptions>(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string configurationPosition
+    ) where TOptions : class
+    {
+        services.AddOptions<TOptions>().Bind(configuration.GetSection(configurationPosition));
         return services;
     }
 
