@@ -4,19 +4,21 @@ using YetAnotherTranslator.Core.Exceptions;
 using YetAnotherTranslator.Core.Handlers.GetHistory;
 using YetAnotherTranslator.Core.Interfaces;
 using YetAnotherTranslator.Core.Models;
+using ValidationException = FluentValidation.ValidationException;
 
 namespace YetAnotherTranslator.Core.Handlers.TranslateText;
 
 public class TranslateTextHandler
 {
+    private readonly IHistoryRepository _historyRepository;
     private readonly ILlmProvider _llmProvider;
     private readonly IValidator<TranslateTextRequest> _validator;
-    private readonly IHistoryRepository _historyRepository;
 
     public TranslateTextHandler(
         ILlmProvider llmProvider,
         IValidator<TranslateTextRequest> validator,
-        IHistoryRepository historyRepository)
+        IHistoryRepository historyRepository
+    )
     {
         _llmProvider = llmProvider ?? throw new ArgumentNullException(nameof(llmProvider));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
@@ -25,7 +27,8 @@ public class TranslateTextHandler
 
     public async Task<TextTranslationResult> HandleAsync(
         TranslateTextRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await _validator.ValidateAndThrowAsync(request, cancellationToken);
 
@@ -53,7 +56,7 @@ public class TranslateTextHandler
             cancellationToken
         );
 
-        var result = new TextTranslationResult
+        TextTranslationResult result = new()
         {
             SourceLanguage = sourceLanguage,
             TargetLanguage = request.TargetLanguage,
@@ -75,7 +78,8 @@ public class TranslateTextHandler
 
     private async Task<string> DetermineSourceLanguageAsync(
         TranslateTextRequest request,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if (request.SourceLanguage == SourceLanguage.Polish)
         {
@@ -96,12 +100,18 @@ public class TranslateTextHandler
 
             if (!root.TryGetProperty("language", out JsonElement languageElement))
             {
-                throw new ExternalServiceException("Anthropic", "Invalid language detection response: missing 'language' field");
+                throw new ExternalServiceException(
+                    "Anthropic",
+                    "Invalid language detection response: missing 'language' field"
+                );
             }
 
             if (!root.TryGetProperty("confidence", out JsonElement confidenceElement))
             {
-                throw new ExternalServiceException("Anthropic", "Invalid language detection response: missing 'confidence' field");
+                throw new ExternalServiceException(
+                    "Anthropic",
+                    "Invalid language detection response: missing 'confidence' field"
+                );
             }
 
             string? detectedLanguage = languageElement.GetString();
@@ -109,12 +119,16 @@ public class TranslateTextHandler
 
             if (confidence < 80)
             {
-                throw new ValidationException($"Language detection confidence too low: {confidence}%. Please specify the source language explicitly.");
+                throw new ValidationException(
+                    $"Language detection confidence too low: {confidence}%. Please specify the source language explicitly."
+                );
             }
 
             if (detectedLanguage != "Polish" && detectedLanguage != "English")
             {
-                throw new ValidationException($"Detected language '{detectedLanguage}' is not supported. Only Polish and English are supported.");
+                throw new ValidationException(
+                    $"Detected language '{detectedLanguage}' is not supported. Only Polish and English are supported."
+                );
             }
 
             return detectedLanguage;

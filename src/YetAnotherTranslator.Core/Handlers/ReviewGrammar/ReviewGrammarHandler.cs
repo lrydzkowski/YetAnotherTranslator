@@ -3,19 +3,21 @@ using FluentValidation;
 using YetAnotherTranslator.Core.Exceptions;
 using YetAnotherTranslator.Core.Handlers.GetHistory;
 using YetAnotherTranslator.Core.Interfaces;
+using ValidationException = YetAnotherTranslator.Core.Exceptions.ValidationException;
 
 namespace YetAnotherTranslator.Core.Handlers.ReviewGrammar;
 
 public class ReviewGrammarHandler
 {
+    private readonly IHistoryRepository _historyRepository;
     private readonly ILlmProvider _llmProvider;
     private readonly IValidator<ReviewGrammarRequest> _validator;
-    private readonly IHistoryRepository _historyRepository;
 
     public ReviewGrammarHandler(
         ILlmProvider llmProvider,
         IValidator<ReviewGrammarRequest> validator,
-        IHistoryRepository historyRepository)
+        IHistoryRepository historyRepository
+    )
     {
         _llmProvider = llmProvider ?? throw new ArgumentNullException(nameof(llmProvider));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
@@ -24,7 +26,8 @@ public class ReviewGrammarHandler
 
     public async Task<GrammarReviewResult> HandleAsync(
         ReviewGrammarRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await _validator.ValidateAndThrowAsync(request, cancellationToken);
 
@@ -58,7 +61,10 @@ public class ReviewGrammarHandler
 
             if (!root.TryGetProperty("language", out JsonElement languageElement))
             {
-                throw new ExternalServiceException("Anthropic", "Invalid language detection response: missing 'language' field");
+                throw new ExternalServiceException(
+                    "Anthropic",
+                    "Invalid language detection response: missing 'language' field"
+                );
             }
 
             string? detectedLanguage = languageElement.GetString();
@@ -87,14 +93,14 @@ public class ReviewGrammarHandler
             using JsonDocument doc = JsonDocument.Parse(llmResponse);
             JsonElement root = doc.RootElement;
 
-            var grammarIssues = new List<GrammarIssue>();
-            var vocabularySuggestions = new List<VocabularySuggestion>();
+            List<GrammarIssue> grammarIssues = new();
+            List<VocabularySuggestion> vocabularySuggestions = new();
 
             if (root.TryGetProperty("grammarIssues", out JsonElement grammarElement))
             {
                 foreach (JsonElement issueElement in grammarElement.EnumerateArray())
                 {
-                    var issue = new GrammarIssue
+                    GrammarIssue issue = new()
                     {
                         Issue = issueElement.GetProperty("issue").GetString() ?? string.Empty,
                         Correction = issueElement.GetProperty("correction").GetString() ?? string.Empty,
@@ -108,7 +114,7 @@ public class ReviewGrammarHandler
             {
                 foreach (JsonElement suggestionElement in vocabElement.EnumerateArray())
                 {
-                    var suggestion = new VocabularySuggestion
+                    VocabularySuggestion suggestion = new()
                     {
                         Original = suggestionElement.GetProperty("original").GetString() ?? string.Empty,
                         Suggestion = suggestionElement.GetProperty("suggestion").GetString() ?? string.Empty,
