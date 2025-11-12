@@ -23,7 +23,7 @@ A REPL-style CLI tool for Polish-English translation with word translation, text
 - EF Core 10.0 with Npgsql (PostgreSQL ORM)
 - Azure.Security.KeyVault.Secrets v4.8.0 + Azure.Identity v1.17.0 (secrets management)
 - ElevenLabs-DotNet v3.6.0 (text-to-speech)
-- PortAudioSharp v0.3.0 (cross-platform audio playback)
+- NAudio v2.2.1 (cross-platform MP3 audio playback)
 
 **Storage**: PostgreSQL 16+ with EF Core for operation history and caching (translations, pronunciations)
 **Testing**: xUnit with NSubstitute (mocking), Testcontainers (PostgreSQL containers), WireMock.Net (external API mocking), Verify (snapshot testing) - integration tests only
@@ -189,7 +189,7 @@ src/
 │   │   └── AnthropicProvider.cs        # Implements ILlmProvider from Core handlers
 │   ├── Tts/                            # TTS provider implementation
 │   │   ├── ElevenLabsProvider.cs       # Implements ITtsProvider (text-to-speech generation)
-│   │   └── PortAudioPlayer.cs          # Implements IAudioPlayer (audio playback via PortAudioSharp)
+│   │   └── PortAudioPlayer.cs          # Implements IAudioPlayer (audio playback via NAudio)
 │   ├── Secrets/                        # Secret manager implementation
 │   │   └── AzureKeyVaultProvider.cs    # Implements ISecretsProvider
 │   ├── Persistence/                    # Database implementation

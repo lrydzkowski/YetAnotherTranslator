@@ -52,10 +52,6 @@ A powerful CLI tool for Polish-English translation with linguistic analysis, gra
 - **PostgreSQL 16+** - [Installation guide](https://www.postgresql.org/download/)
 - **Azure CLI** - [Install guide](https://docs.microsoft.com/cli/azure/install-azure-cli)
 - **API Keys**: [Anthropic](https://console.anthropic.com/) (Claude) and [ElevenLabs](https://elevenlabs.io/)
-- **PortAudio** (for audio playback):
-  - Windows: Included with PortAudioSharp
-  - macOS: `brew install portaudio`
-  - Linux: `sudo apt-get install portaudio19-dev`
 
 ### Installation
 
@@ -342,8 +338,7 @@ Short form:
 - **ElevenLabs** - High-quality text-to-speech
 - **Azure Key Vault** - Secure credential storage
 - **PostgreSQL** - Database for caching and history
-- **PortAudioSharp** - Cross-platform audio playback
-- **NAudio** - MP3 decoding
+- **NAudio** - Cross-platform MP3 audio playback
 - **PrettyPrompt** - Interactive REPL with history
 - **Spectre.Console** - Beautiful CLI formatting
 
@@ -426,9 +421,7 @@ Create `config.json` in the standard user config directory (see Installation ste
 Run `az login` to authenticate with Azure CLI.
 
 ### "Audio playback unavailable"
-Install PortAudio for your platform:
-- macOS: `brew install portaudio`
-- Linux: `sudo apt-get install portaudio19-dev`
+Ensure your system has working audio drivers. NAudio uses the system's default audio output device.
 
 ### "Translation cache not found" errors
 Ensure PostgreSQL is running and migrations are applied:
@@ -466,7 +459,7 @@ This project is licensed under the MIT License.
 - **Anthropic** for Claude AI
 - **ElevenLabs** for high-quality TTS
 - **Microsoft** for .NET and Azure
-- **PortAudio** for cross-platform audio
+- **NAudio** for cross-platform audio playback
 
 ---
 

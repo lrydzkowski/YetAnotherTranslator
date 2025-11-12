@@ -24,7 +24,7 @@ Polish-English Translation CLI Tool - A REPL-style command-line interface for tr
 - **Testcontainers**: PostgreSQL containers for integration tests
 - **WireMock.Net**: External API mocking for integration tests
 - **Verify**: Snapshot testing for complex assertions
-- **PortAudioSharp**: Cross-platform audio playback
+- **NAudio**: Cross-platform MP3 audio playback
 
 **Database**: PostgreSQL with EF Core for operation history and pronunciation cache
 
@@ -79,7 +79,7 @@ src/
 │   │   └── AnthropicProvider.cs        # Implements ILlmProvider
 │   ├── Tts/                            # ElevenLabs provider
 │   │   ├── ElevenLabsProvider.cs       # Implements ITtsProvider
-│   │   └── PortAudioPlayer.cs          # Implements IAudioPlayer
+│   │   └── PortAudioPlayer.cs          # Implements IAudioPlayer (NAudio-based)
 │   ├── Secrets/                        # Azure Key Vault provider
 │   │   └── AzureKeyVaultProvider.cs    # Implements ISecretsProvider
 │   ├── Persistence/                    # EF Core DbContext, repositories

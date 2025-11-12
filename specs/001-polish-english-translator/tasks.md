@@ -35,7 +35,7 @@ Multi-project solution structure:
 - [X] T005 [P] Create Integration test project tests/YetAnotherTranslator.Tests.Integration/YetAnotherTranslator.Tests.Integration.csproj
 - [X] T006 Configure project references: Infrastructure references Core, CLI references Core and Infrastructure, Tests reference all
 - [X] T007 [P] Add Core dependencies: FluentValidation, FluentValidation.DependencyInjectionExtensions
-- [X] T008 [P] Add Infrastructure dependencies: Anthropic SDK, ElevenLabs-DotNet, Azure.Security.KeyVault.Secrets, Azure.Identity, Npgsql.EntityFrameworkCore.PostgreSQL, Microsoft.EntityFrameworkCore.Design, PortAudioSharp
+- [X] T008 [P] Add Infrastructure dependencies: Anthropic SDK, ElevenLabs-DotNet, Azure.Security.KeyVault.Secrets, Azure.Identity, Npgsql.EntityFrameworkCore.PostgreSQL, Microsoft.EntityFrameworkCore.Design, NAudio
 - [X] T009 [P] Add CLI dependencies: PrettyPrompt, Spectre.Console
 - [X] T010 [P] Add Test dependencies: xUnit, xUnit.runner.visualstudio, Microsoft.NET.Test.Sdk, FluentAssertions, NSubstitute, Testcontainers.PostgreSql, WireMock.Net, Verify.Xunit
 
@@ -267,9 +267,10 @@ Multi-project solution structure:
 - [x] T093 [US4] Implement ElevenLabsTtsProvider with GenerateSpeechAsync in src/YetAnotherTranslator.Infrastructure/Tts/ElevenLabsTtsProvider.cs
   - ITtsProvider interface signature: Task<byte[]> GenerateSpeechAsync(string text, string? partOfSpeech = null, CancellationToken ct = default)
   - partOfSpeech parameter optional; when provided, may be included in TTS request metadata or used to adjust pronunciation hint
-- [x] T094 [US4] Implement audio playback using PortAudioSharp in src/YetAnotherTranslator.Infrastructure/Tts/PortAudioPlayer.cs
+- [x] T094 [US4] Implement audio playback using NAudio in src/YetAnotherTranslator.Infrastructure/Tts/PortAudioPlayer.cs
   - Corrected filename: PortAudioPlayer.cs (not AudioPlaybackService.cs) per plan.md
   - Implements IAudioPlayer interface for cross-platform audio playback
+  - Note: Implementation simplified from PortAudioSharp to NAudio v2.2.1 (WaveOutEvent) for better cross-platform compatibility and no native library dependencies
 - [x] T095 [US4] Implement PlayPronunciationHandler with caching and error handling in src/YetAnotherTranslator.Core/Handlers/PlayPronunciation/PlayPronunciationHandler.cs
 - [x] T096 [US4] Add /p, /playback command support with optional part-of-speech to CommandParser in src/YetAnotherTranslator.Cli/Repl/CommandParser.cs (already existed)
 - [x] T097 [US4] Wire up dependency injection for US4 components in src/YetAnotherTranslator.Cli/Program.cs

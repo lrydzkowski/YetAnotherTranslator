@@ -410,28 +410,22 @@ az keyvault secret set \
 
 ### Error: "Audio playback unavailable"
 
-**Cause**: Audio drivers not available or PortAudio not installed
+**Cause**: Audio drivers not available or system audio configuration issue
 
 **Fix**:
 
-**Windows**: Should work out of the box
-**macOS**: Install PortAudio via Homebrew:
+**All Platforms**: Ensure your system has working audio drivers and a default audio output device configured. NAudio uses the system's default audio device for playback.
+
+**Windows**: Check that your audio drivers are installed and working. Test by playing any audio file.
+**macOS**: Verify System Preferences > Sound > Output has a valid device selected.
+**Linux**: Ensure ALSA or PulseAudio is properly configured:
 
 ```bash
-brew install portaudio
+# Test audio output
+speaker-test -t wav -c 2
 ```
 
-**Linux**: Install PortAudio dev package:
-
-```bash
-# Debian/Ubuntu
-sudo apt-get install portaudio19-dev
-
-# Fedora
-sudo dnf install portaudio-devel
-```
-
-Then rebuild:
+If issues persist, rebuild:
 
 ```bash
 dotnet clean

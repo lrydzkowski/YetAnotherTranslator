@@ -278,17 +278,13 @@ public class ElevenLabsProvider : ITtsProvider
 ```
 
 **Audio Playback**:
-For cross-platform audio playback, use **PortAudioSharp** or **Bufdio**:
+For cross-platform audio playback, use **NAudio**:
 
 ```bash
-dotnet add package PortAudioSharp --version 0.3.0
+dotnet add package NAudio --version 2.2.1
 ```
 
-OR for more features:
-
-```bash
-dotnet add package Bufdio
-```
+NAudio provides managed-code MP3 playback using WaveOutEvent, eliminating the need for native library dependencies. It works across Windows, macOS, and Linux with no additional installation required.
 
 **Caching Strategy**:
 
@@ -903,7 +899,7 @@ All NEEDS CLARIFICATION items have been resolved with specific technology choice
 
 1. **Testing**: xUnit with NSubstitute (mocking), Testcontainers (PostgreSQL containers), WireMock.Net (external API mocking), Verify (snapshot testing) - integration tests only
 2. **LLM**: Official Anthropic SDK (currently in beta) for Claude Sonnet 4.5
-3. **TTS**: ElevenLabs-DotNet v3.6.0 with PortAudioSharp for playback
+3. **TTS**: ElevenLabs-DotNet v3.6.0 with NAudio v2.2.1 for playback
 4. **REPL**: PrettyPrompt v4.x for input, Spectre.Console v0.49+ for output
 5. **Secrets**: Azure.Security.KeyVault.Secrets v4.8.0 with DefaultAzureCredential
 6. **Database**: EF Core 10.0 with Npgsql for PostgreSQL
