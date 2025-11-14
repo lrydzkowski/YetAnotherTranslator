@@ -28,10 +28,8 @@ public class TranslateWordEmptyWordThrowsValidationExceptionTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange
         var request = new TranslateWordRequest("", SourceLanguage.Polish, "English");
 
-        // Act & Assert
         var exception = await Assert.ThrowsAsync<ValidationException>(
             async () => await _handler.HandleAsync(request)
         );

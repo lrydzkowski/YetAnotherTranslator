@@ -15,7 +15,6 @@ public class DatabaseOptionsBindsCorrectlyFromConfigurationTest : TestBase
     [Fact]
     public void Run()
     {
-        // Arrange
         var configData = new Dictionary<string, string?>
         {
             ["Database:ConnectionStringSecretName"] = "db-connection"
@@ -30,10 +29,8 @@ public class DatabaseOptionsBindsCorrectlyFromConfigurationTest : TestBase
 
         var provider = services.BuildServiceProvider();
 
-        // Act
         var options = provider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
 
-        // Assert
         Verify(options);
     }
 }

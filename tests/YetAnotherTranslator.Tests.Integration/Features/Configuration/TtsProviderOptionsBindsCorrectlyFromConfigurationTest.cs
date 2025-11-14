@@ -15,7 +15,6 @@ public class TtsProviderOptionsBindsCorrectlyFromConfigurationTest : TestBase
     [Fact]
     public void Run()
     {
-        // Arrange
         var configData = new Dictionary<string, string?>
         {
             ["TtsProvider:Provider"] = "ElevenLabs",
@@ -32,10 +31,8 @@ public class TtsProviderOptionsBindsCorrectlyFromConfigurationTest : TestBase
 
         var provider = services.BuildServiceProvider();
 
-        // Act
         var options = provider.GetRequiredService<IOptions<TtsProviderOptions>>().Value;
 
-        // Assert
         Verify(options);
     }
 }

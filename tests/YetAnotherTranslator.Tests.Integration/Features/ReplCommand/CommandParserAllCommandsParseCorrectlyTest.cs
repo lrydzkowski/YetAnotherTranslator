@@ -12,10 +12,8 @@ public class CommandParserAllCommandsParseCorrectlyTest : TestBase
     [Fact]
     public void Run()
     {
-        // Arrange
         var parser = new CommandParser();
 
-        // Act - Parse all command variations
         var results = new
         {
             TranslateWordT = parser.Parse("/t word"),
@@ -48,7 +46,6 @@ public class CommandParserAllCommandsParseCorrectlyTest : TestBase
             QuitQ = parser.Parse("/q")
         };
 
-        // Assert
         Verify(results);
     }
 }

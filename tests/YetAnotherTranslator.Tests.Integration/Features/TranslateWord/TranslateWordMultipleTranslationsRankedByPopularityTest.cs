@@ -29,7 +29,6 @@ public class TranslateWordMultipleTranslationsRankedByPopularityTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string mockResponse = @"{
   ""translations"": [
     {
@@ -72,10 +71,8 @@ public class TranslateWordMultipleTranslationsRankedByPopularityTest : TestBase
 
         var request = new TranslateWordRequest("zamek", SourceLanguage.Polish, "English", UseCache: false);
 
-        // Act
         TranslationResult result = await _handler.HandleAsync(request);
 
-        // Assert
         await Verify(result);
     }
 }

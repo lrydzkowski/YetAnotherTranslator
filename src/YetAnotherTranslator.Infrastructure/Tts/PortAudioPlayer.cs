@@ -21,7 +21,6 @@ public class PortAudioPlayer : IAudioPlayer, IDisposable
 
         try
         {
-            // ElevenLabs returns MP3 by default, so we need to decode it
             await Task.Run(() => PlayMp3Audio(audioData, cancellationToken), cancellationToken);
         }
         catch (OperationCanceledException)
@@ -47,7 +46,6 @@ public class PortAudioPlayer : IAudioPlayer, IDisposable
         waveOut.Init(mp3Reader);
         waveOut.Play();
 
-        // Wait for playback to complete or cancellation
         while (waveOut.PlaybackState == PlaybackState.Playing)
         {
             if (cancellationToken.IsCancellationRequested)

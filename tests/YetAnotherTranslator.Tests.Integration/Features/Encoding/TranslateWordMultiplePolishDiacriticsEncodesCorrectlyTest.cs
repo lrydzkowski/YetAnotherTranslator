@@ -29,7 +29,6 @@ public class TranslateWordMultiplePolishDiacriticsEncodesCorrectlyTest : TestBas
     [Fact]
     public async Task Run()
     {
-        // Arrange - Word with multiple diacritics
         string polishWord = "mąż"; // husband
         string mockResponse = @"{
   ""translations"": [
@@ -57,15 +56,12 @@ public class TranslateWordMultiplePolishDiacriticsEncodesCorrectlyTest : TestBas
 
         var request = new TranslateWordRequest(polishWord, SourceLanguage.Polish, "English", UseCache: false);
 
-        // Act
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 
-        // Verify UTF-8 encoding
         byte[] utf8Bytes = System.Text.Encoding.UTF8.GetBytes(result.InputText);
         string decodedText = System.Text.Encoding.UTF8.GetString(utf8Bytes);
         string hexString = BitConverter.ToString(utf8Bytes);
 
-        // Assert
         await Verify(new
         {
             Result = result,

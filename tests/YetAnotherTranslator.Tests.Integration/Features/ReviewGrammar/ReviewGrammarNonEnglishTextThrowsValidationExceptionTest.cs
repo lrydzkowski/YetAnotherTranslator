@@ -29,10 +29,8 @@ public class ReviewGrammarNonEnglishTextThrowsValidationExceptionTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string inputText = "Witaj świecie! To jest test.";
 
-        // Mock language detection to return Polish
         WireMockServer.Given(
             Request.Create()
                 .WithPath("/v1/messages")
@@ -47,7 +45,6 @@ public class ReviewGrammarNonEnglishTextThrowsValidationExceptionTest : TestBase
 
         var request = new ReviewGrammarRequest(inputText);
 
-        // Act & Assert
         var exception = await Assert.ThrowsAsync<ValidationException>(
             async () => await _handler.HandleAsync(request)
         );

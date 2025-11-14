@@ -29,7 +29,6 @@ public class TranslateWordOfflineCacheRetrievesFromCacheWhenServerUnavailableTes
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string mockResponse = @"{
   ""translations"": [
     {
@@ -56,14 +55,12 @@ public class TranslateWordOfflineCacheRetrievesFromCacheWhenServerUnavailableTes
 
         var request = new TranslateWordRequest("książka", SourceLanguage.Polish, "English", UseCache: true);
 
-        // Act
         TranslationResult firstResult = await _handler.HandleAsync(request);
 
         WireMockServer.Stop();
 
         TranslationResult offlineResult = await _handler.HandleAsync(request);
 
-        // Assert
         var results = new
         {
             FirstResult = firstResult,

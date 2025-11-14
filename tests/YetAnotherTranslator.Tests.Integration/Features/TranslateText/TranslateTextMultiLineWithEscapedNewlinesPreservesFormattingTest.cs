@@ -29,11 +29,9 @@ public class TranslateTextMultiLineWithEscapedNewlinesPreservesFormattingTest : 
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string inputText = "Pierwsza linia.\nDruga linia.\n\nTrzecia linia po pustej linii.";
         string translatedText = "First line.\nSecond line.\n\nThird line after an empty line.";
 
-        // Mock language detection
         WireMockServer.Given(
             Request.Create()
                 .WithPath("/v1/messages")
@@ -46,7 +44,6 @@ public class TranslateTextMultiLineWithEscapedNewlinesPreservesFormattingTest : 
                 .WithBody($@"{{""content"":[{{""type"":""text"",""text"":""Polish""}}]}}")
         );
 
-        // Mock translation
         WireMockServer.Given(
             Request.Create()
                 .WithPath("/v1/messages")
@@ -61,10 +58,8 @@ public class TranslateTextMultiLineWithEscapedNewlinesPreservesFormattingTest : 
 
         var request = new TranslateTextRequest(inputText, SourceLanguage.Auto, "English", UseCache: false);
 
-        // Act
         TextTranslationResult result = await _handler.HandleAsync(request);
 
-        // Assert
         await Verify(result);
     }
 }

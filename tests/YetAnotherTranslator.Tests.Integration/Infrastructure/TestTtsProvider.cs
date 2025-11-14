@@ -9,7 +9,6 @@ public class TestTtsProvider : ITtsProvider
         string? partOfSpeech = null,
         CancellationToken cancellationToken = default)
     {
-        // Return fake audio data (just some bytes to simulate MP3 data)
         var audioData = new byte[] { 0xFF, 0xFB, 0x90, 0x44, 0x00, 0x00, 0x00, 0x00 };
         return Task.FromResult(audioData);
     }

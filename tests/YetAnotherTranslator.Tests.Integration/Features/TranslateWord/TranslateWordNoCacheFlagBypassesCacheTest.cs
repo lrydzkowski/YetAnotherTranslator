@@ -29,7 +29,6 @@ public class TranslateWordNoCacheFlagBypassesCacheTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string mockResponse1 = @"{
   ""translations"": [
     {
@@ -84,11 +83,9 @@ public class TranslateWordNoCacheFlagBypassesCacheTest : TestBase
 
         var request = new TranslateWordRequest("dom", SourceLanguage.Polish, "English", UseCache: false);
 
-        // Act
         TranslationResult firstResult = await _handler.HandleAsync(request);
         TranslationResult secondResult = await _handler.HandleAsync(request);
 
-        // Assert
         var results = new
         {
             FirstResult = firstResult,

@@ -12,15 +12,12 @@ public class CommandParserInvalidCommandReturnsInvalidTest : TestBase
     [Fact]
     public void Run()
     {
-        // Arrange
         var parser = new CommandParser();
 
-        // Act
         var result = parser.Parse("/unknown");
         var emptyResult = parser.Parse("");
         var noSlashResult = parser.Parse("test");
 
-        // Assert
         Verify(new
         {
             UnknownCommandResult = result,

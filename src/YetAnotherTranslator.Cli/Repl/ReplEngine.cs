@@ -250,8 +250,6 @@ public class ReplEngine
             return;
         }
 
-        // Parse the argument to check for part-of-speech parameter
-        // Format: "word [pos:noun]"
         string text = command.Argument;
         string? partOfSpeech = null;
 

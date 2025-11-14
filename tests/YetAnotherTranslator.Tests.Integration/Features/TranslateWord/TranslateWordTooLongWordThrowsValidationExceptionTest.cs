@@ -28,11 +28,9 @@ public class TranslateWordTooLongWordThrowsValidationExceptionTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string longWord = new string('a', 101);
         var request = new TranslateWordRequest(longWord, SourceLanguage.Polish, "English");
 
-        // Act & Assert
         var exception = await Assert.ThrowsAsync<ValidationException>(
             async () => await _handler.HandleAsync(request)
         );

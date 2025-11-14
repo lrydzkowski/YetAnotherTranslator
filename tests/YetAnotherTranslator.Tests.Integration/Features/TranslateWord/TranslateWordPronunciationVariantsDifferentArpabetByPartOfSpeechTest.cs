@@ -29,7 +29,6 @@ public class TranslateWordPronunciationVariantsDifferentArpabetByPartOfSpeechTes
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string mockResponse = @"{
   ""translations"": [
     {
@@ -64,10 +63,8 @@ public class TranslateWordPronunciationVariantsDifferentArpabetByPartOfSpeechTes
 
         var request = new TranslateWordRequest("nagrywać", SourceLanguage.Polish, "English", UseCache: false);
 
-        // Act
         TranslationResult result = await _handler.HandleAsync(request);
 
-        // Assert
         await Verify(result);
     }
 }

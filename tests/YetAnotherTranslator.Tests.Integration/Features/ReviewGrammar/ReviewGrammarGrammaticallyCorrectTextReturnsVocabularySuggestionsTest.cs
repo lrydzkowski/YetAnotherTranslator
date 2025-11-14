@@ -28,7 +28,6 @@ public class ReviewGrammarGrammaticallyCorrectTextReturnsVocabularySuggestionsTe
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string inputText = "The weather is good today. I am happy.";
 
         string grammarResponse = @"{
@@ -47,7 +46,6 @@ public class ReviewGrammarGrammaticallyCorrectTextReturnsVocabularySuggestionsTe
   ]
 }";
 
-        // Mock language detection
         WireMockServer.Given(
             Request.Create()
                 .WithPath("/v1/messages")
@@ -60,7 +58,6 @@ public class ReviewGrammarGrammaticallyCorrectTextReturnsVocabularySuggestionsTe
                 .WithBody($@"{{""content"":[{{""type"":""text"",""text"":""{{\\""language\\"": \\""English\\"", \\""confidence\\"": 98}}""}}]}}")
         );
 
-        // Mock grammar review
         WireMockServer.Given(
             Request.Create()
                 .WithPath("/v1/messages")
@@ -75,10 +72,8 @@ public class ReviewGrammarGrammaticallyCorrectTextReturnsVocabularySuggestionsTe
 
         var request = new ReviewGrammarRequest(inputText);
 
-        // Act
         GrammarReviewResult result = await _handler.HandleAsync(request);
 
-        // Assert
         await Verify(result);
     }
 }

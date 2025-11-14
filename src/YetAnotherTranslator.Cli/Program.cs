@@ -52,7 +52,6 @@ internal class Program
                     );
                     config.AddEnvironmentVariables();
 
-                    // Build intermediate configuration to get Key Vault name
                     IConfigurationRoot intermediateConfig = config.Build();
                     string? vaultName = intermediateConfig["KeyVault:VaultName"];
 

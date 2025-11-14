@@ -28,7 +28,6 @@ public class ReviewGrammarTextWithGrammarErrorsReturnsGrammarIssuesTest : TestBa
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string inputText = "The cat sit on the mat. She don't like dogs.";
 
         string grammarResponse = @"{
@@ -47,7 +46,6 @@ public class ReviewGrammarTextWithGrammarErrorsReturnsGrammarIssuesTest : TestBa
   ""vocabularySuggestions"": []
 }";
 
-        // Mock language detection to confirm it's English
         WireMockServer.Given(
             Request.Create()
                 .WithPath("/v1/messages")
@@ -60,7 +58,6 @@ public class ReviewGrammarTextWithGrammarErrorsReturnsGrammarIssuesTest : TestBa
                 .WithBody($@"{{""content"":[{{""type"":""text"",""text"":""{{\\""language\\"": \\""English\\"", \\""confidence\\"": 95}}""}}]}}")
         );
 
-        // Mock grammar review
         WireMockServer.Given(
             Request.Create()
                 .WithPath("/v1/messages")
@@ -75,10 +72,8 @@ public class ReviewGrammarTextWithGrammarErrorsReturnsGrammarIssuesTest : TestBa
 
         var request = new ReviewGrammarRequest(inputText);
 
-        // Act
         GrammarReviewResult result = await _handler.HandleAsync(request);
 
-        // Assert
         await Verify(result);
     }
 }

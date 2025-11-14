@@ -15,7 +15,6 @@ public class ConfigurationWithValidSettingsLoadsSuccessfullyTest : TestBase
     [Fact]
     public void Run()
     {
-        // Arrange
         var configData = new Dictionary<string, string?>
         {
             ["KeyVault:VaultName"] = "test-vault",
@@ -42,13 +41,11 @@ public class ConfigurationWithValidSettingsLoadsSuccessfullyTest : TestBase
 
         var provider = services.BuildServiceProvider();
 
-        // Act
         var keyVaultOptions = provider.GetRequiredService<IOptions<KeyVaultOptions>>().Value;
         var llmOptions = provider.GetRequiredService<IOptions<LlmProviderOptions>>().Value;
         var ttsOptions = provider.GetRequiredService<IOptions<TtsProviderOptions>>().Value;
         var dbOptions = provider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
 
-        // Assert
         Verify(new
         {
             KeyVaultOptions = keyVaultOptions,

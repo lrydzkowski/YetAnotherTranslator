@@ -15,7 +15,6 @@ public class ConfigurationWithMissingVaultNameReturnsEmptyVaultUriTest : TestBas
     [Fact]
     public void Run()
     {
-        // Arrange
         var configData = new Dictionary<string, string?>
         {
             ["KeyVault:VaultName"] = ""
@@ -30,10 +29,8 @@ public class ConfigurationWithMissingVaultNameReturnsEmptyVaultUriTest : TestBas
 
         var provider = services.BuildServiceProvider();
 
-        // Act
         var keyVaultOptions = provider.GetRequiredService<IOptions<KeyVaultOptions>>().Value;
 
-        // Assert
         Verify(keyVaultOptions);
     }
 }

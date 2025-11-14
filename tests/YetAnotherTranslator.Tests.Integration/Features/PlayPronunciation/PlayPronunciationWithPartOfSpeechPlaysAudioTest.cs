@@ -33,15 +33,12 @@ public class PlayPronunciationWithPartOfSpeechPlaysAudioTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string word = "record";
         string partOfSpeech = "noun";
         var request = new PlayPronunciationRequest(word, partOfSpeech, UseCache: false);
 
-        // Act
         PronunciationResult result = await _handler.HandleAsync(request);
 
-        // Assert
         await Verify(new
         {
             Result = result,

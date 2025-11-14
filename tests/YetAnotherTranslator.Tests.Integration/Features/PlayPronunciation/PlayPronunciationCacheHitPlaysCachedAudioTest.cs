@@ -33,18 +33,14 @@ public class PlayPronunciationCacheHitPlaysCachedAudioTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string word = "test";
 
-        // First call - should generate and cache
         var request1 = new PlayPronunciationRequest(word, null, UseCache: true);
         PronunciationResult result1 = await _handler.HandleAsync(request1);
 
-        // Second call - should use cache
         var request2 = new PlayPronunciationRequest(word, null, UseCache: true);
         PronunciationResult result2 = await _handler.HandleAsync(request2);
 
-        // Assert
         await Verify(new
         {
             FirstResult = result1,

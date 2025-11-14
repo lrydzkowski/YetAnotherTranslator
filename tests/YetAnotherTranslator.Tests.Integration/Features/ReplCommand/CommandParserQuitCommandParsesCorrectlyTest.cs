@@ -12,14 +12,11 @@ public class CommandParserQuitCommandParsesCorrectlyTest : TestBase
     [Fact]
     public void Run()
     {
-        // Arrange
         var parser = new CommandParser();
 
-        // Act
         var quitResult = parser.Parse("/quit");
         var qResult = parser.Parse("/q");
 
-        // Assert
         Verify(new
         {
             QuitResult = quitResult,

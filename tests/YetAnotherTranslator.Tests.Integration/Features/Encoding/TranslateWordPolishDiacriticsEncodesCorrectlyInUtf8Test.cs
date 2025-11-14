@@ -38,7 +38,6 @@ public class TranslateWordPolishDiacriticsEncodesCorrectlyInUtf8Test : TestBase
     [InlineData("ż", "z with dot above")]
     public async Task Run(string polishChar, string description)
     {
-        // Arrange
         string mockResponse = $@"{{
   ""translations"": [
     {{
@@ -65,14 +64,11 @@ public class TranslateWordPolishDiacriticsEncodesCorrectlyInUtf8Test : TestBase
 
         var request = new TranslateWordRequest(polishChar, SourceLanguage.Polish, "English", UseCache: false);
 
-        // Act
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 
-        // Verify UTF-8 encoding
         byte[] utf8Bytes = System.Text.Encoding.UTF8.GetBytes(result.InputText);
         string decodedText = System.Text.Encoding.UTF8.GetString(utf8Bytes);
 
-        // Assert
         await Verify(new
         {
             PolishChar = polishChar,

@@ -29,7 +29,6 @@ public class TranslateWordEnglishToPolishNoCmuArpabetTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string mockResponse = @"{
   ""translations"": [
     {
@@ -55,10 +54,8 @@ public class TranslateWordEnglishToPolishNoCmuArpabetTest : TestBase
 
         var request = new TranslateWordRequest("cat", SourceLanguage.English, "Polish", UseCache: false);
 
-        // Act
         TranslationResult result = await _handler.HandleAsync(request);
 
-        // Assert
         await Verify(result);
     }
 }

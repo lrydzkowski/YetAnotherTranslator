@@ -12,13 +12,10 @@ public class CommandParserHelpCommandParsesCorrectlyTest : TestBase
     [Fact]
     public void Run()
     {
-        // Arrange
         var parser = new CommandParser();
 
-        // Act
         var helpResult = parser.Parse("/help");
 
-        // Assert
         Verify(helpResult);
     }
 }

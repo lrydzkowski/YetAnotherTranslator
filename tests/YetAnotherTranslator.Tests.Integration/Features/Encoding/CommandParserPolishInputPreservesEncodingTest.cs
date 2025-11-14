@@ -12,18 +12,14 @@ public class CommandParserPolishInputPreservesEncodingTest : TestBase
     [Fact]
     public void Run()
     {
-        // Arrange
         var parser = new CommandParser();
         string polishInput = "/t książka"; // book
 
-        // Act
         var command = parser.Parse(polishInput);
 
-        // Verify UTF-8 encoding is preserved
         byte[] utf8Bytes = System.Text.Encoding.UTF8.GetBytes(command.Argument);
         string decodedText = System.Text.Encoding.UTF8.GetString(utf8Bytes);
 
-        // Assert
         Verify(new
         {
             Command = command,

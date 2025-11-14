@@ -29,11 +29,9 @@ public class TranslateTextPolishToEnglishReturnsTranslatedTextTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string inputText = "Witaj świecie! To jest test tłumaczenia tekstu.";
         string translatedText = "Hello world! This is a text translation test.";
 
-        // Mock language detection
         WireMockServer.Given(
             Request.Create()
                 .WithPath("/v1/messages")
@@ -46,7 +44,6 @@ public class TranslateTextPolishToEnglishReturnsTranslatedTextTest : TestBase
                 .WithBody($@"{{""content"":[{{""type"":""text"",""text"":""Polish""}}]}}")
         );
 
-        // Mock translation
         WireMockServer.Given(
             Request.Create()
                 .WithPath("/v1/messages")
@@ -61,10 +58,8 @@ public class TranslateTextPolishToEnglishReturnsTranslatedTextTest : TestBase
 
         var request = new TranslateTextRequest(inputText, SourceLanguage.Auto, "English", UseCache: false);
 
-        // Act
         TextTranslationResult result = await _handler.HandleAsync(request);
 
-        // Assert
         await Verify(result);
     }
 }

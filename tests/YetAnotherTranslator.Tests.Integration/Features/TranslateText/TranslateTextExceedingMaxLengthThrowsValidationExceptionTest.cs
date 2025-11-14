@@ -28,12 +28,10 @@ public class TranslateTextExceedingMaxLengthThrowsValidationExceptionTest : Test
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string inputText = new string('a', 5001); // Exceeds 5000 character limit
 
         var request = new TranslateTextRequest(inputText, SourceLanguage.Auto, "English", UseCache: false);
 
-        // Act & Assert
         var exception = await Assert.ThrowsAsync<ValidationException>(
             async () => await _handler.HandleAsync(request)
         );

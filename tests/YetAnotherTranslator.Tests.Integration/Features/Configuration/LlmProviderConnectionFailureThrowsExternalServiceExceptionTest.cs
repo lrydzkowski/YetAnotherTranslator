@@ -14,7 +14,6 @@ public class LlmProviderConnectionFailureThrowsExternalServiceExceptionTest : Te
     [Fact]
     public async Task Run()
     {
-        // Arrange
         WireMockServer.Given(
             Request
                 .Create()
@@ -29,7 +28,6 @@ public class LlmProviderConnectionFailureThrowsExternalServiceExceptionTest : Te
 
         var provider = new TestLlmProvider(WireMockServer.Url!);
 
-        // Act & Assert
         var exception = await Assert.ThrowsAsync<ExternalServiceException>(
             async () => await provider.DetectLanguageAsync("test")
         );

@@ -29,7 +29,6 @@ public class TranslateWordPolishDiacriticsRendersCorrectlyInUtf8Test : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string mockResponse = @"{
   ""translations"": [
     {
@@ -56,13 +55,11 @@ public class TranslateWordPolishDiacriticsRendersCorrectlyInUtf8Test : TestBase
 
         var request = new TranslateWordRequest("żółć", SourceLanguage.Polish, "English", UseCache: false);
 
-        // Act
         TranslationResult result = await _handler.HandleAsync(request);
 
         byte[] utf8Bytes = System.Text.Encoding.UTF8.GetBytes(result.InputText);
         string roundtrip = System.Text.Encoding.UTF8.GetString(utf8Bytes);
 
-        // Assert
         await Verify(new
         {
             Result = result,

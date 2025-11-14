@@ -27,11 +27,9 @@ public class GetHistoryAfterMultipleOperationsReturnsAllOperationsTest : TestBas
 
         var historyRepository = ServiceProvider.GetRequiredService<Core.Interfaces.IHistoryRepository>();
 
-        // Create GetHistoryHandler
         var getHistoryValidator = new GetHistoryValidator();
         _handler = new GetHistoryHandler(getHistoryValidator, historyRepository);
 
-        // Create other handlers for performing operations
         var llmProvider = new TestLlmProvider(WireMockServer.Url!);
 
         var translateWordValidator = new TranslateWordValidator();
@@ -47,9 +45,7 @@ public class GetHistoryAfterMultipleOperationsReturnsAllOperationsTest : TestBas
     [Fact]
     public async Task Run()
     {
-        // Arrange - Perform multiple operations to populate history
 
-        // 1. Translate a word (Polish to English)
         string wordTranslationResponse = @"{
   ""translations"": [
     {
@@ -76,7 +72,6 @@ public class GetHistoryAfterMultipleOperationsReturnsAllOperationsTest : TestBas
         var translateWordRequest = new TranslateWordRequest("pies", SourceLanguage.Polish, "English", UseCache: false);
         await _translateWordHandler.HandleAsync(translateWordRequest, CancellationToken.None);
 
-        // 2. Translate text (Polish to English)
         string detectLanguageResponse = @"{
   ""language"": ""Polish"",
   ""confidence"": 95
@@ -108,7 +103,6 @@ public class GetHistoryAfterMultipleOperationsReturnsAllOperationsTest : TestBas
         var translateTextRequest = new TranslateTextRequest("To jest zdanie testowe.", SourceLanguage.Polish, "English", UseCache: false);
         await _translateTextHandler.HandleAsync(translateTextRequest, CancellationToken.None);
 
-        // 3. Review grammar
         string grammarDetectResponse = @"{
   ""language"": ""English"",
   ""confidence"": 98
@@ -149,11 +143,9 @@ public class GetHistoryAfterMultipleOperationsReturnsAllOperationsTest : TestBas
         var reviewGrammarRequest = new ReviewGrammarRequest("The dogs is barking");
         await _reviewGrammarHandler.HandleAsync(reviewGrammarRequest, CancellationToken.None);
 
-        // Act
         var getHistoryRequest = new GetHistoryRequest(Limit: 50);
         var result = await _handler.HandleAsync(getHistoryRequest, CancellationToken.None);
 
-        // Assert - Use Verify but scrub timestamps for stable snapshots
         var settings = new VerifySettings();
         settings.ScrubMember("Timestamp");
         await Verify(result, settings);

@@ -24,13 +24,10 @@ public class GetHistoryEmptyHistoryReturnsEmptyListTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange
         var request = new GetHistoryRequest(Limit: 50);
 
-        // Act
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 
-        // Assert
         await Verify(result);
     }
 }

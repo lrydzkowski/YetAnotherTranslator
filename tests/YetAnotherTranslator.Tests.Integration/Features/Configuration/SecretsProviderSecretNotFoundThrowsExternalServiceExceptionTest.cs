@@ -14,7 +14,6 @@ public class SecretsProviderSecretNotFoundThrowsExternalServiceExceptionTest : T
     [Fact]
     public async Task Run()
     {
-        // Arrange
         WireMockServer.Given(
             Request
                 .Create()
@@ -29,7 +28,6 @@ public class SecretsProviderSecretNotFoundThrowsExternalServiceExceptionTest : T
 
         var provider = new TestSecretsProvider(WireMockServer.Url!);
 
-        // Act & Assert
         var exception = await Assert.ThrowsAsync<ExternalServiceException>(
             async () => await provider.GetSecretAsync("nonexistent-key")
         );

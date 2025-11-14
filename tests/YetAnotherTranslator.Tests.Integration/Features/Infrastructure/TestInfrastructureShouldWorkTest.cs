@@ -11,10 +11,8 @@ public class TestInfrastructureShouldWorkTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange & Act
         await Task.CompletedTask;
 
-        // Assert
         await Verify(new { InfrastructureWorking = true });
     }
 }

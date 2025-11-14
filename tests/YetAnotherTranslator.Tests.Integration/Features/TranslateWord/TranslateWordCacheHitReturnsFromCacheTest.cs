@@ -29,7 +29,6 @@ public class TranslateWordCacheHitReturnsFromCacheTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string mockResponse = @"{
   ""translations"": [
     {
@@ -56,14 +55,12 @@ public class TranslateWordCacheHitReturnsFromCacheTest : TestBase
 
         var request = new TranslateWordRequest("pies", SourceLanguage.Polish, "English", UseCache: true);
 
-        // Act
         TranslationResult firstResult = await _handler.HandleAsync(request);
 
         WireMockServer.ResetMappings();
 
         TranslationResult cachedResult = await _handler.HandleAsync(request);
 
-        // Assert
         var results = new
         {
             FirstResult = firstResult,

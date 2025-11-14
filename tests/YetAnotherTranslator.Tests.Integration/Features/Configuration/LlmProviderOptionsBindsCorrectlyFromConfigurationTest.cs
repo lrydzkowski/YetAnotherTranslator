@@ -15,7 +15,6 @@ public class LlmProviderOptionsBindsCorrectlyFromConfigurationTest : TestBase
     [Fact]
     public void Run()
     {
-        // Arrange
         var configData = new Dictionary<string, string?>
         {
             ["LlmProvider:Provider"] = "Anthropic",
@@ -34,10 +33,8 @@ public class LlmProviderOptionsBindsCorrectlyFromConfigurationTest : TestBase
 
         var provider = services.BuildServiceProvider();
 
-        // Act
         var options = provider.GetRequiredService<IOptions<LlmProviderOptions>>().Value;
 
-        // Assert
         Verify(options);
     }
 }

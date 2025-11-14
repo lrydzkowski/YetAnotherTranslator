@@ -29,7 +29,6 @@ public class TranslateWordPolishSentenceWithDiacriticsEncodesCorrectlyTest : Tes
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string polishWord = "źródło"; // source/spring
         string mockResponse = @"{
   ""translations"": [
@@ -57,18 +56,14 @@ public class TranslateWordPolishSentenceWithDiacriticsEncodesCorrectlyTest : Tes
 
         var request = new TranslateWordRequest(polishWord, SourceLanguage.Polish, "English", UseCache: false);
 
-        // Act
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 
-        // Verify UTF-8 encoding for word
         byte[] utf8Bytes = System.Text.Encoding.UTF8.GetBytes(result.InputText);
         string decodedText = System.Text.Encoding.UTF8.GetString(utf8Bytes);
 
-        // Verify UTF-8 encoding for example sentence
         byte[] exampleBytes = System.Text.Encoding.UTF8.GetBytes(result.Translations[0].Examples[0]);
         string decodedExample = System.Text.Encoding.UTF8.GetString(exampleBytes);
 
-        // Assert
         await Verify(new
         {
             Result = result,

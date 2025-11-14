@@ -33,14 +33,11 @@ public class PlayPronunciationPhrasePlaysAudioTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange
         string phrase = "hello world";
         var request = new PlayPronunciationRequest(phrase, null, UseCache: false);
 
-        // Act
         PronunciationResult result = await _handler.HandleAsync(request);
 
-        // Assert
         await Verify(new
         {
             Result = result,

@@ -20,7 +20,7 @@ public class ElevenLabsTtsProvider : ITtsProvider
         }
 
         _apiKey = apiKey;
-        _voiceId = voiceId ?? "21m00Tcm4TlvDq8ikWAM"; // Default voice (Rachel)
+        _voiceId = voiceId ?? "21m00Tcm4TlvDq8ikWAM";
         _httpClient = new HttpClient();
         _httpClient.DefaultRequestHeaders.Add("xi-api-key", _apiKey);
     }

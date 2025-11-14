@@ -23,11 +23,9 @@ public class GetHistoryWithLimitReturnsLimitedResultsTest : TestBase
 
         var historyRepository = ServiceProvider.GetRequiredService<Core.Interfaces.IHistoryRepository>();
 
-        // Create GetHistoryHandler
         var getHistoryValidator = new GetHistoryValidator();
         _handler = new GetHistoryHandler(getHistoryValidator, historyRepository);
 
-        // Create TranslateWordHandler for performing operations
         var llmProvider = new TestLlmProvider(WireMockServer.Url!);
         var translateWordValidator = new TranslateWordValidator();
         _translateWordHandler = new TranslateWordHandler(llmProvider, translateWordValidator, historyRepository);
@@ -36,7 +34,6 @@ public class GetHistoryWithLimitReturnsLimitedResultsTest : TestBase
     [Fact]
     public async Task Run()
     {
-        // Arrange - Perform 5 operations
         string mockResponse = @"{
   ""translations"": [
     {
@@ -67,11 +64,9 @@ public class GetHistoryWithLimitReturnsLimitedResultsTest : TestBase
             await _translateWordHandler.HandleAsync(request, CancellationToken.None);
         }
 
-        // Act - Request only 3 entries
         var getHistoryRequest = new GetHistoryRequest(Limit: 3);
         var result = await _handler.HandleAsync(getHistoryRequest, CancellationToken.None);
 
-        // Assert - Scrub timestamps for stable snapshots
         var settings = new VerifySettings();
         settings.ScrubMember("Timestamp");
         await Verify(result, settings);

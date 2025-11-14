@@ -14,7 +14,6 @@ public class SecretsProviderNetworkTimeoutThrowsExternalServiceExceptionTest : T
     [Fact]
     public async Task Run()
     {
-        // Arrange
         WireMockServer.Given(
             Request
                 .Create()
@@ -30,7 +29,6 @@ public class SecretsProviderNetworkTimeoutThrowsExternalServiceExceptionTest : T
 
         var provider = new TestSecretsProvider(WireMockServer.Url!);
 
-        // Act & Assert
         var exception = await Assert.ThrowsAsync<ExternalServiceException>(
             async () => await provider.GetSecretAsync("test-key")
         );
