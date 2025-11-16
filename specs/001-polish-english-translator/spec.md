@@ -23,7 +23,7 @@
 - Q: How should audio pronunciation be generated for the pronunciation playback feature? → A: Text-to-speech API - Use dedicated TTS service (Google Cloud TTS, Amazon Polly, Azure Speech) to generate and play audio
 - Q: How should API credentials for LLM and TTS providers be stored securely in the configuration file? → A: Integration with external secret storage
 - Q: What configuration file format should the application use? → A: JSON
-- Q: Where should the configuration file be located? → A: Standard user config directory
+- Q: Where should the configuration file be located? → A: Application directory (appsettings.json)
 - Q: Which approach should be supported for external secret storage? → A: Dedicated secret managers - Support specific services like HashiCorp Vault, AWS Secrets Manager, Azure Key Vault
 
 ### Session 2025-11-03
@@ -143,13 +143,13 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 
 **Acceptance Scenarios**:
 
-1. **Given** the user runs the application with no configuration file, **When** the application starts, **Then** the system displays a clear error message indicating the missing configuration file and its expected location in the standard user config directory (e.g., `~/.config/translator/config.json` on Linux, `%APPDATA%\translator\config.json` on Windows)
+1. **Given** the user runs the application with no appsettings.json file, **When** the application starts, **Then** the system displays a clear error message indicating the missing configuration file and its expected location (e.g., `src/YetAnotherTranslator.Cli/appsettings.json`)
 2. **Given** the user runs the application with a malformed JSON configuration file, **When** the application starts, **Then** the system displays a clear error message indicating the JSON syntax error with line and column information
 3. **Given** the user runs the application with an incomplete configuration file (missing LLM provider settings), **When** the application starts, **Then** the system displays a clear error message listing the missing required configuration fields
 4. **Given** the user runs the application with an incomplete configuration file (missing TTS provider settings), **When** the application starts, **Then** the system displays a clear error message listing the missing required configuration fields
-5. **Given** the user runs the application with an incomplete configuration file (missing secret manager settings), **When** the application starts, **Then** the system displays a clear error message listing the missing required configuration fields
-6. **Given** the user runs the application with a valid configuration file, **When** the application starts, **Then** the system retrieves credentials from the configured secret manager and launches directly into the REPL
-7. **Given** the user runs the application with invalid secret manager connection settings, **When** the application attempts to retrieve credentials, **Then** the system displays a clear error message about the secret manager connection failure
+5. **Given** the user runs the application with an incomplete configuration file (missing Key Vault settings), **When** the application starts, **Then** the system displays a clear error message listing the missing required configuration fields
+6. **Given** the user runs the application with a valid configuration file, **When** the application starts, **Then** the system retrieves credentials from Azure Key Vault via configuration provider and launches directly into the REPL
+7. **Given** the user runs the application with invalid Key Vault connection settings, **When** the application attempts to retrieve credentials, **Then** the system displays a clear error message about the Key Vault connection failure
 8. **Given** the user runs the application with valid configuration, **When** the application cannot connect to the configured LLM provider, **Then** the system displays a clear error message about the LLM provider connection failure
 
 ---
@@ -223,24 +223,24 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - **FR-023**: System MUST use LLM-based implementation for word translation (including CMU Arpabet generation), text translation, and grammar review functions
 - **FR-024**: System MUST leverage LLM's inherent spelling correction capabilities without implementing separate spell-checking logic
 - **FR-025**: System MUST use Anthropic as LLM provider (v1 scope: single LLM provider; pluggable multi-provider architecture deferred to future releases)
-- **FR-026**: System MUST allow users to configure Anthropic LLM settings (model, temperature, max tokens) via JSON configuration file (v1 scope: single provider configuration; multi-provider operation mapping deferred to future releases)
-- **FR-027**: System MUST read configuration from a JSON configuration file located in the standard user config directory (e.g., `~/.config/translator/config.json` on Linux, `%APPDATA%\translator\config.json` on Windows) on startup
+- **FR-026**: System MUST allow users to configure Anthropic LLM settings (model, temperature, max tokens) via appsettings.json file (v1 scope: single provider configuration; multi-provider operation mapping deferred to future releases)
+- **FR-027**: System MUST read configuration from appsettings.json located in the application directory (e.g., `src/YetAnotherTranslator.Cli/appsettings.json`) on startup using .NET Configuration system with Options pattern (IOptions<T>)
 - **FR-028**: System MUST validate that all required configuration fields are present at startup. Error message format: "Configuration validation failed: Missing required field(s): [field1], [field2]. Expected location: [config file path]". Exit code: 1
 - **FR-029**: System MUST validate configuration file syntax (valid JSON) at startup and provide error messages with line and column information for JSON syntax errors. Error message format: "Configuration file syntax error at line [N], column [M]: [specific JSON error]. File: [config file path]". Exit code: 1
 - **FR-030**: System MUST display clear error messages indicating missing or invalid configuration fields when validation fails. Error message format: "Configuration validation failed: [field name] is invalid. Reason: [specific validation error]. Expected: [expected format/value]". Exit code: 1
 - **FR-031**: System MUST exit with a non-zero status code when configuration validation fails
 - **FR-031a**: System MUST use standardized exit codes: 0 (success), 1 (configuration/validation errors per FR-028/FR-029/FR-030), 2 (secret manager errors per FR-036), 3 (LLM/TTS API connection or operational errors)
-- **FR-032**: System MUST integrate with secret manager for securely storing and retrieving API credentials for LLM and TTS providers (v1 scope: Azure Key Vault only; multi-backend support for HashiCorp Vault and AWS Secrets Manager deferred to future releases)
-- **FR-033**: System MUST support secret manager (Azure Key Vault in v1) configuration via configuration file (v1 scope: single backend; configurable multi-backend selection deferred to future releases)
-- **FR-034**: System MUST store references to secrets (not the actual credentials) in the local configuration file
-- **FR-035**: System MUST retrieve actual API credentials from configured secret manager at runtime
-- **FR-036**: System MUST provide clear error messages when secret manager is unavailable or fails to return credentials. Error message formats:
+- **FR-032**: System MUST integrate with Azure Key Vault for securely storing and retrieving API credentials for LLM and TTS providers via Azure Key Vault configuration provider (v1 scope: Azure Key Vault only; multi-backend support for HashiCorp Vault and AWS Secrets Manager deferred to future releases)
+- **FR-033**: System MUST support Azure Key Vault configuration via appsettings.json file, with Key Vault automatically integrated as a configuration source using Azure.Extensions.AspNetCore.Configuration.Secrets package (v1 scope: single backend; configurable multi-backend selection deferred to future releases)
+- **FR-034**: System MUST store references to secrets (secret names) in appsettings.json, not the actual credentials
+- **FR-035**: System MUST retrieve actual API credentials from Azure Key Vault at runtime via configuration provider, making secrets available through IConfiguration
+- **FR-036**: System MUST provide clear error messages when Azure Key Vault is unavailable or fails to return credentials. Error message formats:
   - Connection failure: "Failed to connect to Azure Key Vault at [URL]. Error: [specific error]. Verify network connectivity and Key Vault URL in configuration."
   - Authentication failure (403): "Access denied to Azure Key Vault at [URL]. Verify authentication: Run 'az login' for development or check managed identity permissions in production."
   - Secret not found (404): "Secret '[secret-name]' not found in Azure Key Vault at [URL]. Verify secret reference in configuration matches Key Vault secret name."
   - Timeout: "Connection to Azure Key Vault at [URL] timed out after [N] seconds. Check network connectivity."
   All secret manager errors result in exit code: 2
-- **FR-037**: System MUST proceed to REPL when all configuration is valid and credentials are successfully retrieved
+- **FR-037**: System MUST proceed to REPL when all configuration is valid and credentials are successfully retrieved from Azure Key Vault via configuration provider
 - **FR-038**: System MUST support UTF-8 encoding throughout the application to correctly display and accept Polish diacritical characters (ą, ć, ę, ł, ń, ó, ś, ź, ż)
 - **FR-039**: System MUST fall back to cached results when offline for translation operations and display clear error message when no cached result is available
 - **FR-040**: System MUST fall back to cached LLM responses when offline for LLM provider operations and display clear error message when no cache entry exists
@@ -295,7 +295,7 @@ A user wants to run the CLI tool, which requires proper configuration of LLM and
 - LLM providers inherently handle minor spelling variations and typos in input without requiring explicit spell-checking logic
 - ElevenLabs text-to-speech service can generate high-quality English pronunciation audio
 - TTS providers support natural-sounding pronunciation with appropriate intonation for both words and phrases
-- Operation history, LLM provider configuration (excluding credentials), TTS provider configuration (excluding credentials), and secret manager configuration storage in standard user config directory on local filesystem is acceptable
+- Operation history, LLM provider configuration (excluding credentials), TTS provider configuration (excluding credentials), and Key Vault configuration storage in application directory (appsettings.json) on local filesystem is acceptable
 - Azure Key Vault provides reliable and available access to stored credentials at runtime
 - REPL-style interactive interface is suitable for user interaction
 - LLM providers can reliably perform language auto-detection to distinguish between Polish and English text with confidence scoring

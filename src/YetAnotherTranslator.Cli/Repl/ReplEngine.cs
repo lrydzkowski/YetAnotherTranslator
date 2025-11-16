@@ -1,25 +1,36 @@
 using PrettyPrompt;
 using Spectre.Console;
-using YetAnotherTranslator.Cli.Display;
-using YetAnotherTranslator.Core.Exceptions;
-using YetAnotherTranslator.Core.Handlers.GetHistory;
-using YetAnotherTranslator.Core.Handlers.TranslateWord;
+using YetAnotherTranslator.Cli.Repl.Commands;
+using YetAnotherTranslator.Core.Common.Exceptions;
+using YetAnotherTranslator.Core.Common.Models;
 
 namespace YetAnotherTranslator.Cli.Repl;
 
-public class ReplEngine
+internal class ReplEngine
 {
+    private readonly GetHistoryCommand _getHistoryCommand;
     private readonly CommandParser _parser;
-    private readonly TranslateWordHandler _translateWordHandler;
-    private readonly Prompt _prompt;
+    private readonly PlayPronunciationCommand _playPronunciationCommand;
+    private readonly Prompt _prompt = new();
+    private readonly ReviewGrammarCommand _reviewGrammarCommand;
+    private readonly TranslateTextCommand _translateTextCommand;
+    private readonly TranslateWordCommand _translateWordCommand;
 
     public ReplEngine(
         CommandParser parser,
-        TranslateWordHandler translateWordHandler)
+        TranslateWordCommand translateWordCommand,
+        TranslateTextCommand translateTextCommand,
+        ReviewGrammarCommand reviewGrammarCommand,
+        PlayPronunciationCommand playPronunciationCommand,
+        GetHistoryCommand getHistoryCommand
+    )
     {
-        _parser = parser ?? throw new ArgumentNullException(nameof(parser));
-        _translateWordHandler = translateWordHandler ?? throw new ArgumentNullException(nameof(translateWordHandler));
-        _prompt = new Prompt();
+        _parser = parser;
+        _translateWordCommand = translateWordCommand;
+        _translateTextCommand = translateTextCommand;
+        _reviewGrammarCommand = reviewGrammarCommand;
+        _playPronunciationCommand = playPronunciationCommand;
+        _getHistoryCommand = getHistoryCommand;
     }
 
     public async Task RunAsync(CancellationToken cancellationToken = default)
@@ -31,14 +42,12 @@ public class ReplEngine
         while (!cancellationToken.IsCancellationRequested)
         {
             PromptResult promptResult = await _prompt.ReadLineAsync();
-
             if (!promptResult.IsSuccess)
             {
                 continue;
             }
 
             string input = promptResult.Text.Trim();
-
             if (string.IsNullOrWhiteSpace(input))
             {
                 continue;
@@ -47,7 +56,6 @@ public class ReplEngine
             try
             {
                 Command command = _parser.Parse(input);
-
                 if (await HandleCommandAsync(command, cancellationToken))
                 {
                     break;
@@ -86,7 +94,23 @@ public class ReplEngine
                 return false;
 
             case CommandType.TranslateWord:
-                await HandleTranslateWordAsync(command, cancellationToken);
+                await _translateWordCommand.HandleTranslateWordAsync(command, cancellationToken);
+                return false;
+
+            case CommandType.TranslateText:
+                await _translateTextCommand.HandleTranslateTextAsync(command, cancellationToken);
+                return false;
+
+            case CommandType.ReviewGrammar:
+                await _reviewGrammarCommand.HandleReviewGrammarAsync(command, cancellationToken);
+                return false;
+
+            case CommandType.PlayPronunciation:
+                await _playPronunciationCommand.HandlePlayPronunciationAsync(command, cancellationToken);
+                return false;
+
+            case CommandType.GetHistory:
+                await _getHistoryCommand.HandleGetHistoryAsync(cancellationToken);
                 return false;
 
             case CommandType.Invalid:
@@ -99,49 +123,9 @@ public class ReplEngine
         }
     }
 
-    private async Task HandleTranslateWordAsync(Command command, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrWhiteSpace(command.Argument))
-        {
-            AnsiConsole.MarkupLine("[yellow]Please provide a word to translate.[/]");
-            return;
-        }
-
-        string sourceLanguage;
-        string targetLanguage;
-
-        if (command.AutoDetectLanguage)
-        {
-            AnsiConsole.MarkupLine("[dim]Auto-detection not yet implemented. Using Polish→English.[/]");
-            sourceLanguage = "Polish";
-            targetLanguage = "English";
-        }
-        else
-        {
-            sourceLanguage = command.SourceLanguage ?? "Polish";
-            targetLanguage = command.TargetLanguage ?? "English";
-        }
-
-        var request = new TranslateWordRequest(
-            command.Argument,
-            sourceLanguage,
-            targetLanguage,
-            !command.NoCache
-        );
-
-        await AnsiConsole.Status()
-            .StartAsync("Translating...", async ctx =>
-            {
-                TranslationResult result = await _translateWordHandler.HandleAsync(request, cancellationToken);
-                ctx.Status("Done");
-                AnsiConsole.WriteLine();
-                TranslationTableFormatter.DisplayTranslations(result);
-            });
-    }
-
     private static void DisplayHelp()
     {
-        var table = new Table();
+        Table table = new();
         table.Border(TableBorder.Rounded);
         table.AddColumn(new TableColumn("[bold]Command[/]"));
         table.AddColumn(new TableColumn("[bold]Description[/]"));
@@ -150,6 +134,8 @@ public class ReplEngine
         table.AddRow("/tp, /translate-polish <word>", "Translate Polish word to English");
         table.AddRow("/te, /translate-english <word>", "Translate English word to Polish");
         table.AddRow("/tt, /translate-text <text>", "Auto-detect and translate text");
+        table.AddRow("/ttp, /translate-text-polish <text>", "Translate Polish text to English");
+        table.AddRow("/tte, /translate-text-english <text>", "Translate English text to Polish");
         table.AddRow("/r, /review <text>", "Review English grammar and vocabulary");
         table.AddRow("/p, /playback <word>", "Play pronunciation of English word");
         table.AddRow("/hist, /history", "Show operation history");

@@ -1,23 +1,21 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using YetAnotherTranslator.Core.Exceptions;
-using YetAnotherTranslator.Infrastructure.Configuration;
-using YetAnotherTranslator.Infrastructure.Persistence;
+using YetAnotherTranslator.Cli.Repl;
+using YetAnotherTranslator.Core;
+using YetAnotherTranslator.Core.Common.Exceptions;
+using YetAnotherTranslator.Infrastructure;
 
 namespace YetAnotherTranslator.Cli;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 internal class Program
 {
     private static async Task<int> Main(string[] args)
     {
         try
         {
-            ApplicationConfiguration appConfig = await ValidateAndLoadConfigurationAsync();
-
-            IHost host = CreateHostBuilder(args, appConfig).Build();
+            IHost host = CreateHostBuilder(args).Build();
             await host.RunAsync();
 
             return 0;
@@ -25,79 +23,43 @@ internal class Program
         catch (ConfigurationException ex)
         {
             await Console.Error.WriteLineAsync($"Configuration error: {ex.Message}");
+
             return 1;
         }
         catch (ExternalServiceException ex)
         {
             await Console.Error.WriteLineAsync($"Service connection error ({ex.ServiceName}): {ex.Message}");
+
             return 1;
         }
         catch (Exception ex)
         {
             await Console.Error.WriteLineAsync($"Fatal error: {ex.Message}");
+
             return 1;
         }
     }
 
-    private static async Task<ApplicationConfiguration> ValidateAndLoadConfigurationAsync()
-    {
-        var loader = new ConfigurationLoader();
-        ApplicationConfiguration config = await loader.LoadConfigurationAsync();
-        return config;
-    }
-
-    private static IHostBuilder CreateHostBuilder(string[] args, ApplicationConfiguration appConfig)
+    private static IHostBuilder CreateHostBuilder(string[] args)
     {
         return Host.CreateDefaultBuilder(args)
-            .ConfigureAppConfiguration(
-                (context, config) =>
+            .ConfigureAppConfiguration((_, config) => config.AddConfiguration(args))
+            .ConfigureServices(
+                (context, services) =>
                 {
-                    config.SetBasePath(Directory.GetCurrentDirectory());
-                    config.AddJsonFile("appsettings.json", true, true);
-                    config.AddEnvironmentVariables();
-                    config.AddCommandLine(args);
+                    services.AddAppServices();
+                    services.AddCoreServices();
+                    services.AddInfrastructureServices(context.Configuration);
                 }
             )
-            .ConfigureServices((context, services) => { ConfigureServices(services, appConfig); })
             .ConfigureLogging(
-                (context, logging) =>
+                (_, logging) =>
                 {
                     logging.ClearProviders();
                     logging.AddConsole();
                     logging.AddDebug();
                 }
             );
-    }
-
-    private static void ConfigureServices(IServiceCollection services, ApplicationConfiguration appConfig)
-    {
-        services.AddSingleton(appConfig);
-
-        services.AddDbContext<TranslatorDbContext>(
-            options => { options.UseNpgsql(appConfig.Database.ConnectionString); }
-        );
-
-        services.AddScoped<Core.Interfaces.IHistoryRepository, Infrastructure.Persistence.HistoryRepository>();
-        services.AddScoped<Core.Interfaces.ISecretsProvider>(sp =>
-            new Infrastructure.Secrets.AzureKeyVaultSecretsProvider(appConfig.SecretManager.KeyVaultUrl)
-        );
-
-        services.AddScoped<Core.Interfaces.ILlmProvider>(sp =>
-        {
-            var secretsProvider = sp.GetRequiredService<Core.Interfaces.ISecretsProvider>();
-            string apiKey = secretsProvider.GetSecretAsync(appConfig.LlmProvider.ApiKeySecretName).Result;
-            return new Infrastructure.Llm.AnthropicLlmProvider(apiKey, appConfig.LlmProvider.Model);
-        });
-
-        services.AddScoped<FluentValidation.IValidator<Core.Handlers.TranslateWord.TranslateWordRequest>,
-            Core.Handlers.TranslateWord.TranslateWordValidator>();
-
-        services.AddScoped<Core.Handlers.TranslateWord.TranslateWordHandler>();
-
-        services.AddSingleton<Repl.CommandParser>();
-        services.AddScoped<Repl.ReplEngine>();
-
-        services.AddHostedService<ReplHostedService>();
     }
 }
 
@@ -112,8 +74,8 @@ public class ReplHostedService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        using var scope = _serviceProvider.CreateScope();
-        var replEngine = scope.ServiceProvider.GetRequiredService<Repl.ReplEngine>();
+        using IServiceScope scope = _serviceProvider.CreateScope();
+        ReplEngine replEngine = scope.ServiceProvider.GetRequiredService<ReplEngine>();
         await replEngine.RunAsync(cancellationToken);
     }
 

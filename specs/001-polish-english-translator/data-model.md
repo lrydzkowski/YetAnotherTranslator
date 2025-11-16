@@ -19,7 +19,7 @@ Represents the result of translating a word with linguistic metadata.
 **Fields**:
 
 - `SourceWord` (string, required): Original word to translate
-- `SourceLanguage` (string, required): Language of source word ("Polish" | "English")
+- `SourceLanguage` (SourceLanguage enum, required): Language of source word (SourceLanguage.Polish | SourceLanguage.English)
 - `TargetLanguage` (string, required): Language of translations ("Polish" | "English")
 - `Translations` (List<Translation>, required): Ordered list of translations by popularity
 - `DetectedLanguage` (string, nullable): Auto-detected language if auto-detect was used
@@ -36,7 +36,7 @@ Represents the result of translating a word with linguistic metadata.
 **Validation Rules**:
 
 - `SourceWord`: Not empty, max 100 characters
-- `SourceLanguage`: Must be "Polish" or "English"
+- `SourceLanguage`: Must be SourceLanguage.Polish or SourceLanguage.English
 - `TargetLanguage`: Must be "Polish" or "English", different from SourceLanguage
 - `Translations`: At least 1 translation, max 10 translations
 - `Translation.Rank`: Unique within list, sequential starting from 1
@@ -71,33 +71,38 @@ Represents the result of translating a text snippet.
 
 Represents the result of reviewing English text for grammar and vocabulary.
 
+**Files**:
+- `GrammarReviewResult.cs` - Main result class
+- `GrammarIssue.cs` - Grammar issue model (separate file for modularity)
+- `VocabularySuggestion.cs` - Vocabulary suggestion model (separate file for modularity)
+
 **Fields**:
 
-- `OriginalText` (string, required): Text that was reviewed
-- `IsCorrect` (bool, required): Whether text is grammatically correct
+- `InputText` (string, required): Text that was reviewed
 - `GrammarIssues` (List<GrammarIssue>, required): Grammar errors found (empty if none)
 - `VocabularySuggestions` (List<VocabularySuggestion>, required): Vocabulary improvements (empty if none)
 
-**Nested Type: GrammarIssue**:
+**GrammarIssue Model** (YetAnotherTranslator.Core.Handlers.ReviewGrammar.GrammarIssue):
 
-- `Type` (string, required): Error category (e.g., "subject-verb agreement", "tense", "article")
-- `OriginalText` (string, required): Problematic text fragment
-- `CorrectedText` (string, required): Suggested correction
+- `Issue` (string, required): Description of the grammar error
+- `Correction` (string, required): Suggested correction
 - `Explanation` (string, required): Why the correction is needed
 
-**Nested Type: VocabularySuggestion**:
+**VocabularySuggestion Model** (YetAnotherTranslator.Core.Handlers.ReviewGrammar.VocabularySuggestion):
 
-- `OriginalWord` (string, required): Word to replace
-- `SuggestedWord` (string, required): Better alternative
-- `Reason` (string, required): Why the suggestion is better
+- `Original` (string, required): Original word or phrase
+- `Suggestion` (string, required): Better alternative
+- `Context` (string, required): Why the suggestion is better
 
 **Validation Rules**:
 
-- `OriginalText`: Not empty, max 5000 characters
+- `InputText`: Not empty, max 5000 characters
 - `GrammarIssues`: Max 50 issues
 - `VocabularySuggestions`: Max 20 suggestions
 
 **State Transitions**: Immutable value object (no state transitions)
+
+**Note on Request Model**: ReviewGrammarRequest includes a `UseCache` parameter (bool, default: true) for cache control consistency with other request types.
 
 ### 4. PronunciationResult (YetAnotherTranslator.Core.Handlers.PlayPronunciation)
 
@@ -120,7 +125,17 @@ Represents the result of generating pronunciation audio.
 
 **State Transitions**: Immutable value object (no state transitions)
 
-### 5. CommandType (YetAnotherTranslator.Core.Handlers.GetHistory)
+### 5. SourceLanguage (YetAnotherTranslator.Core.Models)
+
+Enumeration of source languages for translation operations.
+
+**Values**:
+
+- `Auto` = 0: Auto-detect language
+- `Polish` = 1: Polish language
+- `English` = 2: English language
+
+### 6. CommandType (YetAnotherTranslator.Core.Handlers.GetHistory)
 
 Enumeration of all command types for history tracking.
 
@@ -131,7 +146,7 @@ Enumeration of all command types for history tracking.
 - `ReviewGrammar` = 2
 - `PlayPronunciation` = 3
 
-### 6. LlmResponseMetadata (Shared across multiple handlers)
+### 7. LlmResponseMetadata (Shared across multiple handlers)
 
 Metadata from LLM API responses for tracking and debugging. This is a shared model that can be used by any handler that interacts with the LLM.
 
@@ -340,9 +355,9 @@ Root configuration loaded from config.json.
 **Fields**:
 
 - `SecretManager` (SecretManagerConfiguration, required): Secret manager settings
-- `LlmProvider` (LlmProviderConfiguration, required): LLM provider settings
-- `TtsProvider` (TtsProviderConfiguration, required): TTS provider settings
-- `Database` (DatabaseConfiguration, required): Database connection settings
+- `LlmProvider` (LlmProviderOptions, required): LLM provider settings
+- `TtsProvider` (TtsProviderOptions, required): TTS provider settings
+- `Database` (DatabaseOptions, required): Database connection settings
 
 **Validation Rules** (via FluentValidation):
 
@@ -363,7 +378,7 @@ Configuration for Azure Key Vault.
 - `Type`: Must equal "azure-keyvault"
 - `KeyVaultUrl`: Must be valid HTTPS URL matching pattern `https://*.vault.azure.net`
 
-### 3. LlmProviderConfiguration
+### 3. LlmProviderOptions
 
 Configuration for LLM provider (Anthropic).
 
@@ -383,7 +398,7 @@ Configuration for LLM provider (Anthropic).
 - `MaxTokens`: 1-8192
 - `Temperature`: 0.0-1.0
 
-### 4. TtsProviderConfiguration
+### 4. TtsProviderOptions
 
 Configuration for TTS provider (ElevenLabs).
 
@@ -400,7 +415,7 @@ Configuration for TTS provider (ElevenLabs).
 - `SecretReference`: Not empty
 - `VoiceId`: Not empty
 
-### 5. DatabaseConfiguration
+### 5. DatabaseOptions
 
 Configuration for PostgreSQL database.
 
