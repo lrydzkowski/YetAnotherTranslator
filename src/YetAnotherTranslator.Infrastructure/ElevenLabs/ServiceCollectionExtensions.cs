@@ -17,13 +17,13 @@ internal static class ServiceCollectionExtensions
 
         private void AddOptions(IConfiguration configuration)
         {
-            services.AddOptionsType<TextToSpeechProviderOptions>(configuration, TextToSpeechProviderOptions.Position);
+            services.AddOptionsType<ElevenLabsApiOptions>(configuration, ElevenLabsApiOptions.Position);
         }
 
         private void AddServices()
         {
-            services.AddScoped<ITextToSpeechProvider, ElevenLabsTextToSpeechProvider>();
             services.AddScoped<IAudioPlayer, PortAudioPlayer>();
+            services.AddScoped<ITextToSpeechProvider, ElevenLabsApiClient>();
         }
     }
 }

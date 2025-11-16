@@ -26,6 +26,7 @@ internal static class ServiceCollectionExtensions
             services.AddOptions(configuration);
             services.AddDbContext();
             services.AddRepositories();
+            services.AddServices();
         }
 
         private void AddOptions(IConfiguration configuration)
@@ -55,6 +56,11 @@ internal static class ServiceCollectionExtensions
             services.AddScoped<ReviewGrammarHistoryRepository, HistoryRepository>();
             services.AddScoped<TranslateTextHistoryRepository, HistoryRepository>();
             services.AddScoped<TranslateWordHistoryRepository, HistoryRepository>();
+        }
+
+        private void AddServices()
+        {
+            services.AddScoped<CacheKeyGenerator>();
         }
     }
 }

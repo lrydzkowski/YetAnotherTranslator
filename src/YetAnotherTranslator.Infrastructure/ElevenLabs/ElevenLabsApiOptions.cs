@@ -1,10 +1,9 @@
 namespace YetAnotherTranslator.Infrastructure.ElevenLabs;
 
-internal class TextToSpeechProviderOptions
+internal class ElevenLabsApiOptions
 {
-    public const string Position = "TextToSpeechProvider";
+    public const string Position = "ElevenLabsApi";
 
-    public string Provider { get; set; } = string.Empty;
     public string ApiKey { get; set; } = string.Empty;
     public string VoiceId { get; set; } = string.Empty;
 }

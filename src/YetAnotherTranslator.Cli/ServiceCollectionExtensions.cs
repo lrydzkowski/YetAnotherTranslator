@@ -17,10 +17,11 @@ internal static class ServiceCollectionExtensions
         {
             services.AddScoped<CommandParser>();
             services.AddScoped<ReplEngine>();
-            services.AddScoped<TranslateWordCommand>();
-            services.AddScoped<TranslateTextCommand>();
-            services.AddScoped<ReviewGrammarCommand>();
             services.AddScoped<GetHistoryCommand>();
+            services.AddScoped<PlayPronunciationCommand>();
+            services.AddScoped<ReviewGrammarCommand>();
+            services.AddScoped<TranslateTextCommand>();
+            services.AddScoped<TranslateWordCommand>();
             services.AddHostedService<ReplHostedService>();
         }
     }

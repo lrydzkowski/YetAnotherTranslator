@@ -6,7 +6,7 @@ internal class CommandParser
 {
     public Command Parse(string input)
     {
-        if (string.IsNullOrWhiteSpace(input) || input.StartsWith('/'))
+        if (string.IsNullOrWhiteSpace(input) || !input.StartsWith('/'))
         {
             return new Command { Type = CommandType.Invalid };
         }

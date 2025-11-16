@@ -35,7 +35,7 @@ public static class ServiceCollectionExtensions
 
         private void AddServices()
         {
-            services.AddScoped<IDateTimeProvider, IDateTimeProvider>();
+            services.AddScoped<IDateTimeProvider, DateTimeProvider>();
             services.AddScoped<ISerializer, Serializer>();
             services.AddScoped<IEmbeddedFile, EmbeddedFile>();
         }

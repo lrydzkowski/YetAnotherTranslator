@@ -12,7 +12,7 @@ using YetAnotherTranslator.Infrastructure.Persistence;
 namespace YetAnotherTranslator.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TranslatorDbContext))]
-    [Migration("20251116104340_InitDb")]
+    [Migration("20251116193650_InitDb")]
     partial class InitDb
     {
         /// <inheritdoc />
