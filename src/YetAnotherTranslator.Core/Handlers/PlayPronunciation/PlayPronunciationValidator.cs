@@ -1,17 +1,24 @@
 using FluentValidation;
+using YetAnotherTranslator.Core.Handlers.PlayPronunciation.Models;
 
 namespace YetAnotherTranslator.Core.Handlers.PlayPronunciation;
 
-public class PlayPronunciationValidator : AbstractValidator<PlayPronunciationRequest>
+internal class PlayPronunciationValidator : AbstractValidator<PlayPronunciationRequest>
 {
-    private const int MaxTextLength = 500;
-
     public PlayPronunciationValidator()
     {
-        RuleFor(x => x.Text)
+        RuleFor(request => request.Text)
             .NotEmpty()
             .WithMessage("Text cannot be empty")
-            .MaximumLength(MaxTextLength)
-            .WithMessage($"Text cannot exceed {MaxTextLength} characters for pronunciation");
+            .MaximumLength(TranslatorConstants.Validation.MaxTextLength)
+            .WithMessage(
+                $"Text cannot exceed {TranslatorConstants.Validation.MaxTextLength} characters for pronunciation"
+            );
+
+        RuleFor(request => request.PartOfSpeech)
+            .Must(TranslatorConstants.PartsOfSpeech.IsSupported)
+            .WithMessage(
+                $"Part of speech must be one of the following: {TranslatorConstants.PartsOfSpeech.Serialize()}"
+            );
     }
 }

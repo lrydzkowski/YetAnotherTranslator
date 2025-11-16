@@ -1,4 +1,4 @@
-using YetAnotherTranslator.Core.Handlers.GetHistory;
+using YetAnotherTranslator.Core.Common.Models;
 
 namespace YetAnotherTranslator.Cli.Repl;
 

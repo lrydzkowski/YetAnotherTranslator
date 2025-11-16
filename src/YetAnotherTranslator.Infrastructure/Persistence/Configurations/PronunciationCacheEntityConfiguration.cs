@@ -4,7 +4,7 @@ using YetAnotherTranslator.Infrastructure.Persistence.Entities;
 
 namespace YetAnotherTranslator.Infrastructure.Persistence.Configurations;
 
-public class PronunciationCacheEntityConfiguration : IEntityTypeConfiguration<PronunciationCacheEntity>
+internal class PronunciationCacheEntityConfiguration : IEntityTypeConfiguration<PronunciationCacheEntity>
 {
     public void Configure(EntityTypeBuilder<PronunciationCacheEntity> builder)
     {
@@ -23,6 +23,7 @@ public class PronunciationCacheEntityConfiguration : IEntityTypeConfiguration<Pr
 
         builder.Property(e => e.Text)
             .HasColumnName("text")
+            .HasMaxLength(6000)
             .IsRequired();
 
         builder.Property(e => e.PartOfSpeech)

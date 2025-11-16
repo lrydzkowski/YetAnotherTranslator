@@ -1,12 +1,12 @@
-using YetAnotherTranslator.Core.Handlers.GetHistory;
+using YetAnotherTranslator.Core.Common.Models;
 
 namespace YetAnotherTranslator.Cli.Repl;
 
-public class CommandParser
+internal class CommandParser
 {
     public Command Parse(string input)
     {
-        if (string.IsNullOrWhiteSpace(input) || !input.StartsWith('/'))
+        if (string.IsNullOrWhiteSpace(input) || input.StartsWith('/'))
         {
             return new Command { Type = CommandType.Invalid };
         }

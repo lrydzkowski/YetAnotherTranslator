@@ -3,7 +3,7 @@ using YetAnotherTranslator.Infrastructure.Persistence.Entities;
 
 namespace YetAnotherTranslator.Infrastructure.Persistence;
 
-public class TranslatorDbContext : DbContext
+internal class TranslatorDbContext : DbContext
 {
     public TranslatorDbContext(DbContextOptions<TranslatorDbContext> options)
         : base(options)

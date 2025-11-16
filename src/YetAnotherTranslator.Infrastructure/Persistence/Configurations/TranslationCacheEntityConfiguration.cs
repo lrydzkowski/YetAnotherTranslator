@@ -4,7 +4,7 @@ using YetAnotherTranslator.Infrastructure.Persistence.Entities;
 
 namespace YetAnotherTranslator.Infrastructure.Persistence.Configurations;
 
-public class TranslationCacheEntityConfiguration : IEntityTypeConfiguration<TranslationCacheEntity>
+internal class TranslationCacheEntityConfiguration : IEntityTypeConfiguration<TranslationCacheEntity>
 {
     public void Configure(EntityTypeBuilder<TranslationCacheEntity> builder)
     {
@@ -33,11 +33,13 @@ public class TranslationCacheEntityConfiguration : IEntityTypeConfiguration<Tran
 
         builder.Property(e => e.InputText)
             .HasColumnName("input_text")
+            .HasMaxLength(6000)
             .IsRequired();
 
         builder.Property(e => e.ResultJson)
             .HasColumnName("result_json")
             .HasColumnType("jsonb")
+            .HasMaxLength(6000)
             .IsRequired();
 
         builder.Property(e => e.CreatedAt)

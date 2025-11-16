@@ -1,33 +1,36 @@
 using FluentValidation;
-using YetAnotherTranslator.Core.Constants;
-using YetAnotherTranslator.Core.Models;
+using YetAnotherTranslator.Core.Common.Extensions;
+using YetAnotherTranslator.Core.Handlers.TranslateWord.Models;
 
 namespace YetAnotherTranslator.Core.Handlers.TranslateWord;
 
-public class TranslateWordValidator : AbstractValidator<TranslateWordRequest>
+internal class TranslateWordValidator : AbstractValidator<TranslateWordRequest>
 {
     public TranslateWordValidator()
     {
-        RuleFor(x => x.Word)
+        RuleFor(request => request.Word)
             .NotEmpty()
             .WithMessage("Word cannot be empty")
-            .MaximumLength(ValidationConstants.MaxWordLength)
-            .WithMessage($"Word cannot exceed {ValidationConstants.MaxWordLength} characters");
+            .MaximumLength(TranslatorConstants.Validation.MaxWordLength)
+            .WithMessage($"Word cannot exceed {TranslatorConstants.Validation.MaxWordLength} characters");
 
-        RuleFor(x => x.SourceLanguage)
-            .IsInEnum()
-            .WithMessage("Source language must be a valid language")
-            .Must(lang => lang == SourceLanguage.Polish || lang == SourceLanguage.English)
-            .WithMessage("Source language must be either Polish or English (auto-detect not supported for word translation)");
+        RuleFor(request => request.SourceLanguage)
+            .Must(TranslatorConstants.Languages.IsSupported)
+            .When(request => request.SourceLanguage is not null)
+            .WithMessage(
+                $"Source language must be one of the following: {TranslatorConstants.Languages.Serialize()}"
+            );
 
-        RuleFor(x => x.TargetLanguage)
-            .NotEmpty()
-            .WithMessage("Target language must be specified")
-            .Must(lang => lang == "Polish" || lang == "English")
-            .WithMessage("Target language must be either 'Polish' or 'English'");
+        RuleFor(request => request.TargetLanguage)
+            .Must(TranslatorConstants.Languages.IsSupported)
+            .When(request => request.TargetLanguage is not null)
+            .WithMessage(
+                $"Target language must be one of the following: {TranslatorConstants.Languages.Serialize()}"
+            );
 
         RuleFor(x => x)
-            .Must(req => req.SourceLanguage.ToString() != req.TargetLanguage)
+            .Must(request => !request.SourceLanguage.EqualsIgnoreCase(request.TargetLanguage))
+            .When(request => request.SourceLanguage is not null || request.TargetLanguage is not null)
             .WithMessage("Source and target languages must be different");
     }
 }

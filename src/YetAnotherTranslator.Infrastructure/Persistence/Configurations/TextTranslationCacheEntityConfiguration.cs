@@ -4,7 +4,7 @@ using YetAnotherTranslator.Infrastructure.Persistence.Entities;
 
 namespace YetAnotherTranslator.Infrastructure.Persistence.Configurations;
 
-public class TextTranslationCacheEntityConfiguration : IEntityTypeConfiguration<TextTranslationCacheEntity>
+internal class TextTranslationCacheEntityConfiguration : IEntityTypeConfiguration<TextTranslationCacheEntity>
 {
     public void Configure(EntityTypeBuilder<TextTranslationCacheEntity> builder)
     {
@@ -33,10 +33,12 @@ public class TextTranslationCacheEntityConfiguration : IEntityTypeConfiguration<
 
         builder.Property(e => e.InputText)
             .HasColumnName("input_text")
+            .HasMaxLength(6000)
             .IsRequired();
 
         builder.Property(e => e.TranslatedText)
             .HasColumnName("translated_text")
+            .HasMaxLength(6000)
             .IsRequired();
 
         builder.Property(e => e.CreatedAt)

@@ -3,30 +3,27 @@ using System.Text;
 
 namespace YetAnotherTranslator.Infrastructure.Persistence;
 
-public static class CacheKeyGenerator
+internal class CacheKeyGenerator
 {
-    public static string GenerateTranslationKey(string sourceLanguage, string targetLanguage, string inputText)
+    public string Generate(string text, string? sourceLanguage, string? targetLanguage)
     {
-        string input = $"{sourceLanguage}:{targetLanguage}:{inputText}";
+        string input = $"{text}:{sourceLanguage ?? "-"}:{targetLanguage ?? "-"}";
+
         return ComputeHash(input);
     }
 
-    public static string GenerateTextTranslationKey(string sourceLanguage, string targetLanguage, string inputText)
-    {
-        string input = $"text:{sourceLanguage}:{targetLanguage}:{inputText}";
-        return ComputeHash(input);
-    }
-
-    public static string GeneratePronunciationKey(string text, string? partOfSpeech = null)
+    public string Generate(string text, string? partOfSpeech = null)
     {
         string input = $"{text}:{partOfSpeech ?? string.Empty}";
+
         return ComputeHash(input);
     }
 
-    private static string ComputeHash(string input)
+    private string ComputeHash(string input)
     {
         byte[] inputBytes = Encoding.UTF8.GetBytes(input);
         byte[] hashBytes = SHA256.HashData(inputBytes);
+
         return Convert.ToHexString(hashBytes).ToLowerInvariant();
     }
 }

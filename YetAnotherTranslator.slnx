@@ -9,7 +9,4 @@
     <Project Path="src/YetAnotherTranslator.Core/YetAnotherTranslator.Core.csproj" />
     <Project Path="src/YetAnotherTranslator.Infrastructure/YetAnotherTranslator.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/YetAnotherTranslator.Tests.Integration/YetAnotherTranslator.Tests.Integration.csproj" />
-  </Folder>
 </Solution>

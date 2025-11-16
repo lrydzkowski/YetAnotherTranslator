@@ -1,120 +1,77 @@
-using System.Text.Json;
 using FluentValidation;
-using YetAnotherTranslator.Core.Exceptions;
-using YetAnotherTranslator.Core.Handlers.GetHistory;
-using YetAnotherTranslator.Core.Interfaces;
+using YetAnotherTranslator.Core.Common.Models;
+using YetAnotherTranslator.Core.Common.Services;
+using YetAnotherTranslator.Core.Handlers.TranslateWord.Interfaces;
+using YetAnotherTranslator.Core.Handlers.TranslateWord.Models;
 
 namespace YetAnotherTranslator.Core.Handlers.TranslateWord;
 
 public class TranslateWordHandler
 {
-    private readonly ILlmProvider _llmProvider;
-    private readonly IValidator<TranslateWordRequest> _validator;
+    private readonly ICacheRepository _cacheRepository;
     private readonly IHistoryRepository _historyRepository;
+    private readonly ILargeLanguageModelProvider _largeLanguageModelProvider;
+    private readonly ISerializer _serializer;
+    private readonly IValidator<TranslateWordRequest> _validator;
 
     public TranslateWordHandler(
-        ILlmProvider llmProvider,
+        ILargeLanguageModelProvider largeLanguageModelProvider,
         IValidator<TranslateWordRequest> validator,
-        IHistoryRepository historyRepository)
+        ICacheRepository cacheRepository,
+        IHistoryRepository historyRepository,
+        ISerializer serializer
+    )
     {
-        _llmProvider = llmProvider ?? throw new ArgumentNullException(nameof(llmProvider));
-        _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-        _historyRepository = historyRepository ?? throw new ArgumentNullException(nameof(historyRepository));
+        _largeLanguageModelProvider = largeLanguageModelProvider;
+        _validator = validator;
+        _cacheRepository = cacheRepository;
+        _historyRepository = historyRepository;
+        _serializer = serializer;
     }
 
     public async Task<TranslationResult> HandleAsync(
         TranslateWordRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await _validator.ValidateAndThrowAsync(request, cancellationToken);
 
         if (request.UseCache)
         {
-            TranslationResult? cached = await _historyRepository.GetCachedTranslationAsync(
+            TranslationResult? cached = await _cacheRepository.GetTranslationAsync(
                 request.Word,
-                request.SourceLanguage.ToString(),
+                request.SourceLanguage,
                 request.TargetLanguage,
                 cancellationToken
             );
-
-            if (cached != null)
+            if (cached is not null)
             {
                 return cached;
             }
         }
 
-        string llmResponse = await _llmProvider.TranslateWordAsync(
+        List<Translation> translations = await _largeLanguageModelProvider.TranslateWordAsync(
             request.Word,
-            request.SourceLanguage.ToString(),
+            request.SourceLanguage,
             request.TargetLanguage,
             cancellationToken
         );
+        TranslationResult result = new()
+        {
+            SourceLanguage = request.SourceLanguage,
+            TargetLanguage = request.TargetLanguage,
+            InputText = request.Word,
+            Translations = translations
+        };
 
-        TranslationResult result = ParseLlmResponse(llmResponse, request);
-
-        await _historyRepository.SaveTranslationAsync(result, cancellationToken);
-
+        await _cacheRepository.SaveTranslationAsync(result, cancellationToken);
         await _historyRepository.SaveHistoryAsync(
             CommandType.TranslateWord,
             request.Word,
-            JsonSerializer.Serialize(result),
+            _serializer.Serialize(result),
             cancellationToken
         );
 
         return result;
-    }
-
-    private static TranslationResult ParseLlmResponse(string llmResponse, TranslateWordRequest request)
-    {
-        try
-        {
-            using JsonDocument doc = JsonDocument.Parse(llmResponse);
-            JsonElement root = doc.RootElement;
-
-            if (!root.TryGetProperty("translations", out JsonElement translationsElement))
-            {
-                throw new ExternalServiceException("Anthropic", "Invalid LLM response: missing 'translations' field");
-            }
-
-            var translations = new List<Translation>();
-
-            foreach (JsonElement transElement in translationsElement.EnumerateArray())
-            {
-                var translation = new Translation
-                {
-                    Rank = transElement.GetProperty("rank").GetInt32(),
-                    Word = transElement.GetProperty("word").GetString() ?? string.Empty,
-                    PartOfSpeech = transElement.GetProperty("partOfSpeech").GetString() ?? string.Empty,
-                    Countability = transElement.TryGetProperty("countability", out JsonElement countElement)
-                        ? countElement.GetString()
-                        : null,
-                    CmuArpabet = transElement.TryGetProperty("cmuArpabet", out JsonElement arpaElement) &&
-                                 arpaElement.ValueKind != JsonValueKind.Null
-                        ? arpaElement.GetString()
-                        : null,
-                    Examples = transElement.TryGetProperty("examples", out JsonElement examplesElement)
-                        ? examplesElement.EnumerateArray().Select(e => e.GetString() ?? string.Empty).ToList()
-                        : new List<string>()
-                };
-
-                translations.Add(translation);
-            }
-
-            return new TranslationResult
-            {
-                SourceLanguage = request.SourceLanguage.ToString(),
-                TargetLanguage = request.TargetLanguage,
-                InputText = request.Word,
-                Translations = translations
-            };
-        }
-        catch (JsonException ex)
-        {
-            throw new ExternalServiceException(
-                "Anthropic",
-                $"Failed to parse LLM response: {ex.Message}. Response excerpt: {llmResponse.Substring(0, Math.Min(200, llmResponse.Length))}",
-                ex
-            );
-        }
     }
 }

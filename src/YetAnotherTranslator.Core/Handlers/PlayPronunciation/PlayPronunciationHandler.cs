@@ -1,56 +1,64 @@
-using System.Text.Json;
 using FluentValidation;
-using YetAnotherTranslator.Core.Handlers.GetHistory;
-using YetAnotherTranslator.Core.Interfaces;
+using YetAnotherTranslator.Core.Common.Models;
+using YetAnotherTranslator.Core.Common.Services;
+using YetAnotherTranslator.Core.Handlers.PlayPronunciation.Interfaces;
+using YetAnotherTranslator.Core.Handlers.PlayPronunciation.Models;
 
 namespace YetAnotherTranslator.Core.Handlers.PlayPronunciation;
 
 public class PlayPronunciationHandler
 {
-    private readonly ITtsProvider _ttsProvider;
-    private readonly IAudioPlayer _audioPlayer;
-    private readonly IValidator<PlayPronunciationRequest> _validator;
-    private readonly IHistoryRepository _historyRepository;
     private const string DefaultVoiceId = "21m00Tcm4TlvDq8ikWAM";
+    private readonly IAudioPlayer _audioPlayer;
+    private readonly ICacheRepository _cacheRepository;
+    private readonly IHistoryRepository _historyRepository;
+    private readonly ISerializer _serializer;
+    private readonly ITextToSpeechProvider _textToSpeechProvider;
+    private readonly IValidator<PlayPronunciationRequest> _validator;
 
     public PlayPronunciationHandler(
-        ITtsProvider ttsProvider,
+        ITextToSpeechProvider textToSpeechProvider,
         IAudioPlayer audioPlayer,
         IValidator<PlayPronunciationRequest> validator,
-        IHistoryRepository historyRepository)
+        IHistoryRepository historyRepository,
+        ICacheRepository cacheRepository,
+        ISerializer serializer
+    )
     {
-        _ttsProvider = ttsProvider ?? throw new ArgumentNullException(nameof(ttsProvider));
-        _audioPlayer = audioPlayer ?? throw new ArgumentNullException(nameof(audioPlayer));
-        _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-        _historyRepository = historyRepository ?? throw new ArgumentNullException(nameof(historyRepository));
+        _textToSpeechProvider = textToSpeechProvider;
+        _audioPlayer = audioPlayer;
+        _validator = validator;
+        _historyRepository = historyRepository;
+        _cacheRepository = cacheRepository;
+        _serializer = serializer;
     }
 
     public async Task<PronunciationResult> HandleAsync(
         PlayPronunciationRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await _validator.ValidateAndThrowAsync(request, cancellationToken);
 
         byte[]? audioData = null;
-
         if (request.UseCache)
         {
-            audioData = await _historyRepository.GetCachedPronunciationAsync(
+            audioData = await _cacheRepository.GetPronunciationAsync(
                 request.Text,
                 request.PartOfSpeech,
                 cancellationToken
             );
         }
 
-        if (audioData == null)
+        if (audioData is null)
         {
-            audioData = await _ttsProvider.GenerateSpeechAsync(
+            audioData = await _textToSpeechProvider.GenerateSpeechAsync(
                 request.Text,
                 request.PartOfSpeech,
                 cancellationToken
             );
 
-            await _historyRepository.SavePronunciationAsync(
+            await _cacheRepository.SavePronunciationAsync(
                 request.Text,
                 request.PartOfSpeech,
                 audioData,
@@ -61,7 +69,7 @@ public class PlayPronunciationHandler
 
         await _audioPlayer.PlayAsync(audioData, cancellationToken);
 
-        var result = new PronunciationResult
+        PronunciationResult result = new()
         {
             Text = request.Text,
             PartOfSpeech = request.PartOfSpeech,
@@ -71,7 +79,7 @@ public class PlayPronunciationHandler
         await _historyRepository.SaveHistoryAsync(
             CommandType.PlayPronunciation,
             request.Text,
-            JsonSerializer.Serialize(result),
+            _serializer.Serialize(result),
             cancellationToken
         );
 

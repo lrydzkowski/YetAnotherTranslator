@@ -1,24 +1,27 @@
 using FluentValidation;
-using YetAnotherTranslator.Core.Interfaces;
+using YetAnotherTranslator.Core.Handlers.GetHistory.Interfaces;
+using YetAnotherTranslator.Core.Handlers.GetHistory.Models;
 
 namespace YetAnotherTranslator.Core.Handlers.GetHistory;
 
 public class GetHistoryHandler
 {
-    private readonly IValidator<GetHistoryRequest> _validator;
     private readonly IHistoryRepository _historyRepository;
+    private readonly IValidator<GetHistoryRequest> _validator;
 
     public GetHistoryHandler(
         IValidator<GetHistoryRequest> validator,
-        IHistoryRepository historyRepository)
+        IHistoryRepository historyRepository
+    )
     {
-        _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-        _historyRepository = historyRepository ?? throw new ArgumentNullException(nameof(historyRepository));
+        _validator = validator;
+        _historyRepository = historyRepository;
     }
 
     public async Task<GetHistoryResult> HandleAsync(
         GetHistoryRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await _validator.ValidateAndThrowAsync(request, cancellationToken);
 

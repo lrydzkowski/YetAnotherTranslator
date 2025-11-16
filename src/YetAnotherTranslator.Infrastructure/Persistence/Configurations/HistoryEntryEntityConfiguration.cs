@@ -4,7 +4,7 @@ using YetAnotherTranslator.Infrastructure.Persistence.Entities;
 
 namespace YetAnotherTranslator.Infrastructure.Persistence.Configurations;
 
-public class HistoryEntryEntityConfiguration : IEntityTypeConfiguration<HistoryEntryEntity>
+internal class HistoryEntryEntityConfiguration : IEntityTypeConfiguration<HistoryEntryEntity>
 {
     public void Configure(EntityTypeBuilder<HistoryEntryEntity> builder)
     {
@@ -23,10 +23,12 @@ public class HistoryEntryEntityConfiguration : IEntityTypeConfiguration<HistoryE
 
         builder.Property(e => e.InputText)
             .HasColumnName("input_text")
+            .HasMaxLength(6000)
             .IsRequired();
 
         builder.Property(e => e.OutputText)
             .HasColumnName("output_text")
+            .HasMaxLength(6000)
             .IsRequired();
 
         builder.Property(e => e.CreatedAt)

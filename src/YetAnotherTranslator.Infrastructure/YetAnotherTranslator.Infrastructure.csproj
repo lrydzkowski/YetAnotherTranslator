@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>NU1903</NoWarn>
+    <UserSecretsId>e1d6607f-1353-4006-b055-b572ca9ce454</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,15 +15,37 @@
 
   <ItemGroup>
     <PackageReference Include="Anthropic.SDK" Version="5.8.0" />
+    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.4.0" />
     <PackageReference Include="Azure.Identity" Version="1.17.0" />
-    <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.8.0" />
-    <PackageReference Include="ElevenLabs-DotNet" Version="3.7.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
+    <PackageReference Include="Azure.Core" Version="1.50.0" />
     <PackageReference Include="NAudio" Version="2.2.1" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0-rc.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0-rc.2.25502.107" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0-rc.2.25502.107" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0-rc.2.25502.107" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Azure\AiFoundry\Prompts\ReviewGrammar\system_prompt.md" />
+    <Resource Include="Azure\AiFoundry\Prompts\ReviewGrammar\system_prompt.md" />
+    <None Remove="Azure\AiFoundry\Prompts\ReviewGrammar\user_prompt.md" />
+    <Resource Include="Azure\AiFoundry\Prompts\ReviewGrammar\user_prompt.md" />
+    <None Remove="Azure\AiFoundry\Prompts\TranslateText\system_prompt.md" />
+    <Resource Include="Azure\AiFoundry\Prompts\TranslateText\system_prompt.md" />
+    <None Remove="Azure\AiFoundry\Prompts\TranslateText\user_prompt.md" />
+    <Resource Include="Azure\AiFoundry\Prompts\TranslateText\user_prompt.md" />
+    <None Remove="Azure\AiFoundry\Prompts\TranslateText\user_prompt_auto_detection.md" />
+    <Resource Include="Azure\AiFoundry\Prompts\TranslateText\user_prompt_auto_detection.md" />
+    <None Remove="Azure\AiFoundry\Prompts\TranslateWord\system_prompt.md" />
+    <Resource Include="Azure\AiFoundry\Prompts\TranslateWord\system_prompt.md" />
+    <None Remove="Azure\AiFoundry\Prompts\TranslateWord\user_prompt_auto_detection.md" />
+    <Resource Include="Azure\AiFoundry\Prompts\TranslateWord\user_prompt_auto_detection.md" />
+    <None Remove="Azure\AiFoundry\Prompts\TranslateWord\user_prompt_english_word.md" />
+    <Resource Include="Azure\AiFoundry\Prompts\TranslateWord\user_prompt_english_word.md" />
+    <None Remove="Azure\AiFoundry\Prompts\TranslateWord\user_prompt_polish_word.md" />
+    <Resource Include="Azure\AiFoundry\Prompts\TranslateWord\user_prompt_polish_word.md" />
   </ItemGroup>
 
 </Project>

@@ -1,16 +1,19 @@
 using FluentValidation;
+using YetAnotherTranslator.Core.Handlers.GetHistory.Models;
 
 namespace YetAnotherTranslator.Core.Handlers.GetHistory;
 
-public class GetHistoryValidator : AbstractValidator<GetHistoryRequest>
+internal class GetHistoryValidator : AbstractValidator<GetHistoryRequest>
 {
-    private const int MinLimit = 1;
-    private const int MaxLimit = 1000;
-
     public GetHistoryValidator()
     {
         RuleFor(x => x.Limit)
-            .InclusiveBetween(MinLimit, MaxLimit)
-            .WithMessage($"Limit must be between {MinLimit} and {MaxLimit}");
+            .InclusiveBetween(
+                TranslatorConstants.Validation.MinHistoryLimit,
+                TranslatorConstants.Validation.MaxHistoryLimit
+            )
+            .WithMessage(
+                $"Limit must be between {TranslatorConstants.Validation.MinHistoryLimit} and {TranslatorConstants.Validation.MaxHistoryLimit}"
+            );
     }
 }
