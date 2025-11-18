@@ -63,11 +63,13 @@ internal class Program
 
 public class ReplHostedService : IHostedService
 {
+    private readonly IHostApplicationLifetime _lifetime;
     private readonly IServiceProvider _serviceProvider;
 
-    public ReplHostedService(IServiceProvider serviceProvider)
+    public ReplHostedService(IServiceProvider serviceProvider, IHostApplicationLifetime lifetime)
     {
         _serviceProvider = serviceProvider;
+        _lifetime = lifetime;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -75,6 +77,7 @@ public class ReplHostedService : IHostedService
         using IServiceScope scope = _serviceProvider.CreateScope();
         ReplEngine replEngine = scope.ServiceProvider.GetRequiredService<ReplEngine>();
         await replEngine.RunAsync(cancellationToken);
+        _lifetime.StopApplication();
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
