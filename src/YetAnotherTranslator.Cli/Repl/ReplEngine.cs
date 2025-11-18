@@ -35,9 +35,7 @@ internal class ReplEngine
 
     public async Task RunAsync(CancellationToken cancellationToken = default)
     {
-        AnsiConsole.MarkupLine("[bold blue]Yet Another Translator[/]");
-        AnsiConsole.MarkupLine("[dim]Type /help for available commands or /quit to exit[/]");
-        AnsiConsole.WriteLine();
+        DisplayTitle();
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -64,17 +62,18 @@ internal class ReplEngine
             catch (ValidationException ex)
             {
                 AnsiConsole.MarkupLine($"[red]Validation error: {Markup.Escape(ex.Message)}[/]");
+                AnsiConsole.WriteLine();
             }
             catch (ExternalServiceException ex)
             {
                 AnsiConsole.MarkupLine($"[red]Service error ({ex.ServiceName}): {Markup.Escape(ex.Message)}[/]");
+                AnsiConsole.WriteLine();
             }
             catch (Exception ex)
             {
                 AnsiConsole.MarkupLine($"[red]Error: {Markup.Escape(ex.Message)}[/]");
+                AnsiConsole.WriteLine();
             }
-
-            AnsiConsole.WriteLine();
         }
     }
 
@@ -87,40 +86,59 @@ internal class ReplEngine
 
             case CommandType.Clear:
                 AnsiConsole.Clear();
+                DisplayTitle();
+
                 return false;
 
             case CommandType.Help:
                 DisplayHelp();
+
                 return false;
 
             case CommandType.TranslateWord:
                 await _translateWordCommand.HandleTranslateWordAsync(command, cancellationToken);
+
                 return false;
 
             case CommandType.TranslateText:
                 await _translateTextCommand.HandleTranslateTextAsync(command, cancellationToken);
+
                 return false;
 
             case CommandType.ReviewGrammar:
                 await _reviewGrammarCommand.HandleReviewGrammarAsync(command, cancellationToken);
+
                 return false;
 
             case CommandType.PlayPronunciation:
                 await _playPronunciationCommand.HandlePlayPronunciationAsync(command, cancellationToken);
+
                 return false;
 
             case CommandType.GetHistory:
                 await _getHistoryCommand.HandleGetHistoryAsync(cancellationToken);
+
                 return false;
 
             case CommandType.Invalid:
                 AnsiConsole.MarkupLine("[yellow]Invalid command. Type /help for available commands.[/]");
+                AnsiConsole.WriteLine();
+
                 return false;
 
             default:
                 AnsiConsole.MarkupLine("[yellow]Command not yet implemented.[/]");
+                AnsiConsole.WriteLine();
+
                 return false;
         }
+    }
+
+    private static void DisplayTitle()
+    {
+        AnsiConsole.MarkupLine("[bold blue]Yet Another Translator[/]");
+        AnsiConsole.MarkupLine("[dim]Type /help for available commands or /quit to exit[/]");
+        AnsiConsole.WriteLine();
     }
 
     private static void DisplayHelp()
@@ -146,5 +164,6 @@ internal class ReplEngine
         AnsiConsole.Write(table);
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[dim]Use --no-cache flag to bypass cache (e.g., /t cat --no-cache)[/]");
+        AnsiConsole.WriteLine();
     }
 }

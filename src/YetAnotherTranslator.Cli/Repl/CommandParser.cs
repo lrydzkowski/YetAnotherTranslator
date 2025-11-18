@@ -84,7 +84,7 @@ internal class CommandParser
             {
                 Type = CommandType.GetHistory
             },
-            "/help" => new Command
+            "/h" or "/help" => new Command
             {
                 Type = CommandType.Help
             },
