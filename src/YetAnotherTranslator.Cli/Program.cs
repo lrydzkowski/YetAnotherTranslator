@@ -56,8 +56,6 @@ internal class Program
                 (_, logging) =>
                 {
                     logging.ClearProviders();
-                    logging.AddConsole();
-                    logging.AddDebug();
                 }
             );
     }
