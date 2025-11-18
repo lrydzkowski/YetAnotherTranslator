@@ -17,7 +17,10 @@ internal static class ServiceCollectionExtensions
 
         private void AddOptions(IConfiguration configuration)
         {
-            services.AddOptionsType<ElevenLabsApiOptions>(configuration, ElevenLabsApiOptions.Position);
+            services.AddOptionsTypeWithValidation<ElevenLabsApiOptions, ElevenLabsApiOptionsValidator>(
+                configuration,
+                ElevenLabsApiOptions.Position
+            );
         }
 
         private void AddServices()

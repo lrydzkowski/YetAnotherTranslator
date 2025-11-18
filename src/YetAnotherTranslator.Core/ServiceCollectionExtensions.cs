@@ -1,6 +1,8 @@
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using YetAnotherTranslator.Core.Common.Services;
+using YetAnotherTranslator.Core.Common.Validation;
 using YetAnotherTranslator.Core.Handlers.GetHistory;
 using YetAnotherTranslator.Core.Handlers.PlayPronunciation;
 using YetAnotherTranslator.Core.Handlers.ReviewGrammar;
@@ -23,14 +25,24 @@ public static class ServiceCollectionExtensions
             services.AddTranslateWordServices();
         }
 
-        public IServiceCollection AddOptionsType<TOptions>(
+        public void AddOptionsType<TOptions>(
             IConfiguration configuration,
             string configurationPosition
         ) where TOptions : class
         {
-            services.AddOptions<TOptions>().Bind(configuration.GetSection(configurationPosition));
+            services.AddOptions<TOptions>()
+                .Bind(configuration.GetSection(configurationPosition))
+                .ValidateFluently()
+                .ValidateOnStart();
+        }
 
-            return services;
+        public void AddOptionsTypeWithValidation<TOptions, TValidator>(
+            IConfiguration configuration,
+            string configurationPosition
+        ) where TOptions : class where TValidator : class, IValidator<TOptions>, new()
+        {
+            services.AddSingleton<IValidator<TOptions>, TValidator>();
+            services.AddOptionsType<TOptions>(configuration, configurationPosition);
         }
 
         private void AddServices()

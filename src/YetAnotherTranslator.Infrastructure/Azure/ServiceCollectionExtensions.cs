@@ -24,11 +24,14 @@ internal static class ServiceCollectionExtensions
 
         private void AddOptions(IConfiguration configuration)
         {
-            services.AddOptionsType<KeyVaultOptions>(configuration, KeyVaultOptions.Position)
-                .AddOptionsType<AzureAiFoundryOptions>(
-                    configuration,
-                    AzureAiFoundryOptions.Position
-                );
+            services.AddOptionsTypeWithValidation<KeyVaultOptions, KeyVaultOptionsValidator>(
+                configuration,
+                KeyVaultOptions.Position
+            );
+            services.AddOptionsTypeWithValidation<AzureAiFoundryOptions, AzureAiFoundryOptionsValidator>(
+                configuration,
+                AzureAiFoundryOptions.Position
+            );
         }
 
         private void AddServices()

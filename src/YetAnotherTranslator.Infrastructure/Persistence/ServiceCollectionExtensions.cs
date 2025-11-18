@@ -31,7 +31,10 @@ internal static class ServiceCollectionExtensions
 
         private void AddOptions(IConfiguration configuration)
         {
-            services.AddOptionsType<DatabaseOptions>(configuration, DatabaseOptions.Position);
+            services.AddOptionsTypeWithValidation<DatabaseOptions, DatabaseOptionsValidator>(
+                configuration,
+                DatabaseOptions.Position
+            );
         }
 
         private void AddDbContext()
