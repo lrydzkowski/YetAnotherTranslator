@@ -4,6 +4,16 @@ namespace YetAnotherTranslator.Core;
 
 public static class TranslatorConstants
 {
+    public static class EnvironmentVariables
+    {
+        public const string Environment = "ENVIRONMENT";
+    }
+    
+    public static class Environments
+    {
+        public const string Development = "Development";
+    }
+    
     public static class Validation
     {
         public const int MaxWordLength = 100;

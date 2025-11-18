@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Configuration;
+using YetAnotherTranslator.Core;
+using YetAnotherTranslator.Core.Common.Extensions;
 using YetAnotherTranslator.Infrastructure.Azure;
 
 namespace YetAnotherTranslator.Cli;
@@ -15,5 +17,18 @@ internal static class ConfigurationBuilder
         configurationBuilder.AddEnvironmentVariables();
         configurationBuilder.AddAzureKeyVaultConfiguration(configurationBuilder.Build());
         configurationBuilder.AddCommandLine(args);
+
+        if (IsDevelopment())
+        {
+            configurationBuilder.AddUserSecrets(typeof(ConfigurationBuilder).Assembly);
+        }
+    }
+
+    private static bool IsDevelopment()
+    {
+        string environment = Environment.GetEnvironmentVariable(TranslatorConstants.EnvironmentVariables.Environment)
+            ?? "";
+
+        return environment.EqualsIgnoreCase(TranslatorConstants.Environments.Development);
     }
 }
