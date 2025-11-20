@@ -70,7 +70,8 @@ internal class AzureAiFoundryProvider
         string userPrompt = "";
         if (sourceLanguage is null || targetLanguage is null)
         {
-            userPrompt = GetContent("TranslateText/user_prompt_auto_detection.md");
+            userPrompt = GetContent("TranslateText/user_prompt_auto_detection.md")
+                .Replace("{text}", text);
         }
         else
         {
