@@ -14,6 +14,7 @@ internal class CacheRepository
     : PlayPronunciationCacheRepository, TranslateTextCacheRepository, TranslateWordCacheRepository
 {
     private readonly CacheKeyGenerator _cacheKeyGenerator;
+    private readonly TimeSpan _cacheLifespan = TimeSpan.FromDays(30);
     private readonly TranslatorDbContext _context;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ISerializer _serializer;
@@ -45,25 +46,25 @@ internal class CacheRepository
         }
 
         string cacheKey = _cacheKeyGenerator.Generate(text, partOfSpeech);
-        PronunciationCacheEntity? existingCache = await _context.PronunciationCache
+        CacheEntity? existingCache = await _context.Cache
             .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
         if (existingCache is not null)
         {
+            existingCache.ResultByte = audioData;
+            existingCache.CreatedAt = _dateTimeProvider.UtcNowOffset;
+            await _context.SaveChangesAsync(cancellationToken);
+
             return;
         }
 
-        PronunciationCacheEntity cacheEntity = new()
+        CacheEntity cacheEntity = new()
         {
             Id = Guid.CreateVersion7(),
             CacheKey = cacheKey,
-            Text = text,
-            PartOfSpeech = partOfSpeech,
-            AudioData = audioData,
-            VoiceId = voiceId,
+            ResultByte = audioData,
             CreatedAt = _dateTimeProvider.UtcNowOffset
         };
-
-        _context.PronunciationCache.Add(cacheEntity);
+        _context.Cache.Add(cacheEntity);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
@@ -74,20 +75,20 @@ internal class CacheRepository
     )
     {
         string cacheKey = _cacheKeyGenerator.Generate(text, partOfSpeech);
-        PronunciationCacheEntity? cached = await _context.PronunciationCache
+        CacheEntity? cached = await _context.Cache
             .AsNoTracking()
             .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
-        if (cached is null)
+        if (cached?.ResultByte is null)
         {
             return null;
         }
 
-        if (_dateTimeProvider.UtcNowOffset - cached.CreatedAt > TimeSpan.FromDays(30))
+        if (_dateTimeProvider.UtcNowOffset - cached.CreatedAt > _cacheLifespan)
         {
             return null;
         }
 
-        return cached.AudioData;
+        return cached.ResultByte;
     }
 
     public async Task<TextTranslationResult?> GetTextTranslationAsync(
@@ -98,26 +99,20 @@ internal class CacheRepository
     )
     {
         string cacheKey = _cacheKeyGenerator.Generate(text, sourceLanguage, targetLanguage);
-        TextTranslationCacheEntity? cached = await _context.TextTranslationCache
+        CacheEntity? cached = await _context.Cache
             .AsNoTracking()
             .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
-        if (cached is null)
+        if (cached?.ResultJson is null)
         {
             return null;
         }
 
-        if (_dateTimeProvider.UtcNowOffset - cached.CreatedAt > TimeSpan.FromDays(30))
+        if (_dateTimeProvider.UtcNowOffset - cached.CreatedAt > _cacheLifespan)
         {
             return null;
         }
 
-        return new TextTranslationResult
-        {
-            SourceLanguage = cached.SourceLanguage,
-            TargetLanguage = cached.TargetLanguage,
-            InputText = cached.InputText,
-            TranslatedText = cached.TranslatedText
-        };
+        return _serializer.Deserialize<TextTranslationResult>(cached.ResultJson);
     }
 
     public async Task SaveTextTranslationAsync(
@@ -130,25 +125,25 @@ internal class CacheRepository
             result.SourceLanguage,
             result.TargetLanguage
         );
-        TextTranslationCacheEntity? existingCache = await _context.TextTranslationCache
+        CacheEntity? existingCache = await _context.Cache
             .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
         if (existingCache is not null)
         {
+            existingCache.ResultJson = _serializer.Serialize(result);
+            existingCache.CreatedAt = _dateTimeProvider.UtcNowOffset;
+            await _context.SaveChangesAsync(cancellationToken);
+
             return;
         }
 
-        TextTranslationCacheEntity cacheEntity = new()
+        CacheEntity cacheEntity = new()
         {
             Id = Guid.CreateVersion7(),
             CacheKey = cacheKey,
-            SourceLanguage = result.SourceLanguage,
-            TargetLanguage = result.TargetLanguage,
-            InputText = result.InputText,
-            TranslatedText = result.TranslatedText,
+            ResultJson = _serializer.Serialize(result),
             CreatedAt = _dateTimeProvider.UtcNowOffset
         };
-
-        _context.TextTranslationCache.Add(cacheEntity);
+        _context.Cache.Add(cacheEntity);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
@@ -163,25 +158,25 @@ internal class CacheRepository
             result.TargetLanguage
         );
 
-        TranslationCacheEntity? existingCache = await _context.TranslationCache
+        CacheEntity? existingCache = await _context.Cache
             .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
         if (existingCache is not null)
         {
+            existingCache.ResultJson = _serializer.Serialize(result);
+            existingCache.CreatedAt = _dateTimeProvider.UtcNowOffset;
+            await _context.SaveChangesAsync(cancellationToken);
+
             return;
         }
 
-        TranslationCacheEntity cacheEntity = new()
+        CacheEntity cacheEntity = new()
         {
             Id = Guid.CreateVersion7(),
             CacheKey = cacheKey,
-            SourceLanguage = result.SourceLanguage,
-            TargetLanguage = result.TargetLanguage,
-            InputText = result.InputText,
             ResultJson = _serializer.Serialize(result),
             CreatedAt = _dateTimeProvider.UtcNowOffset
         };
-
-        _context.TranslationCache.Add(cacheEntity);
+        _context.Cache.Add(cacheEntity);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
@@ -193,10 +188,10 @@ internal class CacheRepository
     )
     {
         string cacheKey = _cacheKeyGenerator.Generate(word, sourceLanguage, targetLanguage);
-        TranslationCacheEntity? cached = await _context.TranslationCache
+        CacheEntity? cached = await _context.Cache
             .AsNoTracking()
             .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
-        if (cached is null)
+        if (cached?.ResultJson is null)
         {
             return null;
         }

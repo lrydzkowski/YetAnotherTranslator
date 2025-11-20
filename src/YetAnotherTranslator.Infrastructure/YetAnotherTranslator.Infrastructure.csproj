@@ -44,8 +44,8 @@
     <EmbeddedResource Include="Azure\AiFoundry\Prompts\TranslateWord\user_prompt_auto_detection.md" />
     <None Remove="Azure\AiFoundry\Prompts\TranslateWord\user_prompt_english_word.md" />
     <EmbeddedResource Include="Azure\AiFoundry\Prompts\TranslateWord\user_prompt_english_word.md" />
-    <None Remove="Azure\AiFoundry\Prompts\TranslateWord\user_prompt_polish_word.md" />
     <EmbeddedResource Include="Azure\AiFoundry\Prompts\TranslateWord\user_prompt_polish_word.md" />
+    <None Remove="Azure\AiFoundry\Prompts\TranslateWord\user_prompt_polish_word.md" />
   </ItemGroup>
 
 </Project>

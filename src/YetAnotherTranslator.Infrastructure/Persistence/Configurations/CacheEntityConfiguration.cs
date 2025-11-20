@@ -4,11 +4,11 @@ using YetAnotherTranslator.Infrastructure.Persistence.Entities;
 
 namespace YetAnotherTranslator.Infrastructure.Persistence.Configurations;
 
-internal class TranslationCacheEntityConfiguration : IEntityTypeConfiguration<TranslationCacheEntity>
+internal class CacheEntityConfiguration : IEntityTypeConfiguration<CacheEntity>
 {
-    public void Configure(EntityTypeBuilder<TranslationCacheEntity> builder)
+    public void Configure(EntityTypeBuilder<CacheEntity> builder)
     {
-        builder.ToTable("translation_cache");
+        builder.ToTable("cache");
 
         builder.HasKey(e => e.Id);
 
@@ -21,26 +21,12 @@ internal class TranslationCacheEntityConfiguration : IEntityTypeConfiguration<Tr
             .HasMaxLength(64)
             .IsRequired();
 
-        builder.Property(e => e.SourceLanguage)
-            .HasColumnName("source_language")
-            .HasMaxLength(50)
-            .IsRequired();
-
-        builder.Property(e => e.TargetLanguage)
-            .HasColumnName("target_language")
-            .HasMaxLength(50)
-            .IsRequired();
-
-        builder.Property(e => e.InputText)
-            .HasColumnName("input_text")
-            .HasMaxLength(6000)
-            .IsRequired();
-
         builder.Property(e => e.ResultJson)
             .HasColumnName("result_json")
-            .HasColumnType("jsonb")
-            .HasMaxLength(6000)
-            .IsRequired();
+            .HasColumnType("jsonb");
+
+        builder.Property(e => e.ResultByte)
+            .HasColumnName("result_byte");
 
         builder.Property(e => e.CreatedAt)
             .HasColumnName("created_at")
