@@ -50,19 +50,16 @@ public class TranslateWordHandler
             }
         }
 
-        List<Translation> translations = await _largeLanguageModelProvider.TranslateWordAsync(
-            request.Word,
-            request.SourceLanguage,
-            request.TargetLanguage,
-            cancellationToken
-        );
-        TranslationResult result = new()
-        {
-            SourceLanguage = request.SourceLanguage,
-            TargetLanguage = request.TargetLanguage,
-            InputText = request.Word,
-            Translations = translations
-        };
+        TranslationResult? result = await _largeLanguageModelProvider.TranslateWordAsync(
+                request.Word,
+                request.SourceLanguage,
+                request.TargetLanguage,
+                cancellationToken
+            )
+            ?? new TranslationResult();
+        result.SourceLanguage = request.SourceLanguage;
+        result.TargetLanguage = request.TargetLanguage;
+        result.InputText = request.Word;
 
         await _cacheRepository.SaveTranslationAsync(result, cancellationToken);
         await _historyRepository.SaveHistoryAsync(

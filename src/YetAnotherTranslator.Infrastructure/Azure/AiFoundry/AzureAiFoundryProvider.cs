@@ -44,7 +44,7 @@ internal class AzureAiFoundryProvider
     {
         ChatClient chatClient = BuildChatClient();
         string systemPrompt = GetContent("ReviewGrammar/system_prompt.md");
-        string userPrompt = string.Format(GetContent("ReviewGrammar/user_prompt.md"), text);
+        string userPrompt = GetContent("ReviewGrammar/user_prompt.md").Replace("{text}", text);
         List<ChatMessage> messages =
         [
             new SystemChatMessage(systemPrompt),
@@ -74,12 +74,10 @@ internal class AzureAiFoundryProvider
         }
         else
         {
-            userPrompt = string.Format(
-                GetContent("TranslateText/user_prompt.md"),
-                sourceLanguage,
-                targetLanguage,
-                text
-            );
+            userPrompt = GetContent("TranslateText/user_prompt.md")
+                .Replace("{sourceLanguage}", sourceLanguage)
+                .Replace("{targetLanguage}", targetLanguage)
+                .Replace("{text}", text);
         }
 
         List<ChatMessage> messages =
@@ -93,7 +91,7 @@ internal class AzureAiFoundryProvider
         return clientResult.Value.Content[0].Text;
     }
 
-    public async Task<List<Translation>> TranslateWordAsync(
+    public async Task<TranslationResult?> TranslateWordAsync(
         string word,
         string? sourceLanguage,
         string? targetLanguage,
@@ -105,15 +103,15 @@ internal class AzureAiFoundryProvider
         string userPrompt = "";
         if (sourceLanguage is null || targetLanguage is null)
         {
-            userPrompt = string.Format(GetContent("TranslateWord/user_prompt_auto_detection.md"), word);
+            userPrompt = GetContent("TranslateWord/user_prompt_auto_detection.md").Replace("{word}", word);
         }
         else if (sourceLanguage.EqualsIgnoreCase("Polish"))
         {
-            userPrompt = string.Format(GetContent("TranslateWord/user_prompt_polish_word.md"), word);
+            userPrompt = GetContent("TranslateWord/user_prompt_polish_word.md").Replace("{word}", word);
         }
         else
         {
-            userPrompt = string.Format(GetContent("TranslateWord/user_prompt_english_word.md"), word);
+            userPrompt = GetContent("TranslateWord/user_prompt_english_word.md").Replace("{word}", word);
         }
 
         List<ChatMessage> messages =
@@ -123,10 +121,10 @@ internal class AzureAiFoundryProvider
         ];
         ClientResult<ChatCompletion>? clientResult =
             await chatClient.CompleteChatAsync(messages, new ChatCompletionOptions(), cancellationToken);
-        List<Translation>? translations =
-            _serializer.Deserialize<List<Translation>>(clientResult.Value.Content[0].Text);
+        TranslationResult? translations =
+            _serializer.Deserialize<TranslationResult>(clientResult.Value.Content[0].Text);
 
-        return translations ?? [];
+        return translations;
     }
 
     private ChatClient BuildChatClient()
