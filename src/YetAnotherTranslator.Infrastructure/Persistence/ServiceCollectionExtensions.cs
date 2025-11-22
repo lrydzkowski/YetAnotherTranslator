@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using YetAnotherTranslator.Core;
+using YetAnotherTranslator.Infrastructure.Hosting;
 using YetAnotherTranslator.Infrastructure.Persistence.Repositories;
 using PlayPronunciationCacheRepository =
     YetAnotherTranslator.Core.Handlers.PlayPronunciation.Interfaces.ICacheRepository;
@@ -27,6 +28,7 @@ internal static class ServiceCollectionExtensions
             services.AddDbContext();
             services.AddRepositories();
             services.AddServices();
+            services.AddHostedServices();
         }
 
         private void AddOptions(IConfiguration configuration)
@@ -64,6 +66,11 @@ internal static class ServiceCollectionExtensions
         private void AddServices()
         {
             services.AddScoped<CacheKeyGenerator>();
+        }
+
+        private void AddHostedServices()
+        {
+            services.AddHostedService<DatabaseWarmupService>();
         }
     }
 }

@@ -11,7 +11,7 @@ internal class TranslatorDbContext : DbContext
     }
 
     public DbSet<HistoryEntryEntity> HistoryEntries { get; set; } = null!;
-    public DbSet<CacheEntity> Cache { get; set; } = null!;
+    public DbSet<CacheEntity> CacheEntries { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

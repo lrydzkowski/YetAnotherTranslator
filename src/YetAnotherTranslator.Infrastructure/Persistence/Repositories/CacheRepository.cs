@@ -46,7 +46,7 @@ internal class CacheRepository
         }
 
         string cacheKey = _cacheKeyGenerator.Generate(text, partOfSpeech);
-        CacheEntity? existingCache = await _context.Cache
+        CacheEntity? existingCache = await _context.CacheEntries
             .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
         if (existingCache is not null)
         {
@@ -64,7 +64,7 @@ internal class CacheRepository
             ResultByte = audioData,
             CreatedAt = _dateTimeProvider.UtcNowOffset
         };
-        _context.Cache.Add(cacheEntity);
+        _context.CacheEntries.Add(cacheEntity);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
@@ -75,7 +75,7 @@ internal class CacheRepository
     )
     {
         string cacheKey = _cacheKeyGenerator.Generate(text, partOfSpeech);
-        CacheEntity? cached = await _context.Cache
+        CacheEntity? cached = await _context.CacheEntries
             .AsNoTracking()
             .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
         if (cached?.ResultByte is null)
@@ -99,7 +99,7 @@ internal class CacheRepository
     )
     {
         string cacheKey = _cacheKeyGenerator.Generate(text, sourceLanguage, targetLanguage);
-        CacheEntity? cached = await _context.Cache
+        CacheEntity? cached = await _context.CacheEntries
             .AsNoTracking()
             .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
         if (cached?.ResultJson is null)
@@ -125,7 +125,7 @@ internal class CacheRepository
             result.SourceLanguage,
             result.TargetLanguage
         );
-        CacheEntity? existingCache = await _context.Cache
+        CacheEntity? existingCache = await _context.CacheEntries
             .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
         if (existingCache is not null)
         {
@@ -143,7 +143,7 @@ internal class CacheRepository
             ResultJson = _serializer.Serialize(result),
             CreatedAt = _dateTimeProvider.UtcNowOffset
         };
-        _context.Cache.Add(cacheEntity);
+        _context.CacheEntries.Add(cacheEntity);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
@@ -158,7 +158,7 @@ internal class CacheRepository
             result.TargetLanguage
         );
 
-        CacheEntity? existingCache = await _context.Cache
+        CacheEntity? existingCache = await _context.CacheEntries
             .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
         if (existingCache is not null)
         {
@@ -176,7 +176,7 @@ internal class CacheRepository
             ResultJson = _serializer.Serialize(result),
             CreatedAt = _dateTimeProvider.UtcNowOffset
         };
-        _context.Cache.Add(cacheEntity);
+        _context.CacheEntries.Add(cacheEntity);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
@@ -188,7 +188,7 @@ internal class CacheRepository
     )
     {
         string cacheKey = _cacheKeyGenerator.Generate(word, sourceLanguage, targetLanguage);
-        CacheEntity? cached = await _context.Cache
+        CacheEntity? cached = await _context.CacheEntries
             .AsNoTracking()
             .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
         if (cached?.ResultJson is null)
