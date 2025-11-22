@@ -6,6 +6,7 @@ Provide:
 
 1. Grammar issues with corrections and explanations
 2. Vocabulary suggestions for improvement
+3. Modified text with corrections applied
 
 Return response as structured JSON:
 
@@ -22,7 +23,8 @@ Return response as structured JSON:
       "suggestion": "excellent",
       "context": "More impactful in formal writing"
     }
-  ]
+  ],
+  "modifiedText": "The cat sits on the mat. It is an excellent day."
 }
 ```
 

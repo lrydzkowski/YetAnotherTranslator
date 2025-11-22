@@ -9,7 +9,7 @@ Provide:
     - Part of speech (noun, verb, adjective, etc.)
     - Countability (countable/uncountable for nouns, N/A otherwise)
     - CMU Arpabet phonetic transcription using standard CMU dictionary format (only for English words)
-    - Example sentences demonstrating usage, at least three per translation, show example sentences in English only
+    - Example sentences demonstrating usage of the English word, at least three per translation, show example sentences in English only
 
 3. If a word has pronunciation variants by part of speech (e.g., "record" as noun vs verb), provide separate CMU Arpabet for each variant (only for English words)
 

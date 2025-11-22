@@ -54,6 +54,10 @@ internal class ReviewGrammarCommand
             return;
         }
 
+        AnsiConsole.MarkupLine("[bold]Original Text:[/]");
+        AnsiConsole.MarkupLine($"[dim]{Markup.Escape(result.InputText)}[/]");
+        AnsiConsole.WriteLine();
+
         if (result.GrammarIssues.Count > 0)
         {
             AnsiConsole.MarkupLine("[bold red]Grammar Issues:[/]");
@@ -99,6 +103,13 @@ internal class ReviewGrammarCommand
             }
 
             AnsiConsole.Write(vocabTable);
+            AnsiConsole.WriteLine();
+        }
+
+        if (!string.IsNullOrWhiteSpace(result.ModifiedText))
+        {
+            AnsiConsole.MarkupLine("[bold green]Corrected Text:[/]");
+            AnsiConsole.MarkupLine($"[green]{Markup.Escape(result.ModifiedText)}[/]");
         }
     }
 }

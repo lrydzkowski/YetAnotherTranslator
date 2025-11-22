@@ -37,6 +37,7 @@ public class ReviewGrammarHandler
             request.Text,
             cancellationToken
         );
+        result?.InputText = request.Text;
 
         await _historyRepository.SaveHistoryAsync(
             CommandType.ReviewGrammar,
