@@ -6,7 +6,15 @@ using YetAnotherTranslator.Core.Handlers.PlayPronunciation.Models;
 
 namespace YetAnotherTranslator.Core.Handlers.PlayPronunciation;
 
-public class PlayPronunciationHandler
+public interface IPlayPronunciationHandler
+{
+    Task<PronunciationResult> HandleAsync(
+        PlayPronunciationRequest request,
+        CancellationToken cancellationToken = default
+    );
+}
+
+internal class PlayPronunciationHandler : IPlayPronunciationHandler
 {
     private const string DefaultVoiceId = "21m00Tcm4TlvDq8ikWAM";
     private readonly IAudioPlayer _audioPlayer;

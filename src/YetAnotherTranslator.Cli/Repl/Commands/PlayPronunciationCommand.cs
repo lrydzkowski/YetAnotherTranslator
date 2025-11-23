@@ -6,9 +6,9 @@ namespace YetAnotherTranslator.Cli.Repl.Commands;
 
 internal class PlayPronunciationCommand
 {
-    private readonly PlayPronunciationHandler _playPronunciationHandler;
+    private readonly IPlayPronunciationHandler _playPronunciationHandler;
 
-    public PlayPronunciationCommand(PlayPronunciationHandler playPronunciationHandler)
+    public PlayPronunciationCommand(IPlayPronunciationHandler playPronunciationHandler)
     {
         _playPronunciationHandler = playPronunciationHandler;
     }

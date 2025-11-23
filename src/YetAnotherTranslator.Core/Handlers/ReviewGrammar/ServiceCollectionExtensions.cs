@@ -10,7 +10,7 @@ internal static class ServiceCollectionExtensions
     {
         public void AddReviewGrammarServices()
         {
-            services.AddScoped<ReviewGrammarHandler>();
+            services.AddScopedWithPerformanceLogging<IReviewGrammarHandler, ReviewGrammarHandler>();
             services.AddScoped<IValidator<ReviewGrammarRequest>, ReviewGrammarValidator>();
         }
     }

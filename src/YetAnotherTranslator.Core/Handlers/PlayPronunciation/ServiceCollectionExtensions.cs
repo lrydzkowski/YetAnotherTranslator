@@ -10,7 +10,7 @@ internal static class ServiceCollectionExtensions
     {
         public void AddPlayPronunciationServices()
         {
-            services.AddScoped<PlayPronunciationHandler>();
+            services.AddScopedWithPerformanceLogging<IPlayPronunciationHandler, PlayPronunciationHandler>();
             services.AddScoped<IValidator<PlayPronunciationRequest>, PlayPronunciationValidator>();
         }
     }

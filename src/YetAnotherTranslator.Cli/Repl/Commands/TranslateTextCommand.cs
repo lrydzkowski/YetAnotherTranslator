@@ -6,9 +6,9 @@ namespace YetAnotherTranslator.Cli.Repl.Commands;
 
 internal class TranslateTextCommand
 {
-    private readonly TranslateTextHandler _translateTextHandler;
+    private readonly ITranslateTextHandler _translateTextHandler;
 
-    public TranslateTextCommand(TranslateTextHandler translateTextHandler)
+    public TranslateTextCommand(ITranslateTextHandler translateTextHandler)
     {
         _translateTextHandler = translateTextHandler;
     }

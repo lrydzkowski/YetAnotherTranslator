@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using PrettyPrompt;
 using Spectre.Console;
 using YetAnotherTranslator.Cli.Repl.Commands;
@@ -9,6 +10,7 @@ namespace YetAnotherTranslator.Cli.Repl;
 internal class ReplEngine
 {
     private readonly GetHistoryCommand _getHistoryCommand;
+    private readonly ILogger<ReplEngine> _logger;
     private readonly CommandParser _parser;
     private readonly PlayPronunciationCommand _playPronunciationCommand;
     private readonly Prompt _prompt = new();
@@ -22,7 +24,8 @@ internal class ReplEngine
         TranslateTextCommand translateTextCommand,
         ReviewGrammarCommand reviewGrammarCommand,
         PlayPronunciationCommand playPronunciationCommand,
-        GetHistoryCommand getHistoryCommand
+        GetHistoryCommand getHistoryCommand,
+        ILogger<ReplEngine> logger
     )
     {
         _parser = parser;
@@ -31,6 +34,7 @@ internal class ReplEngine
         _reviewGrammarCommand = reviewGrammarCommand;
         _playPronunciationCommand = playPronunciationCommand;
         _getHistoryCommand = getHistoryCommand;
+        _logger = logger;
     }
 
     public async Task RunAsync(CancellationToken cancellationToken = default)
@@ -61,16 +65,19 @@ internal class ReplEngine
             }
             catch (ValidationException ex)
             {
+                _logger.LogError(ex, "Validation error");
                 AnsiConsole.MarkupLine($"[red]Validation error: {Markup.Escape(ex.Message)}[/]");
                 AnsiConsole.WriteLine();
             }
             catch (ExternalServiceException ex)
             {
+                _logger.LogError(ex, "External service error: {ServiceName}", ex.ServiceName);
                 AnsiConsole.MarkupLine($"[red]Service error ({ex.ServiceName}): {Markup.Escape(ex.Message)}[/]");
                 AnsiConsole.WriteLine();
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Unexpected error in REPL");
                 AnsiConsole.MarkupLine($"[red]Error: {Markup.Escape(ex.Message)}[/]");
                 AnsiConsole.WriteLine();
             }
@@ -79,59 +86,87 @@ internal class ReplEngine
 
     private async Task<bool> HandleCommandAsync(Command command, CancellationToken cancellationToken)
     {
-        switch (command.Type)
+        bool shouldQuit = command.Type switch
         {
-            case CommandType.Quit:
-                return true;
+            CommandType.Quit => true,
+            CommandType.Clear => HandleClearCommand(),
+            CommandType.Help => HandleHelpCommand(),
+            CommandType.TranslateWord => await HandleTranslateWordCommandAsync(command, cancellationToken),
+            CommandType.TranslateText => await HandleTranslateTextCommandAsync(command, cancellationToken),
+            CommandType.ReviewGrammar => await HandleReviewGrammarCommandAsync(command, cancellationToken),
+            CommandType.PlayPronunciation => await HandlePlayPronunciationCommandAsync(command, cancellationToken),
+            CommandType.GetHistory => await HandleGetHistoryCommandAsync(cancellationToken),
+            CommandType.Invalid => HandleInvalidCommand(),
+            _ => HandleUnimplementedCommand()
+        };
 
-            case CommandType.Clear:
-                AnsiConsole.Clear();
-                DisplayTitle();
+        return shouldQuit;
+    }
 
-                return false;
+    private bool HandleClearCommand()
+    {
+        AnsiConsole.Clear();
+        DisplayTitle();
 
-            case CommandType.Help:
-                DisplayHelp();
+        return false;
+    }
 
-                return false;
+    private bool HandleHelpCommand()
+    {
+        DisplayHelp();
 
-            case CommandType.TranslateWord:
-                await _translateWordCommand.HandleTranslateWordAsync(command, cancellationToken);
+        return false;
+    }
 
-                return false;
+    private async Task<bool> HandleTranslateWordCommandAsync(Command command, CancellationToken cancellationToken)
+    {
+        await _translateWordCommand.HandleTranslateWordAsync(command, cancellationToken);
 
-            case CommandType.TranslateText:
-                await _translateTextCommand.HandleTranslateTextAsync(command, cancellationToken);
+        return false;
+    }
 
-                return false;
+    private async Task<bool> HandleTranslateTextCommandAsync(Command command, CancellationToken cancellationToken)
+    {
+        await _translateTextCommand.HandleTranslateTextAsync(command, cancellationToken);
 
-            case CommandType.ReviewGrammar:
-                await _reviewGrammarCommand.HandleReviewGrammarAsync(command, cancellationToken);
+        return false;
+    }
 
-                return false;
+    private async Task<bool> HandleReviewGrammarCommandAsync(Command command, CancellationToken cancellationToken)
+    {
+        await _reviewGrammarCommand.HandleReviewGrammarAsync(command, cancellationToken);
 
-            case CommandType.PlayPronunciation:
-                await _playPronunciationCommand.HandlePlayPronunciationAsync(command, cancellationToken);
+        return false;
+    }
 
-                return false;
+    private async Task<bool> HandlePlayPronunciationCommandAsync(Command command, CancellationToken cancellationToken)
+    {
+        await _playPronunciationCommand.HandlePlayPronunciationAsync(command, cancellationToken);
 
-            case CommandType.GetHistory:
-                await _getHistoryCommand.HandleGetHistoryAsync(cancellationToken);
+        return false;
+    }
 
-                return false;
+    private async Task<bool> HandleGetHistoryCommandAsync(CancellationToken cancellationToken)
+    {
+        await _getHistoryCommand.HandleGetHistoryAsync(cancellationToken);
 
-            case CommandType.Invalid:
-                AnsiConsole.MarkupLine("[yellow]Invalid command. Type /help for available commands.[/]");
-                AnsiConsole.WriteLine();
+        return false;
+    }
 
-                return false;
+    private bool HandleInvalidCommand()
+    {
+        AnsiConsole.MarkupLine("[yellow]Invalid command. Type /help for available commands.[/]");
+        AnsiConsole.WriteLine();
 
-            default:
-                AnsiConsole.MarkupLine("[yellow]Command not yet implemented.[/]");
-                AnsiConsole.WriteLine();
+        return false;
+    }
 
-                return false;
-        }
+    private bool HandleUnimplementedCommand()
+    {
+        AnsiConsole.MarkupLine("[yellow]Command not yet implemented.[/]");
+        AnsiConsole.WriteLine();
+
+        return false;
     }
 
     private static void DisplayTitle()

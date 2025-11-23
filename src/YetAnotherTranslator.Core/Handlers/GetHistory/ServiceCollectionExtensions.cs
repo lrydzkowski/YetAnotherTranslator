@@ -10,7 +10,7 @@ internal static class ServiceCollectionExtensions
     {
         public void AddGetHistoryServices()
         {
-            services.AddScoped<GetHistoryHandler>();
+            services.AddScopedWithPerformanceLogging<IGetHistoryHandler, GetHistoryHandler>();
             services.AddScoped<IValidator<GetHistoryRequest>, GetHistoryValidator>();
         }
     }

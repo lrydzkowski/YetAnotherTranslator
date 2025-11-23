@@ -4,7 +4,15 @@ using YetAnotherTranslator.Core.Handlers.GetHistory.Models;
 
 namespace YetAnotherTranslator.Core.Handlers.GetHistory;
 
-public class GetHistoryHandler
+public interface IGetHistoryHandler
+{
+    Task<GetHistoryResult> HandleAsync(
+        GetHistoryRequest request,
+        CancellationToken cancellationToken = default
+    );
+}
+
+internal class GetHistoryHandler : IGetHistoryHandler
 {
     private readonly IHistoryRepository _historyRepository;
     private readonly IValidator<GetHistoryRequest> _validator;

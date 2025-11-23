@@ -1,14 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using YetAnotherTranslator.Infrastructure.Persistence;
 
-namespace YetAnotherTranslator.Infrastructure.Hosting;
+namespace YetAnotherTranslator.Infrastructure.Persistence.Hosting;
 
 internal class DatabaseWarmupService : IHostedService
 {
-    private readonly ILogger<DatabaseWarmupService> _logger;
     private readonly TranslatorDbContext _dbContext;
+    private readonly ILogger<DatabaseWarmupService> _logger;
 
     public DatabaseWarmupService(
         ILogger<DatabaseWarmupService> logger,

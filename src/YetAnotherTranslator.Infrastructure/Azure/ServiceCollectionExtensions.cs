@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using YetAnotherTranslator.Core;
 using YetAnotherTranslator.Infrastructure.Azure.AiFoundry;
 using YetAnotherTranslator.Infrastructure.Azure.KeyVault;
+using YetAnotherTranslator.Infrastructure.Serilog;
 using ReviewGrammarLargeLanguageProvider =
     YetAnotherTranslator.Core.Handlers.ReviewGrammar.Interfaces.ILargeLanguageModelProvider;
 using TranslateTextLargeLanguageProvider =
@@ -36,9 +37,9 @@ internal static class ServiceCollectionExtensions
 
         private void AddServices()
         {
-            services.AddScoped<ReviewGrammarLargeLanguageProvider, AzureAiFoundryProvider>();
-            services.AddScoped<TranslateTextLargeLanguageProvider, AzureAiFoundryProvider>();
-            services.AddScoped<TranslateWordLargeLanguageProvider, AzureAiFoundryProvider>();
+            services.AddScopedWithPerformanceLogging<ReviewGrammarLargeLanguageProvider, AzureAiFoundryProvider>();
+            services.AddScopedWithPerformanceLogging<TranslateTextLargeLanguageProvider, AzureAiFoundryProvider>();
+            services.AddScopedWithPerformanceLogging<TranslateWordLargeLanguageProvider, AzureAiFoundryProvider>();
         }
     }
 }

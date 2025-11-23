@@ -6,9 +6,9 @@ namespace YetAnotherTranslator.Cli.Repl.Commands;
 
 internal class ReviewGrammarCommand
 {
-    private readonly ReviewGrammarHandler _reviewGrammarHandler;
+    private readonly IReviewGrammarHandler _reviewGrammarHandler;
 
-    public ReviewGrammarCommand(ReviewGrammarHandler reviewGrammarHandler)
+    public ReviewGrammarCommand(IReviewGrammarHandler reviewGrammarHandler)
     {
         _reviewGrammarHandler = reviewGrammarHandler;
     }

@@ -7,9 +7,9 @@ namespace YetAnotherTranslator.Cli.Repl.Commands;
 
 internal class GetHistoryCommand
 {
-    private readonly GetHistoryHandler _getHistoryHandler;
+    private readonly IGetHistoryHandler _getHistoryHandler;
 
-    public GetHistoryCommand(GetHistoryHandler getHistoryHandler)
+    public GetHistoryCommand(IGetHistoryHandler getHistoryHandler)
     {
         _getHistoryHandler = getHistoryHandler;
     }

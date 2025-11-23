@@ -10,7 +10,7 @@ internal static class ServiceCollectionExtensions
     {
         public void AddTranslateWordServices()
         {
-            services.AddScoped<TranslateWordHandler>();
+            services.AddScopedWithPerformanceLogging<ITranslateWordHandler, TranslateWordHandler>();
             services.AddScoped<IValidator<TranslateWordRequest>, TranslateWordValidator>();
         }
     }
