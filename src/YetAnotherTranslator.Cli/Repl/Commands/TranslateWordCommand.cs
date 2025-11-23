@@ -28,6 +28,7 @@ internal class TranslateWordCommand
                 async ctx =>
                 {
                     TranslateWordRequest request = new(
+                        command.Type,
                         command.Argument,
                         command.SourceLanguage,
                         command.TargetLanguage,

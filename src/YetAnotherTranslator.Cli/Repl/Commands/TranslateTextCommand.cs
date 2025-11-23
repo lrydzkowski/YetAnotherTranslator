@@ -28,6 +28,7 @@ internal class TranslateTextCommand
                 async ctx =>
                 {
                     TranslateTextRequest request = new(
+                        command.Type,
                         command.Argument,
                         command.SourceLanguage,
                         command.TargetLanguage,

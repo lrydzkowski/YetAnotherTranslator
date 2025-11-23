@@ -25,14 +25,14 @@ internal class CommandParser
         {
             "/t" or "/translate" => new Command
             {
-                Type = CommandType.TranslateWord,
+                Type = CommandType.TranslateWordAutodetect,
                 Argument = argument,
                 AutoDetectLanguage = true,
                 NoCache = noCache
             },
             "/tp" or "/translate-polish" => new Command
             {
-                Type = CommandType.TranslateWord,
+                Type = CommandType.TranslateWordToEnglish,
                 Argument = argument,
                 SourceLanguage = "Polish",
                 TargetLanguage = "English",
@@ -40,7 +40,7 @@ internal class CommandParser
             },
             "/te" or "/translate-english" => new Command
             {
-                Type = CommandType.TranslateWord,
+                Type = CommandType.TranslateWordToPolish,
                 Argument = argument,
                 SourceLanguage = "English",
                 TargetLanguage = "Polish",
@@ -48,14 +48,14 @@ internal class CommandParser
             },
             "/tt" or "/translate-text" => new Command
             {
-                Type = CommandType.TranslateText,
+                Type = CommandType.TranslateTextAutodetect,
                 Argument = argument.Replace("\\n", "\n"),
                 AutoDetectLanguage = true,
                 NoCache = noCache
             },
             "/ttp" or "/translate-text-polish" => new Command
             {
-                Type = CommandType.TranslateText,
+                Type = CommandType.TranslateTextToEnglish,
                 Argument = argument.Replace("\\n", "\n"),
                 SourceLanguage = "Polish",
                 TargetLanguage = "English",
@@ -63,7 +63,7 @@ internal class CommandParser
             },
             "/tte" or "/translate-text-english" => new Command
             {
-                Type = CommandType.TranslateText,
+                Type = CommandType.TranslateTextToPolish,
                 Argument = argument.Replace("\\n", "\n"),
                 SourceLanguage = "English",
                 TargetLanguage = "Polish",

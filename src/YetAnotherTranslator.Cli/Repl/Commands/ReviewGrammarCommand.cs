@@ -26,7 +26,7 @@ internal class ReviewGrammarCommand
                 "Reviewing grammar...",
                 async ctx =>
                 {
-                    ReviewGrammarRequest request = new(command.Argument, !command.NoCache);
+                    ReviewGrammarRequest request = new(command.Type, command.Argument, !command.NoCache);
                     GrammarReviewResult? result = await _reviewGrammarHandler.HandleAsync(request, cancellationToken);
                     ctx.Status("Done");
                     Display(result);

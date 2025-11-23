@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using YetAnotherTranslator.Core.Common.Models;
 using YetAnotherTranslator.Core.Common.Services;
 using YetAnotherTranslator.Core.Handlers.TranslateWord.Interfaces;
 using YetAnotherTranslator.Core.Handlers.TranslateWord.Models;
@@ -128,7 +127,7 @@ internal class TranslateWordHandler : ITranslateWordHandler
     )
     {
         await _historyRepository.SaveHistoryAsync(
-            CommandType.TranslateWord,
+            request.CommandType,
             request.Word,
             _serializer.Serialize(result),
             cancellationToken

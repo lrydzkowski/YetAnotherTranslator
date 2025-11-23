@@ -32,6 +32,29 @@ internal class CacheRepository
         _serializer = serializer;
     }
 
+    public async Task<byte[]?> GetPronunciationAsync(
+        string text,
+        string? partOfSpeech,
+        CancellationToken cancellationToken = default
+    )
+    {
+        string cacheKey = _cacheKeyGenerator.Generate(text, partOfSpeech);
+        CacheEntity? cached = await _context.CacheEntries
+            .AsNoTracking()
+            .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
+        if (cached?.ResultByte is null)
+        {
+            return null;
+        }
+
+        if (_dateTimeProvider.UtcNowOffset - cached.CreatedAt > _cacheLifespan)
+        {
+            return null;
+        }
+
+        return cached.ResultByte;
+    }
+
     public async Task SavePronunciationAsync(
         string text,
         string? partOfSpeech,
@@ -61,34 +84,19 @@ internal class CacheRepository
         {
             Id = Guid.CreateVersion7(),
             CacheKey = cacheKey,
+            InputJson = _serializer.Serialize(
+                new
+                {
+                    Text = text,
+                    PartOfSpeech = partOfSpeech,
+                    VoiceId = voiceId
+                }
+            ),
             ResultByte = audioData,
             CreatedAt = _dateTimeProvider.UtcNowOffset
         };
         _context.CacheEntries.Add(cacheEntity);
         await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task<byte[]?> GetPronunciationAsync(
-        string text,
-        string? partOfSpeech,
-        CancellationToken cancellationToken = default
-    )
-    {
-        string cacheKey = _cacheKeyGenerator.Generate(text, partOfSpeech);
-        CacheEntity? cached = await _context.CacheEntries
-            .AsNoTracking()
-            .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
-        if (cached?.ResultByte is null)
-        {
-            return null;
-        }
-
-        if (_dateTimeProvider.UtcNowOffset - cached.CreatedAt > _cacheLifespan)
-        {
-            return null;
-        }
-
-        return cached.ResultByte;
     }
 
     public async Task<TextTranslationResult?> GetTextTranslationAsync(
@@ -140,39 +148,14 @@ internal class CacheRepository
         {
             Id = Guid.CreateVersion7(),
             CacheKey = cacheKey,
-            ResultJson = _serializer.Serialize(result),
-            CreatedAt = _dateTimeProvider.UtcNowOffset
-        };
-        _context.CacheEntries.Add(cacheEntity);
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task SaveTranslationAsync(
-        TranslationResult result,
-        CancellationToken cancellationToken = default
-    )
-    {
-        string cacheKey = _cacheKeyGenerator.Generate(
-            result.InputText,
-            result.SourceLanguage,
-            result.TargetLanguage
-        );
-
-        CacheEntity? existingCache = await _context.CacheEntries
-            .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
-        if (existingCache is not null)
-        {
-            existingCache.ResultJson = _serializer.Serialize(result);
-            existingCache.CreatedAt = _dateTimeProvider.UtcNowOffset;
-            await _context.SaveChangesAsync(cancellationToken);
-
-            return;
-        }
-
-        CacheEntity cacheEntity = new()
-        {
-            Id = Guid.CreateVersion7(),
-            CacheKey = cacheKey,
+            InputJson = _serializer.Serialize(
+                new
+                {
+                    result.SourceLanguage,
+                    result.TargetLanguage,
+                    result.InputText
+                }
+            ),
             ResultJson = _serializer.Serialize(result),
             CreatedAt = _dateTimeProvider.UtcNowOffset
         };
@@ -202,5 +185,46 @@ internal class CacheRepository
         }
 
         return _serializer.Deserialize<TranslationResult>(cached.ResultJson);
+    }
+
+    public async Task SaveTranslationAsync(
+        TranslationResult result,
+        CancellationToken cancellationToken = default
+    )
+    {
+        string cacheKey = _cacheKeyGenerator.Generate(
+            result.InputText,
+            result.SourceLanguage,
+            result.TargetLanguage
+        );
+
+        CacheEntity? existingCache = await _context.CacheEntries
+            .FirstOrDefaultAsync(entity => entity.CacheKey == cacheKey, cancellationToken);
+        if (existingCache is not null)
+        {
+            existingCache.ResultJson = _serializer.Serialize(result);
+            existingCache.CreatedAt = _dateTimeProvider.UtcNowOffset;
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return;
+        }
+
+        CacheEntity cacheEntity = new()
+        {
+            Id = Guid.CreateVersion7(),
+            CacheKey = cacheKey,
+            InputJson = _serializer.Serialize(
+                new
+                {
+                    result.SourceLanguage,
+                    result.TargetLanguage,
+                    result.InputText
+                }
+            ),
+            ResultJson = _serializer.Serialize(result),
+            CreatedAt = _dateTimeProvider.UtcNowOffset
+        };
+        _context.CacheEntries.Add(cacheEntity);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using YetAnotherTranslator.Core.Common.Models;
 using YetAnotherTranslator.Core.Common.Services;
 using YetAnotherTranslator.Core.Handlers.ReviewGrammar.Interfaces;
 using YetAnotherTranslator.Core.Handlers.ReviewGrammar.Models;
@@ -84,7 +83,7 @@ internal class ReviewGrammarHandler : IReviewGrammarHandler
     )
     {
         await _historyRepository.SaveHistoryAsync(
-            CommandType.ReviewGrammar,
+            request.CommandType,
             request.Text,
             result is null ? null : _serializer.Serialize(result),
             cancellationToken

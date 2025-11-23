@@ -3,8 +3,12 @@ namespace YetAnotherTranslator.Core.Common.Models;
 public enum CommandType
 {
     Invalid,
-    TranslateWord,
-    TranslateText,
+    TranslateWordAutodetect,
+    TranslateWordToEnglish,
+    TranslateWordToPolish,
+    TranslateTextAutodetect,
+    TranslateTextToEnglish,
+    TranslateTextToPolish,
     ReviewGrammar,
     PlayPronunciation,
     GetHistory,

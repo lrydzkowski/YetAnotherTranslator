@@ -21,6 +21,10 @@ internal class CacheEntityConfiguration : IEntityTypeConfiguration<CacheEntity>
             .HasMaxLength(64)
             .IsRequired();
 
+        builder.Property(e => e.InputJson)
+            .HasColumnName("input_json")
+            .HasColumnType("jsonb");
+
         builder.Property(e => e.ResultJson)
             .HasColumnName("result_json")
             .HasColumnType("jsonb");

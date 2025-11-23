@@ -67,8 +67,12 @@ internal class GetHistoryCommand
     {
         return commandType switch
         {
-            CommandType.TranslateWord => "[cyan]Translate Word[/]",
-            CommandType.TranslateText => "[cyan]Translate Text[/]",
+            CommandType.TranslateWordAutodetect => "[cyan]Translate Word[/]",
+            CommandType.TranslateWordToEnglish => "[cyan]Translate Word to English[/]",
+            CommandType.TranslateWordToPolish => "[cyan]Translate Word to Polish[/]",
+            CommandType.TranslateTextAutodetect => "[cyan]Translate Text[/]",
+            CommandType.TranslateTextToEnglish => "[cyan]Translate Text to English[/]",
+            CommandType.TranslateTextToPolish => "[cyan]Translate Text to Polish[/]",
             CommandType.ReviewGrammar => "[green]Review Grammar[/]",
             CommandType.PlayPronunciation => "[magenta]Play Pronunciation[/]",
             CommandType.GetHistory => "[blue]Get History[/]",

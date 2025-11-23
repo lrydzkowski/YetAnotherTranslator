@@ -27,7 +27,7 @@ internal class PlayPronunciationCommand
                 async ctx =>
                 {
                     string text = ParsePartOfSpeech(command, out string? partOfSpeech);
-                    PlayPronunciationRequest request = new(text, partOfSpeech, !command.NoCache);
+                    PlayPronunciationRequest request = new(command.Type, text, partOfSpeech, !command.NoCache);
                     PronunciationResult result =
                         await _playPronunciationHandler.HandleAsync(request, cancellationToken);
                     ctx.Status("Done");

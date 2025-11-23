@@ -1,5 +1,4 @@
 using FluentValidation;
-using YetAnotherTranslator.Core.Common.Models;
 using YetAnotherTranslator.Core.Common.Services;
 using YetAnotherTranslator.Core.Handlers.PlayPronunciation.Interfaces;
 using YetAnotherTranslator.Core.Handlers.PlayPronunciation.Models;
@@ -85,7 +84,7 @@ internal class PlayPronunciationHandler : IPlayPronunciationHandler
         };
 
         await _historyRepository.SaveHistoryAsync(
-            CommandType.PlayPronunciation,
+            request.CommandType,
             request.Text,
             _serializer.Serialize(result),
             cancellationToken
