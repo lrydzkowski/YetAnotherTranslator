@@ -18,7 +18,6 @@ internal static class ServiceCollectionExtensions
             services.AddScoped<CommandParser>();
             services.AddScoped<ReplEngine>();
             services.AddScoped<GetHistoryCommand>();
-            services.AddScoped<PlayPronunciationCommand>();
             services.AddScoped<ReviewGrammarCommand>();
             services.AddScoped<TranslateTextCommand>();
             services.AddScoped<TranslateWordCommand>();

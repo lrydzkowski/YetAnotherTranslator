@@ -7,7 +7,6 @@ using YetAnotherTranslator.Core.Common.Logging;
 using YetAnotherTranslator.Core.Common.Services;
 using YetAnotherTranslator.Core.Common.Validation;
 using YetAnotherTranslator.Core.Handlers.GetHistory;
-using YetAnotherTranslator.Core.Handlers.PlayPronunciation;
 using YetAnotherTranslator.Core.Handlers.ReviewGrammar;
 using YetAnotherTranslator.Core.Handlers.TranslateText;
 using YetAnotherTranslator.Core.Handlers.TranslateWord;
@@ -22,7 +21,6 @@ public static class ServiceCollectionExtensions
         {
             services.AddServices();
             services.AddGetHistoryServices();
-            services.AddPlayPronunciationServices();
             services.AddReviewGrammarServices();
             services.AddTranslateTextServices();
             services.AddTranslateWordServices();

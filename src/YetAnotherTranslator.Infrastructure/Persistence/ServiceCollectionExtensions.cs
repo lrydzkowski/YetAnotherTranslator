@@ -5,13 +5,9 @@ using Microsoft.Extensions.Options;
 using YetAnotherTranslator.Core;
 using YetAnotherTranslator.Infrastructure.Persistence.Hosting;
 using YetAnotherTranslator.Infrastructure.Persistence.Repositories;
-using PlayPronunciationCacheRepository =
-    YetAnotherTranslator.Core.Handlers.PlayPronunciation.Interfaces.ICacheRepository;
 using TranslateTextCacheRepository = YetAnotherTranslator.Core.Handlers.TranslateText.Interfaces.ICacheRepository;
 using TranslateWordCacheRepository = YetAnotherTranslator.Core.Handlers.TranslateWord.Interfaces.ICacheRepository;
 using GetHistoryHistoryRepository = YetAnotherTranslator.Core.Handlers.GetHistory.Interfaces.IHistoryRepository;
-using PlayPronunciationHistoryRepository =
-    YetAnotherTranslator.Core.Handlers.PlayPronunciation.Interfaces.IHistoryRepository;
 using ReviewGrammarHistoryRepository = YetAnotherTranslator.Core.Handlers.ReviewGrammar.Interfaces.IHistoryRepository;
 using TranslateTextHistoryRepository = YetAnotherTranslator.Core.Handlers.TranslateText.Interfaces.IHistoryRepository;
 using TranslateWordHistoryRepository = YetAnotherTranslator.Core.Handlers.TranslateWord.Interfaces.IHistoryRepository;
@@ -52,12 +48,10 @@ internal static class ServiceCollectionExtensions
 
         private void AddRepositories()
         {
-            services.AddScopedWithPerformanceLogging<PlayPronunciationCacheRepository, CacheRepository>();
             services.AddScopedWithPerformanceLogging<TranslateTextCacheRepository, CacheRepository>();
             services.AddScopedWithPerformanceLogging<TranslateWordCacheRepository, CacheRepository>();
 
             services.AddScopedWithPerformanceLogging<GetHistoryHistoryRepository, HistoryRepository>();
-            services.AddScopedWithPerformanceLogging<PlayPronunciationHistoryRepository, HistoryRepository>();
             services.AddScopedWithPerformanceLogging<ReviewGrammarHistoryRepository, HistoryRepository>();
             services.AddScopedWithPerformanceLogging<TranslateTextHistoryRepository, HistoryRepository>();
             services.AddScopedWithPerformanceLogging<TranslateWordHistoryRepository, HistoryRepository>();

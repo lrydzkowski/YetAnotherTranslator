@@ -74,7 +74,6 @@ internal class GetHistoryCommand
             CommandType.TranslateTextToEnglish => "[cyan]Translate Text to English[/]",
             CommandType.TranslateTextToPolish => "[cyan]Translate Text to Polish[/]",
             CommandType.ReviewGrammar => "[green]Review Grammar[/]",
-            CommandType.PlayPronunciation => "[magenta]Play Pronunciation[/]",
             CommandType.GetHistory => "[blue]Get History[/]",
             _ => commandType.ToString()
         };

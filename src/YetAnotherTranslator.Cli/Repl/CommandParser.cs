@@ -74,12 +74,6 @@ internal class CommandParser
                 Type = CommandType.ReviewGrammar,
                 Argument = argument
             },
-            "/p" or "/playback" => new Command
-            {
-                Type = CommandType.PlayPronunciation,
-                Argument = argument,
-                NoCache = noCache
-            },
             "/hist" or "/history" => new Command
             {
                 Type = CommandType.GetHistory

@@ -10,7 +10,6 @@ public enum CommandType
     TranslateTextToEnglish,
     TranslateTextToPolish,
     ReviewGrammar,
-    PlayPronunciation,
     GetHistory,
     Help,
     Clear,

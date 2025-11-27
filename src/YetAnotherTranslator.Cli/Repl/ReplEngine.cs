@@ -12,7 +12,6 @@ internal class ReplEngine
     private readonly GetHistoryCommand _getHistoryCommand;
     private readonly ILogger<ReplEngine> _logger;
     private readonly CommandParser _parser;
-    private readonly PlayPronunciationCommand _playPronunciationCommand;
     private readonly Prompt _prompt = new();
     private readonly ReviewGrammarCommand _reviewGrammarCommand;
     private readonly TranslateTextCommand _translateTextCommand;
@@ -23,7 +22,6 @@ internal class ReplEngine
         TranslateWordCommand translateWordCommand,
         TranslateTextCommand translateTextCommand,
         ReviewGrammarCommand reviewGrammarCommand,
-        PlayPronunciationCommand playPronunciationCommand,
         GetHistoryCommand getHistoryCommand,
         ILogger<ReplEngine> logger
     )
@@ -32,7 +30,6 @@ internal class ReplEngine
         _translateWordCommand = translateWordCommand;
         _translateTextCommand = translateTextCommand;
         _reviewGrammarCommand = reviewGrammarCommand;
-        _playPronunciationCommand = playPronunciationCommand;
         _getHistoryCommand = getHistoryCommand;
         _logger = logger;
     }
@@ -98,7 +95,6 @@ internal class ReplEngine
             CommandType.TranslateTextToEnglish => await HandleTranslateTextCommandAsync(command, cancellationToken),
             CommandType.TranslateTextToPolish => await HandleTranslateTextCommandAsync(command, cancellationToken),
             CommandType.ReviewGrammar => await HandleReviewGrammarCommandAsync(command, cancellationToken),
-            CommandType.PlayPronunciation => await HandlePlayPronunciationCommandAsync(command, cancellationToken),
             CommandType.GetHistory => await HandleGetHistoryCommandAsync(cancellationToken),
             CommandType.Invalid => HandleInvalidCommand(),
             _ => HandleUnimplementedCommand()
@@ -139,13 +135,6 @@ internal class ReplEngine
     private async Task<bool> HandleReviewGrammarCommandAsync(Command command, CancellationToken cancellationToken)
     {
         await _reviewGrammarCommand.HandleReviewGrammarAsync(command, cancellationToken);
-
-        return false;
-    }
-
-    private async Task<bool> HandlePlayPronunciationCommandAsync(Command command, CancellationToken cancellationToken)
-    {
-        await _playPronunciationCommand.HandlePlayPronunciationAsync(command, cancellationToken);
 
         return false;
     }
@@ -194,7 +183,6 @@ internal class ReplEngine
         table.AddRow("/ttp, /translate-text-polish <text>", "Translate Polish text to English");
         table.AddRow("/tte, /translate-text-english <text>", "Translate English text to Polish");
         table.AddRow("/r, /review <text>", "Review English grammar and vocabulary");
-        table.AddRow("/p, /playback <word>", "Play pronunciation of English word");
         table.AddRow("/hist, /history", "Show operation history");
         table.AddRow("/help", "Show this help message");
         table.AddRow("/clear, /c", "Clear the screen");

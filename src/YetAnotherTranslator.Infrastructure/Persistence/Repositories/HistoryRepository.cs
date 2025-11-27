@@ -4,8 +4,6 @@ using YetAnotherTranslator.Core.Common.Services;
 using YetAnotherTranslator.Core.Handlers.GetHistory.Models;
 using YetAnotherTranslator.Infrastructure.Persistence.Entities;
 using GetHistoryHistoryRepository = YetAnotherTranslator.Core.Handlers.GetHistory.Interfaces.IHistoryRepository;
-using PlayPronunciationHistoryRepository =
-    YetAnotherTranslator.Core.Handlers.PlayPronunciation.Interfaces.IHistoryRepository;
 using ReviewGrammarHistoryRepository = YetAnotherTranslator.Core.Handlers.ReviewGrammar.Interfaces.IHistoryRepository;
 using TranslateTextHistoryRepository = YetAnotherTranslator.Core.Handlers.TranslateText.Interfaces.IHistoryRepository;
 using TranslateWordHistoryRepository = YetAnotherTranslator.Core.Handlers.TranslateWord.Interfaces.IHistoryRepository;
@@ -14,7 +12,6 @@ namespace YetAnotherTranslator.Infrastructure.Persistence.Repositories;
 
 internal class HistoryRepository
     : GetHistoryHistoryRepository,
-        PlayPronunciationHistoryRepository,
         ReviewGrammarHistoryRepository,
         TranslateTextHistoryRepository,
         TranslateWordHistoryRepository
