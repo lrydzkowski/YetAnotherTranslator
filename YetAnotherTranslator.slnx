@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/YetAnotherTranslator.Cli/YetAnotherTranslator.Cli.csproj" />
+    <Project Path="src/YetAnotherTranslator.Core/YetAnotherTranslator.Core.csproj" />
+    <Project Path="src/YetAnotherTranslator.Infrastructure/YetAnotherTranslator.Infrastructure.csproj" />
+  </Folder>
+</Solution>
