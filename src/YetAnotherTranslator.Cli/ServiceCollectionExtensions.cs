@@ -22,7 +22,6 @@ internal static class ServiceCollectionExtensions
             services.AddScoped<ReviewGrammarCommand>();
             services.AddScoped<TranslateTextCommand>();
             services.AddScoped<TranslateWordCommand>();
-            services.AddHostedService<ReplHostedService>();
         }
     }
 }

@@ -1,31 +1,35 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace YetAnotherTranslator.Infrastructure.Persistence.Hosting;
 
-internal class DatabaseWarmupService : IHostedService
+internal class DatabaseWarmupService : BackgroundService
 {
-    private readonly TranslatorDbContext _dbContext;
     private readonly ILogger<DatabaseWarmupService> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
     public DatabaseWarmupService(
         ILogger<DatabaseWarmupService> logger,
-        TranslatorDbContext dbContext
+        IServiceProvider serviceProvider
     )
     {
         _logger = logger;
-        _dbContext = dbContext;
+        _serviceProvider = serviceProvider;
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         try
         {
             _logger.LogInformation("Warming up database connection...");
 
-            await _dbContext.CacheEntries.AnyAsync(cancellationToken);
-            await _dbContext.HistoryEntries.AnyAsync(cancellationToken);
+            using IServiceScope scope = _serviceProvider.CreateScope();
+            TranslatorDbContext dbContext = scope.ServiceProvider.GetRequiredService<TranslatorDbContext>();
+
+            await dbContext.CacheEntries.AnyAsync(cancellationToken);
+            await dbContext.HistoryEntries.AnyAsync(cancellationToken);
 
             _logger.LogInformation("Database connection warmed up successfully");
         }
@@ -33,10 +37,5 @@ internal class DatabaseWarmupService : IHostedService
         {
             _logger.LogWarning(ex, "Failed to warm up database connection, but application will continue normally");
         }
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
     }
 }

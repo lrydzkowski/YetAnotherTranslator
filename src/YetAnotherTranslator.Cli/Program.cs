@@ -58,6 +58,7 @@ internal class Program
             .ConfigureServices(
                 (context, services) =>
                 {
+                    services.AddHostedService<ReplHostedService>();
                     services.AddAppServices();
                     services.AddCoreServices(context.Configuration);
                     services.AddInfrastructureServices(context.Configuration);
@@ -66,7 +67,7 @@ internal class Program
     }
 }
 
-public class ReplHostedService : IHostedService
+public class ReplHostedService : BackgroundService
 {
     private readonly IHostApplicationLifetime _lifetime;
     private readonly IServiceProvider _serviceProvider;
@@ -77,16 +78,11 @@ public class ReplHostedService : IHostedService
         _lifetime = lifetime;
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using IServiceScope scope = _serviceProvider.CreateScope();
         ReplEngine replEngine = scope.ServiceProvider.GetRequiredService<ReplEngine>();
-        await replEngine.RunAsync(cancellationToken);
+        await replEngine.RunAsync(stoppingToken);
         _lifetime.StopApplication();
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
     }
 }
