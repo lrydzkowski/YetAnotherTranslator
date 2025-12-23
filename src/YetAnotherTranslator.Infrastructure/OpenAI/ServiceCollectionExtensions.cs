@@ -1,8 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using YetAnotherTranslator.Core;
-using YetAnotherTranslator.Infrastructure.Azure.AiFoundry;
-using YetAnotherTranslator.Infrastructure.Azure.KeyVault;
 using ReviewGrammarLargeLanguageProvider =
     YetAnotherTranslator.Core.Handlers.ReviewGrammar.Interfaces.ILargeLanguageModelProvider;
 using TranslateTextLargeLanguageProvider =
@@ -10,13 +8,13 @@ using TranslateTextLargeLanguageProvider =
 using TranslateWordLargeLanguageProvider =
     YetAnotherTranslator.Core.Handlers.TranslateWord.Interfaces.ILargeLanguageModelProvider;
 
-namespace YetAnotherTranslator.Infrastructure.Azure;
+namespace YetAnotherTranslator.Infrastructure.OpenAI;
 
 internal static class ServiceCollectionExtensions
 {
     extension(IServiceCollection services)
     {
-        public void AddAzureServices(IConfiguration configuration)
+        public void AddOpenAiServices(IConfiguration configuration)
         {
             services.AddOptions(configuration);
             services.AddServices();
@@ -24,21 +22,17 @@ internal static class ServiceCollectionExtensions
 
         private void AddOptions(IConfiguration configuration)
         {
-            services.AddOptionsTypeWithValidation<KeyVaultOptions, KeyVaultOptionsValidator>(
+            services.AddOptionsTypeWithValidation<OpenAiOptions, OpenAiOptionsValidator>(
                 configuration,
-                KeyVaultOptions.Position
-            );
-            services.AddOptionsTypeWithValidation<AzureAiFoundryOptions, AzureAiFoundryOptionsValidator>(
-                configuration,
-                AzureAiFoundryOptions.Position
+                OpenAiOptions.Position
             );
         }
 
         private void AddServices()
         {
-            services.AddScopedWithPerformanceLogging<ReviewGrammarLargeLanguageProvider, AzureAiFoundryProvider>();
-            services.AddScopedWithPerformanceLogging<TranslateTextLargeLanguageProvider, AzureAiFoundryProvider>();
-            services.AddScopedWithPerformanceLogging<TranslateWordLargeLanguageProvider, AzureAiFoundryProvider>();
+            services.AddScopedWithPerformanceLogging<ReviewGrammarLargeLanguageProvider, OpenAiProvider>();
+            services.AddScopedWithPerformanceLogging<TranslateTextLargeLanguageProvider, OpenAiProvider>();
+            services.AddScopedWithPerformanceLogging<TranslateWordLargeLanguageProvider, OpenAiProvider>();
         }
     }
 }

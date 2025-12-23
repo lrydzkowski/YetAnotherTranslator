@@ -13,6 +13,7 @@ public static class ServiceCollectionExtensions
         {
             services.AddAzureServices(configuration);
             services.AddPersistenceServices(configuration);
+            // services.AddOpenAiServices(configuration);
         }
     }
 }
